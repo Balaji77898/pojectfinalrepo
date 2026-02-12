@@ -1,0 +1,95 @@
+import { API_CONFIG } from '@/app/admin/lib/api.config';
+import { staffAuthService } from './staff-auth.service';
+
+export interface StaffOrder {
+    id: string;
+    restaurant_id: string;
+    table_id: string | null;
+    order_type: string;
+    status: string;
+    subtotal: string;
+    tax_amount: string;
+    total_amount: string;
+    payment_status: string;
+    payment_method: string;
+    created_at: string;
+    updated_at: string;
+    // Add other fields if API returns them later
+}
+
+export interface StaffOrdersResponse {
+    success: boolean;
+    orders: StaffOrder[];
+}
+
+class StaffOrdersService {
+    /**
+     * Get all orders for the current staff's restaurant
+     */
+    async getOrders(): Promise<StaffOrder[]> {
+        const token = staffAuthService.getToken();
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        try {
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.ORDERS}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to fetch orders');
+            }
+
+            const data: StaffOrdersResponse = await response.json();
+            return data.orders || [];
+        } catch (error) {
+            console.error('Error fetching staff orders:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Update order status
+     */
+    async updateStatus(orderId: string, status: string): Promise<void> {
+        const token = staffAuthService.getToken();
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        try {
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true',
+                    },
+                    body: JSON.stringify({ status }),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to update order status');
+            }
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            throw error;
+        }
+    }
+}
+
+export const staffOrdersService = new StaffOrdersService();
