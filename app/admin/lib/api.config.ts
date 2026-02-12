@@ -40,6 +40,8 @@ export const API_CONFIG = {
             LOGIN: '/api/staff/login',
             ORDERS: '/api/staff/orders',
             UPDATE_STATUS: (id: string) => `/api/staff/orders/${id}/status`,
+            GENERATE_BILL: (id: string) => `/api/staff/orders/${id}/generate-bill`,
+            PAY: (id: string) => `/api/staff/orders/${id}/pay`,
         },
     },
     HEADERS: {

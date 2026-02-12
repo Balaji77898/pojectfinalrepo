@@ -1,0 +1,822 @@
+[00:00:01.439] Server  LOG     ✓ Ready in 1073ms
+[00:00:11.532] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:11.657] Browser WARN    Image with src "http://localhost:3000/vercel.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:00:22.600] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:22.815] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+      <LoadingBoundary name="admin/" loading={null}>
+        <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+          <RedirectBoundary>
+            <RedirectErrorBoundary router={{...}}>
+              <InnerLayoutRouter url="/admin" tree={[...]} params={{}} cacheNode={{rsc:<Fragment>, ...}} ...>
+                <SegmentViewNode type="page" pagePath="admin/page...">
+                  <SegmentTrieNode>
+                  <ClientPageRoot Component={function RestaurantLanding} serverProvidedParams={{...}}>
+                    <RestaurantLanding params={Promise} searchParams={Promise}>
+                      <div className="jsx-813fd6...">
+                        <div>
+                        <div className="jsx-813fd6...">
+                          <motion.div className="absolute" style={{left:"26.3...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "26.338692484472315%"
+-                               left: "94.1802%"
++                               top: "3.797148355659441%"
+-                               top: "91.1264%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 11.191562402546461
+-                                 width: "9.0887px"
++                                 height: 22.383124805092923
+-                                 height: "18.1774px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"81.0...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "81.06604914398254%"
+-                               left: "70.9625%"
++                               top: "99.40892910413798%"
+-                               top: "8.64525%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 9.810134844215337
+-                                 width: "13.4705px"
++                                 height: 19.620269688430675
+-                                 height: "26.941px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"58.8...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "58.876510144855466%"
+-                               left: "48.8465%"
++                               top: "24.496650218047588%"
+-                               top: "69.1008%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 12.970095284937884
+-                                 width: "9.34506px"
++                                 height: 25.940190569875767
+-                                 height: "18.6901px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"94.1...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "94.11724768031634%"
+-                               left: "85.4573%"
++                               top: "29.403614396536337%"
+-                               top: "26.5086%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 10.421599383609845
+-                                 width: "11.3578px"
++                                 height: 20.84319876721969
+-                                 height: "22.7155px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"77.5...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "77.5397304586537%"
+-                               left: "36.5227%"
++                               top: "45.70619981629147%"
+-                               top: "38.1301%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 15.67934138826849
+-                                 width: "16.442px"
++                                 height: 31.35868277653698
+-                                 height: "32.884px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"5.69...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "5.698779976672008%"
+-                               left: "79.2651%"
++                               top: "28.436052412675604%"
+-                               top: "68.7352%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 15.102816203753877
+-                                 width: "6.95068px"
++                                 height: 30.205632407507753
+-                                 height: "13.9014px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"37.9...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "37.90261165440384%"
+-                               left: "95.2533%"
++                               top: "90.99417281608306%"
+-                               top: "98.6262%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 17.03754352171682
+-                                 width: "6.88994px"
++                                 height: 34.07508704343364
+-                                 height: "13.7799px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"28.6...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "28.661958471966287%"
+-                               left: "83.0843%"
++                               top: "92.096597603024%"
+-                               top: "64.8664%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 12.617269696176152
+-                                 width: "14.1767px"
++                                 height: 25.234539392352303
+-                                 height: "28.3533px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"44.4...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "44.42280448037137%"
+-                               left: "65.6168%"
++                               top: "88.3239864579196%"
+-                               top: "19.0105%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 12.054776733297714
+-                                 width: "12.3485px"
++                                 height: 24.10955346659543
+-                                 height: "24.697px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"21.8...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "21.849412118486576%"
+-                               left: "89.4987%"
++                               top: "67.94090162550242%"
+-                               top: "77.4538%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 14.166293045360348
+-                                 width: "16.4062px"
++                                 height: 28.332586090720696
+-                                 height: "32.8124px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"43.8...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "43.892421568232855%"
+-                               left: "6.04152%"
++                               top: "89.0844895431339%"
+-                               top: "16.7147%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 13.505239305793808
+-                                 width: "11.2277px"
++                                 height: 27.010478611587615
+-                                 height: "22.4554px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"23.1...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "23.143624466224633%"
+-                               left: "93.8098%"
++                               top: "81.3989843448936%"
+-                               top: "69.1097%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 9.498941496926529
+-                                 width: "16.9837px"
++                                 height: 18.997882993853057
+-                                 height: "33.9675px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"55.9...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "55.97894407693994%"
+-                               left: "10.8989%"
++                               top: "54.215857101635855%"
+-                               top: "27.5987%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 13.486169763902161
+-                                 width: "14.3939px"
++                                 height: 26.972339527804323
+-                                 height: "28.7877px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"30.9...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "30.920942687381547%"
+-                               left: "75.6794%"
++                               top: "47.251650435398304%"
+-                               top: "58.7957%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 6.216796516689589
+-                                 width: "9.76768px"
++                                 height: 12.433593033379179
+-                                 height: "19.5354px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"81.1...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "81.1384004252367%"
+-                               left: "76.6026%"
++                               top: "58.32639734030997%"
+-                               top: "28.8424%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 13.59258003104762
+-                                 width: "10.2922px"
++                                 height: 27.18516006209524
+-                                 height: "20.5844px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"33.1...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "33.13204607928723%"
+-                               left: "4.98663%"
++                               top: "14.649289327024507%"
+-                               top: "27.0301%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 13.11810195540653
+-                                 width: "16.9854px"
++                                 height: 26.23620391081306
+-                                 height: "33.9708px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"8.32...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "8.329075046854362%"
+-                               left: "70.1345%"
++                               top: "32.59714016060473%"
+-                               top: "86.6333%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 8.419111704837242
+-                                 width: "14.9193px"
++                                 height: 16.838223409674484
+-                                 height: "29.8385px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"48.1...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "48.18943773157667%"
+-                               left: "24.3461%"
++                               top: "83.1118530125287%"
+-                               top: "94.229%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 7.491925789017003
+-                                 width: "7.03297px"
++                                 height: 14.983851578034006
+-                                 height: "14.0659px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"68.5...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "68.58433736913902%"
+-                               left: "31.8449%"
++                               top: "58.83436318811084%"
+-                               top: "29.2035%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 10.263288664030984
+-                                 width: "7.66355px"
++                                 height: 20.52657732806197
+-                                 height: "15.3271px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"41.3...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "41.36454206134351%"
+-                               left: "78.7165%"
++                               top: "68.92614804786153%"
+-                               top: "6.79202%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 9.078378966994801
+-                                 width: "14.1483px"
++                                 height: 18.156757933989603
+-                                 height: "28.2965px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"88.2...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "88.25404798204822%"
+-                               left: "33.5854%"
++                               top: "57.137537840169564%"
+-                               top: "30.3234%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 14.27841444853896
+-                                 width: "8.79262px"
++                                 height: 28.55682889707792
+-                                 height: "17.5852px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"82.9...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "82.95046812688483%"
+-                               left: "21.6553%"
++                               top: "55.21911865231443%"
+-                               top: "26.186%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 12.078108007611963
+-                                 width: "7.22202px"
++                                 height: 24.156216015223926
+-                                 height: "14.444px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"69.1...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "69.12310083628522%"
+-                               left: "20.4867%"
++                               top: "70.64530237416476%"
+-                               top: "47.0829%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 6.045580095241986
+-                                 width: "14.3392px"
++                                 height: 12.091160190483972
+-                                 height: "28.6783px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"78.4...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "78.47748252531646%"
+-                               left: "91.0076%"
++                               top: "10.38004889191112%"
+-                               top: "29.9674%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 14.471602901445886
+-                                 width: "15.4765px"
++                                 height: 28.94320580289177
+-                                 height: "30.9529px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"73.7...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "73.78027262820261%"
+-                               left: "59.5792%"
++                               top: "40.46662740411039%"
+-                               top: "30.0255%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 10.982136848200948
+-                                 width: "9.26286px"
++                                 height: 21.964273696401897
+-                                 height: "18.5257px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"17.4...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "17.450038224762043%"
+-                               left: "96.3529%"
++                               top: "53.140655423281466%"
+-                               top: "62.429%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 7.781204140508294
+-                                 width: "10.4249px"
++                                 height: 15.562408281016587
+-                                 height: "20.8498px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"46.5...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "46.52453889354577%"
+-                               left: "34.6511%"
++                               top: "0.21167166705877705%"
+-                               top: "25.9449%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 6.045899237774163
+-                                 width: "15.2797px"
++                                 height: 12.091798475548327
+-                                 height: "30.5594px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"40.0...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "40.080133780755354%"
+-                               left: "88.5351%"
++                               top: "87.25156156526013%"
+-                               top: "34.0134%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 10.602829210909057
+-                                 width: "6.75557px"
++                                 height: 21.205658421818114
+-                                 height: "13.5111px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"14.2...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "14.208806646617544%"
+-                               left: "37.5556%"
++                               top: "56.19733567890456%"
+-                               top: "38.1524%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 14.69592370575751
+-                                 width: "14.4474px"
++                                 height: 29.39184741151502
+-                                 height: "28.8948px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                          <motion.div className="absolute" style={{left:"53.9...", ...}} animate={{y:[...],x:[...], ...}} ...>
+                            <div
+                              className="absolute"
+                              style={{
++                               left: "53.96218095218107%"
+-                               left: "62.2528%"
++                               top: "89.03778776610197%"
+-                               top: "34.8725%"
+                              }}
+                              ref={function useMotionRef.useCallback}
+                            >
+                              <div
+                                style={{
++                                 width: 9.472130442619784
+-                                 width: "9.38675px"
++                                 height: 18.94426088523957
+-                                 height: "18.7735px"
++                                 borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%"
+-                                 border-top-left-radius: "50% 60%"
+-                                 border-top-right-radius: "50% 60%"
+-                                 border-bottom-right-radius: "50% 40%"
+-                                 border-bottom-left-radius: "50% 40%"
+                                }}
+                                className="jsx-813fd66e6d5dd91f bg-gradient-to-br from-green-400/40 to-green-600/40 ro..."
+                              >
+                        ...
+                ...
+              ...
+
+[00:00:23.110] Browser ERROR   API Request Error: {}
+[00:00:23.110] Browser ERROR   Failed to fetch restaurant profile: {}
+[00:00:23.110] Browser ERROR   Error fetching restaurant: {}
+[00:01:20.169] Browser ERROR   Staff login error: {}
+[00:01:20.170] Browser ERROR   Login error: {}
+[00:01:21.863] Browser ERROR   Staff login error: {}
+[00:01:21.863] Browser ERROR   Login error: {}
+[00:01:53.529] Browser ERROR   Staff login error: {}
+[00:01:53.529] Browser ERROR   Login error: {}
+[00:01:57.216] Browser ERROR   Staff login error: {}
+[00:01:57.216] Browser ERROR   Login error: {}
+[00:02:03.272] Browser ERROR   Staff login error: {}
+[00:02:03.272] Browser ERROR   Login error: {}
+[00:02:04.151] Browser ERROR   Staff login error: {}
+[00:02:04.151] Browser ERROR   Login error: {}
+[00:02:05.577] Browser ERROR   Staff login error: {}
+[00:02:05.577] Browser ERROR   Login error: {}
+[00:02:06.695] Browser ERROR   Staff login error: {}
+[00:02:06.695] Browser ERROR   Login error: {}
+[00:02:07.848] Browser ERROR   Staff login error: {}
+[00:02:07.848] Browser ERROR   Login error: {}
+[00:02:56.763] Browser ERROR   Staff login error: {}
+[00:02:56.763] Browser ERROR   Login error: {}
+[00:03:30.959] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:05:06.066] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:05:06.515] Browser ERROR   API Request Error: {}
+[00:05:06.516] Browser ERROR   Failed to fetch restaurant profile: {}
+[00:05:06.516] Browser ERROR   Error fetching restaurant: {}
+[00:06:06.662] Browser ERROR   Staff login error: {}
+[00:06:06.662] Browser ERROR   Login error: {}
+[00:07:06.067] Browser ERROR   Staff login error: {}
+[00:07:06.067] Browser ERROR   Login error: {}
+[00:07:07.978] Browser WARN    Image with src "http://localhost:3000/vercel.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:14:12.794] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./app/admin/lib/api.config.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:14:12.881] Server  LOG     ✓ Compiled in 113ms
+[00:14:13.182] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:14:13.584] Browser WARN    Image with src "http://localhost:3000/vercel.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:14:48.108] Server  LOG     ✓ Compiled in 168ms

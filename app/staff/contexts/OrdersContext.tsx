@@ -18,6 +18,8 @@ export interface Order {
 interface OrdersContextType {
   orders: Order[];
   setOrderStatus: (id: string, status: OrderStatus) => void;
+  generateBill: (id: string) => Promise<void>;
+  payOrder: (id: string, paymentMethod: string, amount: number) => Promise<void>;
   refreshOrders: () => Promise<void>;
   isLoading: boolean;
 }
@@ -67,12 +69,34 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     );
 
     try {
-        await staffOrdersService.updateStatus(id, status);
+      await staffOrdersService.updateStatus(id, status);
     } catch (error) {
-        console.error('Failed to update status:', error);
-        // Revert on failure (optional, or show toast)
-        // For now logging error. Re-fetch could also fix state.
-        fetchOrders();
+      console.error('Failed to update status:', error);
+      // Revert on failure (optional, or show toast)
+      // For now logging error. Re-fetch could also fix state.
+      fetchOrders();
+    }
+  }, [fetchOrders]);
+
+  const generateBill = React.useCallback(async (id: string) => {
+    try {
+      await staffOrdersService.generateBill(id);
+      // Refresh orders to get updated status
+      await fetchOrders();
+    } catch (error) {
+      console.error('Failed to generate bill:', error);
+      throw error;
+    }
+  }, [fetchOrders]);
+
+  const payOrder = React.useCallback(async (id: string, paymentMethod: string, amount: number) => {
+    try {
+      await staffOrdersService.payOrder(id, paymentMethod, amount);
+      // Refresh orders to get updated status
+      await fetchOrders();
+    } catch (error) {
+      console.error('Failed to pay order:', error);
+      throw error;
     }
   }, [fetchOrders]);
 
@@ -80,17 +104,19 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     () => ({
       orders,
       setOrderStatus,
+      generateBill,
+      payOrder,
       refreshOrders: fetchOrders,
       isLoading
     }),
-    [orders, isLoading, setOrderStatus, fetchOrders],
+    [orders, isLoading, setOrderStatus, generateBill, payOrder, fetchOrders],
   );
 
   return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;
 }
 
 function mapApiStatusToOrderStatus(apiStatus: string): OrderStatus {
-    return apiStatus.toUpperCase() as OrderStatus;
+  return apiStatus.toUpperCase() as OrderStatus;
 }
 
 export function useOrders() {

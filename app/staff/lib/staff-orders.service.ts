@@ -90,6 +90,74 @@ class StaffOrdersService {
             throw error;
         }
     }
+
+    /**
+     * Generate bill for an order
+     */
+    async generateBill(orderId: string): Promise<void> {
+        const token = staffAuthService.getToken();
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        try {
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.GENERATE_BILL(orderId)}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to generate bill');
+            }
+        } catch (error) {
+            console.error('Error generating bill:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Process payment for an order
+     */
+    async payOrder(orderId: string, paymentMethod: string, amount: number): Promise<void> {
+        const token = staffAuthService.getToken();
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        try {
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.PAY(orderId)}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true',
+                    },
+                    body: JSON.stringify({
+                        payment_method: paymentMethod,
+                        amount: amount
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to process payment');
+            }
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            throw error;
+        }
+    }
 }
 
 export const staffOrdersService = new StaffOrdersService();
