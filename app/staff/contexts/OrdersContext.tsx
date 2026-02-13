@@ -38,14 +38,14 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       // Map API response to Order interface
       const mappedOrders: Order[] = data.map(apiOrder => ({
         id: apiOrder.id,
-        orderNumber: '#' + apiOrder.id.substring(0, 5), // Generate short ID
+        orderNumber: apiOrder.id.substring(0, 8).toUpperCase(), 
         table: apiOrder.order_type === 'DINE_IN' ? `Table ${apiOrder.table_id || '?'}` : apiOrder.order_type,
-        customerName: 'Guest', // API doesn't return customer name yet in list
-        items: 0, // API doesn't return items count yet in list
-        total: parseFloat(apiOrder.total_amount),
+        customerName: '', 
+        items: 0, 
+        total: parseFloat(apiOrder.total_amount) || 0,
         status: mapApiStatusToOrderStatus(apiOrder.status),
-        time: new Date(apiOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        itemsPreview: [], // API doesn't return items preview yet
+        time: apiOrder.created_at ? new Date(apiOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Unknown',
+        itemsPreview: [], 
       }));
       setOrders(mappedOrders);
     } catch (error) {

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '../components/Icon';
 import { Gradient } from '../components/Gradient';
@@ -21,11 +21,18 @@ interface TableBilling {
   orderItems?: { name: string; qty: number; price: number }[];
 }
 
+function mapOrderStatusToBillingStatus(orderStatus: string): BillingStatus {
+  const status = orderStatus.toUpperCase();
+  if (status === 'PAID') return 'paid';
+  if (status === 'BILLED') return 'pending';
+  return 'unpaid';
+}
+
 export default function BillingPayment() {
   const { role } = useAuth();
   const router = useRouter();
   const { setNavState } = useNavigationState();
-  const { payOrder } = useOrders();
+  const { orders, payOrder } = useOrders();
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
@@ -39,14 +46,16 @@ export default function BillingPayment() {
     }
   }, [role, router]);
 
-  const allTablesBilling: TableBilling[] = [
-    { id: '1', table: 'Table 1', items: 4, total: 560, status: 'paid', time: '10:30 AM' },
-    { id: '2', table: 'Table 2', items: 2, total: 320, status: 'unpaid', time: '11:15 AM' },
-    { id: '3', table: 'Table 3', items: 6, total: 890, status: 'pending', time: '11:45 AM' },
-    { id: '4', table: 'Table 5', items: 3, total: 450, status: 'unpaid', time: '12:00 PM' },
-    { id: '5', table: 'Table 7', items: 5, total: 720, status: 'paid', time: '12:30 PM' },
-    { id: '6', table: 'Table 8', items: 2, total: 280, status: 'pending', time: '1:00 PM' },
-  ];
+  const allTablesBilling: TableBilling[] = useMemo(() => {
+    return orders.map(order => ({
+      id: order.id,
+      table: order.table,
+      items: order.items,
+      total: order.total,
+      status: mapOrderStatusToBillingStatus(order.status),
+      time: order.time,
+    }));
+  }, [orders]);
 
   const billingFilters = [
     { id: 'all', label: 'All', count: allTablesBilling.length },

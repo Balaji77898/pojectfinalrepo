@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '../components/Icon';
 
@@ -23,7 +23,7 @@ export default function OrderDetails() {
   const { role } = useAuth();
   const router = useRouter();
   const { navState, setNavState } = useNavigationState();
-  const { setOrderStatus, generateBill, payOrder } = useOrders();
+  const { setOrderStatus, generateBill, payOrder, orders } = useOrders();
 
   const [orderItems] = useState<OrderItem[]>([]);
 
@@ -31,20 +31,17 @@ export default function OrderDetails() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [tipAmount, setTipAmount] = useState('');
 
-  const table = (navState?.table as string) || 'Table 5';
+  const tableFromNav = (navState?.table as string) || '';
   const orderId = (navState?.orderId as string);
 
-
-
-
+  const currentOrder = useMemo(() => {
+    return orders.find(o => o.id === orderId);
+  }, [orders, orderId]);
 
   const handleUpdateStatus = async (status: OrderStatus) => {
-
-    // Call API if orderId exists
     if (orderId && setOrderStatus) {
       try {
         await setOrderStatus(orderId, status);
-        // router.back(); // Optional: go back after status update? No, maybe they want to verify.
       } catch (e) {
         console.error(e);
       }
@@ -57,13 +54,13 @@ export default function OrderDetails() {
   const markAllServed = () => handleUpdateStatus('SERVED');
 
   const orderInfo = {
-    orderNumber: (navState?.orderNumber as string) || '',
-    table,
-    server: 'Staff',
-    time: 'Just now',
-    subtotal: 0,
-    tax: 0,
-    total: 0,
+    orderNumber: currentOrder?.orderNumber || (navState?.orderNumber as string) || '',
+    table: currentOrder?.table || tableFromNav || 'Unknown Table',
+    server: 'Staff', 
+    time: currentOrder?.time || 'Just now',
+    subtotal: (currentOrder?.total || 0) * 0.92, // Estimate subtotal if not provided
+    tax: (currentOrder?.total || 0) * 0.08,
+    total: currentOrder?.total || 0,
   };
 
   // ... (rest of code)
@@ -289,7 +286,7 @@ export default function OrderDetails() {
                           try {
                             await generateBill(orderId);
                             // Optional: Show success message/toast
-                          } catch (e) {
+                          } catch {
                             alert('Failed to generate bill');
                           }
                         }
