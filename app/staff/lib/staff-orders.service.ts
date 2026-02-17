@@ -71,7 +71,7 @@ class StaffOrdersService {
             const response = await fetch(
                 `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
                 {
-                    method: 'PUT',
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
@@ -102,14 +102,15 @@ class StaffOrdersService {
 
         try {
             const response = await fetch(
-                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.GENERATE_BILL(orderId)}`,
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
                 {
-                    method: 'PUT',
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                         'ngrok-skip-browser-warning': 'true',
                     },
+                    body: JSON.stringify({ status: 'BILLED' }),
                 }
             );
 
@@ -134,15 +135,16 @@ class StaffOrdersService {
 
         try {
             const response = await fetch(
-                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.PAY(orderId)}`,
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
                 {
-                    method: 'PUT',
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                         'ngrok-skip-browser-warning': 'true',
                     },
                     body: JSON.stringify({
+                        status: 'PAID',
                         payment_method: paymentMethod,
                         amount: amount
                     }),

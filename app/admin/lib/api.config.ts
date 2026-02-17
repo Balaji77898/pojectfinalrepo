@@ -38,10 +38,9 @@ export const API_CONFIG = {
         },
         STAFF_APP: {
             LOGIN: '/api/staff/login',
-            ORDERS: '/api/staff/orders',
-            UPDATE_STATUS: (id: string) => `/api/staff/orders/${id}/status`,
-            GENERATE_BILL: (id: string) => `/api/staff/orders/${id}/generate-bill`,
-            PAY: (id: string) => `/api/staff/orders/${id}/pay`,
+            ORDERS: '/api/admin/orders',
+            DETAILS: (id: string) => `/api/admin/orders/${id}`,
+            UPDATE_STATUS: (id: string) => `/api/admin/orders/${id}/status`,
         },
     },
     HEADERS: {
