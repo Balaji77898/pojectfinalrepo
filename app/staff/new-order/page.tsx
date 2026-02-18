@@ -25,12 +25,12 @@ export default function NewOrder() {
 
   const acceptOrder = (itemId: string, table: string) => {
     setOrderStatus(itemId, 'CONFIRMED');
-    setNavState({ table });
+    setNavState({ table, orderId: itemId });
     router.push('/staff/order-details');
   };
 
-  const handleDetailsClick = (table: string) => {
-    setNavState({ table });
+  const handleDetailsClick = (table: string, orderId: string) => {
+    setNavState({ table, orderId });
     router.push('/staff/order-details');
   };
 
@@ -81,7 +81,7 @@ export default function NewOrder() {
           {/* Card Content */}
           <button
             className="w-full p-5 text-left"
-            onClick={() => !isNew && handleDetailsClick(item.table)}
+            onClick={() => !isNew && handleDetailsClick(item.table, item.id)}
           >
             {/* Table & Amount */}
             <div className="flex justify-between items-start mb-5">
@@ -154,7 +154,7 @@ export default function NewOrder() {
             <div className="px-5 pb-5">
               <div
                 className="w-full bg-surface-100 hover:bg-surface-200 rounded-2xl overflow-hidden transition-colors group"
-                onClick={() => handleDetailsClick(item.table)}
+                onClick={() => handleDetailsClick(item.table, item.id)}
               >
                 <button className="w-full py-4 flex items-center justify-center">
                   <span className="text-text font-bold text-base mr-2">

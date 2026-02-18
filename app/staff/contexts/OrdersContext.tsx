@@ -12,7 +12,9 @@ export interface Order {
   total: number;
   status: OrderStatus;
   time: string;
+  createdAt: string; // ISO format
   itemsPreview: string[];
+  itemsDetails?: StaffOrderItem[];
 }
 
 interface OrdersContextType {
@@ -26,7 +28,8 @@ interface OrdersContextType {
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 
-import { staffOrdersService } from '../lib/staff-orders.service';
+import { staffOrdersService, StaffOrder, StaffOrderItem } from '../lib/staff-orders.service';
+import { formatTime } from '../lib/date-utils';
 
 export function OrdersProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -35,18 +38,28 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
   const fetchOrders = React.useCallback(async () => {
     try {
       const data = await staffOrdersService.getOrders();
+
       // Map API response to Order interface
-      const mappedOrders: Order[] = data.map(apiOrder => ({
+      const mappedOrders: Order[] = data.map((apiOrder: StaffOrder) => {
+        // Use the centralized date utility
+        const formattedTime = formatTime(apiOrder.created_at);
+
+        return {
         id: apiOrder.id,
         orderNumber: apiOrder.id.substring(0, 8).toUpperCase(), 
-        table: apiOrder.order_type === 'DINE_IN' ? `Table ${apiOrder.table_id || '?'}` : apiOrder.order_type,
-        customerName: '', 
-        items: 0, 
+        table: apiOrder.table_id && apiOrder.table_id !== 'null' && apiOrder.table_id !== 'undefined'
+          ? `Table ${apiOrder.table_id}` 
+          : (apiOrder.order_type === 'DINE_IN' ? 'Dine In' : (apiOrder.customer_name || 'Takeaway')),
+        customerName: apiOrder.customer_name || '', 
+        items: apiOrder.items?.length || 0, 
+        itemsDetails: apiOrder.items || [],
         total: parseFloat(apiOrder.total_amount) || 0,
         status: mapApiStatusToOrderStatus(apiOrder.status),
-        time: apiOrder.created_at ? new Date(apiOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Unknown',
-        itemsPreview: [], 
-      }));
+        time: formattedTime,
+        createdAt: apiOrder.created_at,
+        itemsPreview: apiOrder.items?.map((item: StaffOrderItem) => `${item.quantity}x ${item.name}`) || [], 
+      }});
+      console.log('Mapped Orders with items:', mappedOrders); // Debug log
       setOrders(mappedOrders);
     } catch (error) {
       console.error('Failed to fetch orders:', error);

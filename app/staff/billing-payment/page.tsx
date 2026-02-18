@@ -208,7 +208,22 @@ export default function BillingPayment() {
               </div>
             </div>
 
-            {(item.status === 'unpaid' || item.status === 'pending') && (
+            {item.status === 'unpaid' ? (
+              <button
+                className="w-full mt-4 rounded-2xl overflow-hidden hover:scale-[0.98] transition-transform"
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  // Navigate to order details to generate bill
+                  setNavState({ table: item.table, orderId: item.id });
+                  router.push('/staff/order-details');
+                }}
+              >
+                <div className="bg-indigo-50 border border-indigo-100 py-3 flex items-center justify-center">
+                  <Icon name="receipt-outline" size={18} color="#4338ca" />
+                  <span className="text-indigo-700 font-bold text-sm ml-2">View to Generate Bill</span>
+                </div>
+              </button>
+            ) : item.status === 'pending' ? (
               <button
                 className="w-full mt-4 rounded-2xl overflow-hidden hover:scale-[0.98] transition-transform"
                 onClick={(e) => { e.stopPropagation(); openPaymentModal(item); }}
@@ -221,7 +236,7 @@ export default function BillingPayment() {
                   <span className="text-white font-bold text-sm ml-2">Process Payment</span>
                 </Gradient>
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </Animated>

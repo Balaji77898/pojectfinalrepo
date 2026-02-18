@@ -1,20 +1,32 @@
 import { API_CONFIG } from '@/app/admin/lib/api.config';
 import { staffAuthService } from './staff-auth.service';
 
+export interface StaffOrderItem {
+    id: string;
+    name: string;
+    quantity: number;
+    price: string;
+    subtotal: string;
+    notes?: string;
+}
+
 export interface StaffOrder {
     id: string;
-    restaurant_id: string;
-    table_id: string | null;
-    order_type: string;
+    // These fields might be missing in some API versions
+    restaurant_id?: string;
+    table_id?: string | null;
+    order_type?: string;
     status: string;
-    subtotal: string;
-    tax_amount: string;
+    subtotal?: string;
+    tax_amount?: string;
     total_amount: string;
     payment_status: string;
-    payment_method: string;
+    payment_method?: string;
     created_at: string;
-    updated_at: string;
-    // Add other fields if API returns them later
+    updated_at?: string;
+    customer_name?: string;
+    customer_phone?: string;
+    items?: StaffOrderItem[];
 }
 
 export interface StaffOrdersResponse {
@@ -50,7 +62,13 @@ class StaffOrdersService {
                 throw new Error(errorData.message || 'Failed to fetch orders');
             }
 
-            const data: StaffOrdersResponse = await response.json();
+            const data = await response.json();
+            
+            // Handle both array and object response formats
+            if (Array.isArray(data)) {
+                return data;
+            }
+            
             return data.orders || [];
         } catch (error) {
             console.error('Error fetching staff orders:', error);
