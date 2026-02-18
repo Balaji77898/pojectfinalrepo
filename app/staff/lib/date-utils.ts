@@ -3,7 +3,7 @@ export function formatTime(isoString: string | undefined | null): string {
 
     try {
         const date = new Date(isoString);
-        
+
         // Check if date is valid
         if (isNaN(date.getTime())) {
             return 'Invalid Date';
@@ -15,7 +15,7 @@ export function formatTime(isoString: string | undefined | null): string {
             hour: '2-digit',
             minute: '2-digit',
             hour12: true,
-            timeZone: 'UTC'
+            timeZone: 'Asia/Kolkata'
         }).format(date);
     } catch (error) {
         console.error('Error formatting date:', error);

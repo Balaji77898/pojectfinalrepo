@@ -51,7 +51,7 @@ export default function OrderDetails() {
   const orderInfo = {
     orderNumber: currentOrder?.orderNumber || (navState?.orderNumber as string) || '',
     table: currentOrder?.table || tableFromNav || 'Unknown Table',
-    server: 'Staff', 
+    server: 'Staff',
     time: currentOrder?.time || 'Just now',
     subtotal: (currentOrder?.total || 0) * 0.92, // Estimate subtotal if not provided
     tax: (currentOrder?.total || 0) * 0.08,
@@ -82,6 +82,13 @@ export default function OrderDetails() {
 
     try {
       if (orderId && payOrder) {
+        // If order is not yet billed, generate bill first (single flow for billing staff)
+        if (currentOrder?.status === 'SERVED' || currentOrder?.status === 'PLACED' || currentOrder?.status === 'CONFIRMED' || currentOrder?.status === 'PREPARING' || currentOrder?.status === 'READY') {
+          // Although logically should be SERVED, we safeguard other statues just in case
+          await generateBill(orderId);
+        }
+
+        // Then process payment
         await payOrder(orderId, selectedPaymentMethod, finalTotal);
       }
 
@@ -136,9 +143,13 @@ export default function OrderDetails() {
               </div>
             </div>
           </div>
-          <button className="hidden md:flex w-12 h-12 bg-white/10 rounded-xl items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md border border-white/10">
-            <Icon name="print-outline" size={24} color="#FFFFFF" />
-          </button>
+          <div className="hidden md:flex">
+            {role !== 'billing_staff' && (
+              <button className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md border border-white/10">
+                <Icon name="print-outline" size={24} color="#FFFFFF" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -151,17 +162,15 @@ export default function OrderDetails() {
             {role === 'serving_staff' && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button
-                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${
-                    currentOrder?.status === 'PLACED'
-                      ? 'bg-white hover:bg-orange-50 border-orange-200 hover:shadow-md cursor-pointer'
-                      : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
-                  }`}
+                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'PLACED'
+                    ? 'bg-white hover:bg-orange-50 border-orange-200 hover:shadow-md cursor-pointer'
+                    : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                    }`}
                   onClick={() => currentOrder?.status === 'PLACED' && handleUpdateStatus('CONFIRMED')}
                   disabled={currentOrder?.status !== 'PLACED'}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${
-                    currentOrder?.status === 'PLACED' ? 'bg-orange-100 group-hover:scale-110' : 'bg-slate-200'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'PLACED' ? 'bg-orange-100 group-hover:scale-110' : 'bg-slate-200'
+                    }`}>
                     <Icon name="time" size={20} color={currentOrder?.status === 'PLACED' ? "#f97316" : "#94a3b8"} />
                   </div>
                   <p className={`font-bold text-sm ${currentOrder?.status === 'PLACED' ? 'text-orange-900' : 'text-slate-500'}`}>Confirm</p>
@@ -169,17 +178,15 @@ export default function OrderDetails() {
                 </button>
 
                 <button
-                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${
-                    currentOrder?.status === 'CONFIRMED'
-                      ? 'bg-white hover:bg-blue-50 border-blue-200 hover:shadow-md cursor-pointer'
-                      : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
-                  }`}
+                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'CONFIRMED'
+                    ? 'bg-white hover:bg-blue-50 border-blue-200 hover:shadow-md cursor-pointer'
+                    : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                    }`}
                   onClick={() => currentOrder?.status === 'CONFIRMED' && handleUpdateStatus('PREPARING')}
                   disabled={currentOrder?.status !== 'CONFIRMED'}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${
-                    currentOrder?.status === 'CONFIRMED' ? 'bg-blue-100 group-hover:scale-110' : 'bg-slate-200'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'CONFIRMED' ? 'bg-blue-100 group-hover:scale-110' : 'bg-slate-200'
+                    }`}>
                     <Icon name="flame" size={20} color={currentOrder?.status === 'CONFIRMED' ? "#3b82f6" : "#94a3b8"} />
                   </div>
                   <p className={`font-bold text-sm ${currentOrder?.status === 'CONFIRMED' ? 'text-blue-900' : 'text-slate-500'}`}>Prepare</p>
@@ -187,17 +194,15 @@ export default function OrderDetails() {
                 </button>
 
                 <button
-                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${
-                    currentOrder?.status === 'PREPARING'
-                      ? 'bg-white hover:bg-indigo-50 border-indigo-200 hover:shadow-md cursor-pointer'
-                      : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
-                  }`}
+                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'PREPARING'
+                    ? 'bg-white hover:bg-indigo-50 border-indigo-200 hover:shadow-md cursor-pointer'
+                    : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                    }`}
                   onClick={() => currentOrder?.status === 'PREPARING' && markAllReady()}
-                   disabled={currentOrder?.status !== 'PREPARING'}
+                  disabled={currentOrder?.status !== 'PREPARING'}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${
-                    currentOrder?.status === 'PREPARING' ? 'bg-indigo-100 group-hover:scale-110' : 'bg-slate-200'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'PREPARING' ? 'bg-indigo-100 group-hover:scale-110' : 'bg-slate-200'
+                    }`}>
                     <Icon name="checkmark-circle" size={20} color={currentOrder?.status === 'PREPARING' ? "#6366f1" : "#94a3b8"} />
                   </div>
                   <p className={`font-bold text-sm ${currentOrder?.status === 'PREPARING' ? 'text-indigo-900' : 'text-slate-500'}`}>Ready</p>
@@ -205,17 +210,15 @@ export default function OrderDetails() {
                 </button>
 
                 <button
-                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${
-                    currentOrder?.status === 'READY'
-                      ? 'bg-white hover:bg-emerald-50 border-emerald-200 hover:shadow-md cursor-pointer'
-                      : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
-                  }`}
+                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'READY'
+                    ? 'bg-white hover:bg-emerald-50 border-emerald-200 hover:shadow-md cursor-pointer'
+                    : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
+                    }`}
                   onClick={() => currentOrder?.status === 'READY' && markAllServed()}
                   disabled={currentOrder?.status !== 'READY'}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${
-                    currentOrder?.status === 'READY' ? 'bg-emerald-100 group-hover:scale-110' : 'bg-slate-200'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'READY' ? 'bg-emerald-100 group-hover:scale-110' : 'bg-slate-200'
+                    }`}>
                     <Icon name="checkmark-done" size={20} color={currentOrder?.status === 'READY' ? "#059669" : "#94a3b8"} />
                   </div>
                   <p className={`font-bold text-sm ${currentOrder?.status === 'READY' ? 'text-emerald-900' : 'text-slate-500'}`}>Served</p>
@@ -227,7 +230,7 @@ export default function OrderDetails() {
             <div className="bg-white rounded-[24px] md:rounded-[32px] shadow-card border border-slate-100 overflow-hidden min-h-[400px] md:min-h-[500px]">
               <div className="px-5 md:px-8 py-4 md:py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="text-lg md:text-xl font-bold text-slate-800">Order Items ({orderItems.length})</h2>
-                {role !== 'serving_staff' && currentOrder?.status !== 'BILLED' && currentOrder?.status !== 'PAID' && (
+                {role !== 'serving_staff' && role !== 'billing_staff' && currentOrder?.status !== 'BILLED' && currentOrder?.status !== 'PAID' && (
                   <button className="text-primary font-bold text-xs md:text-sm flex items-center px-2 md:px-3 py-2 rounded-lg transition-colors">
                     <Icon name="add-circle" size={18} color="#7B1F1F" className="mr-1 md:mr-2" />
                     Add Items
@@ -290,13 +293,12 @@ export default function OrderDetails() {
 
               {role === 'billing_staff' ? (
                 <button
-                  className={`w-full rounded-2xl py-5 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative ${
-                    currentOrder?.status === 'BILLED'
-                    ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
-                    : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                  }`}
-                  onClick={currentOrder?.status === 'BILLED' ? handleProceedToPayment : undefined}
-                  disabled={currentOrder?.status !== 'BILLED'}
+                  className={`w-full rounded-2xl py-5 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative ${currentOrder?.status === 'BILLED' || currentOrder?.status === 'SERVED'
+                      ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
+                      : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                    }`}
+                  onClick={currentOrder?.status === 'BILLED' || currentOrder?.status === 'SERVED' ? handleProceedToPayment : undefined}
+                  disabled={currentOrder?.status !== 'BILLED' && currentOrder?.status !== 'SERVED'}
                 >
                   <div className="absolute inset-0 bg-linear-to-r from-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative flex items-center justify-center gap-3">
@@ -308,11 +310,10 @@ export default function OrderDetails() {
 
                 <div className="space-y-4">
                   <button
-                    className={`w-full text-white rounded-2xl py-4 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 ${
-                        currentOrder?.status === 'SERVED' 
-                        ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer' 
-                        : 'bg-slate-400 opacity-50 cursor-not-allowed'
-                    }`}
+                    className={`w-full text-white rounded-2xl py-4 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 ${currentOrder?.status === 'SERVED'
+                      ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
+                      : 'bg-slate-400 opacity-50 cursor-not-allowed'
+                      }`}
                     onClick={
                       async () => {
                         if (currentOrder?.status !== 'SERVED') return;
@@ -325,13 +326,13 @@ export default function OrderDetails() {
                           }
                         }
                       }}
-                       disabled={currentOrder?.status !== 'SERVED'}
+                    disabled={currentOrder?.status !== 'SERVED'}
                   >
                     <Icon name="receipt" size={24} color="white" />
                     <span className="font-bold text-lg">Generate Bill</span>
                   </button>
                   {currentOrder?.status !== 'SERVED' && (
-                     <p className="text-center text-xs text-slate-400">Order must be served before billing</p>
+                    <p className="text-center text-xs text-slate-400">Order must be served before billing</p>
                   )}
 
                   <div className="bg-blue-50 rounded-2xl p-4 flex items-center gap-3 text-blue-800 border border-blue-100">

@@ -1,0 +1,13 @@
+{
+  "/admin/login/page": "app/admin/login/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/page": "app/page.js",
+  "/staff/bill/page": "app/staff/bill/page.js",
+  "/staff/billing-payment/page": "app/staff/billing-payment/page.js",
+  "/staff/new-order/page": "app/staff/new-order/page.js",
+  "/staff/order-details/page": "app/staff/order-details/page.js",
+  "/staff/orders/page": "app/staff/orders/page.js",
+  "/staff/profile/page": "app/staff/profile/page.js",
+  "/staff/staff-dashboard/page": "app/staff/staff-dashboard/page.js",
+  "/staff/tables/page": "app/staff/tables/page.js"
+}
