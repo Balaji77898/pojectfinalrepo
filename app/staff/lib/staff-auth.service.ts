@@ -28,6 +28,13 @@ interface StaffLoginResponse {
     message?: string;
 }
 
+export interface StaffProfile extends StaffUser {
+    phone?: string;
+    restaurant_name?: string;
+    created_at?: string;
+    is_active?: boolean;
+}
+
 class StaffAuthService {
     /**
      * Login staff member with email and password
@@ -193,6 +200,41 @@ class StaffAuthService {
     getRole(): 'serving_staff' | 'billing_staff' | null {
         const user = this.getUser();
         return user?.role || null;
+    }
+
+    /**
+     * Get staff profile from API
+     */
+    async getProfile(): Promise<StaffProfile> {
+        const token = this.getToken();
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        try {
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.PROFILE}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to fetch profile');
+            }
+
+            const data = await response.json();
+            return data.staff || data;
+        } catch (error) {
+            console.error('Error fetching staff profile:', error);
+            throw error;
+        }
     }
 }
 

@@ -15,6 +15,7 @@ export interface StaffOrder {
     // These fields might be missing in some API versions
     restaurant_id?: string;
     table_id?: string | null;
+    table_number?: string;
     order_type?: string;
     status: string;
     subtotal?: string;

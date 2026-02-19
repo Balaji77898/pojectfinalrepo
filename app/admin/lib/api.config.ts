@@ -41,6 +41,7 @@ export const API_CONFIG = {
             ORDERS: '/api/admin/orders',
             DETAILS: (id: string) => `/api/admin/orders/${id}`,
             UPDATE_STATUS: (id: string) => `/api/admin/orders/${id}/status`,
+            PROFILE: '/api/staff/me',
         },
     },
     HEADERS: {

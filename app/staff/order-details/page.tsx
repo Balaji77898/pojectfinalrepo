@@ -51,10 +51,10 @@ export default function OrderDetails() {
   const orderInfo = {
     orderNumber: currentOrder?.orderNumber || (navState?.orderNumber as string) || '',
     table: currentOrder?.table || tableFromNav || 'Unknown Table',
-    server: 'Staff',
+    server: 'Staff', // TODO: Add server name from API when available
     time: currentOrder?.time || 'Just now',
-    subtotal: (currentOrder?.total || 0) * 0.92, // Estimate subtotal if not provided
-    tax: (currentOrder?.total || 0) * 0.08,
+    subtotal: currentOrder?.subtotal || (currentOrder?.total || 0) * 0.95,
+    tax: currentOrder?.tax || (currentOrder?.total || 0) * 0.05,
     total: currentOrder?.total || 0,
   };
 
@@ -137,14 +137,14 @@ export default function OrderDetails() {
               <div className="flex flex-wrap items-center gap-3 md:gap-4 text-white/80 text-xs md:text-sm font-medium">
                 <span className="flex items-center gap-1"><Icon name="restaurant" size={14} color="currentColor" /> {orderInfo.table}</span>
                 <span className="w-1 h-1 bg-white/40 rounded-full"></span>
-                <span className="flex items-center gap-1"><Icon name="person" size={14} color="currentColor" /> {orderInfo.server}</span>
-                <span className="w-1 h-1 bg-white/40 rounded-full"></span>
+                {/* <span className="flex items-center gap-1"><Icon name="person" size={14} color="currentColor" /> {orderInfo.server}</span>
+                <span className="w-1 h-1 bg-white/40 rounded-full"></span> */}
                 <span className="flex items-center gap-1"><Icon name="time" size={14} color="currentColor" /> {orderInfo.time}</span>
               </div>
             </div>
           </div>
           <div className="hidden md:flex">
-            {role !== 'billing_staff' && (
+            {role !== 'billing_staff' && role !== 'serving_staff' && (
               <button className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md border border-white/10">
                 <Icon name="print-outline" size={24} color="#FFFFFF" />
               </button>
@@ -309,30 +309,34 @@ export default function OrderDetails() {
               ) : (
 
                 <div className="space-y-4">
-                  <button
-                    className={`w-full text-white rounded-2xl py-4 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 ${currentOrder?.status === 'SERVED'
-                      ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
-                      : 'bg-slate-400 opacity-50 cursor-not-allowed'
-                      }`}
-                    onClick={
-                      async () => {
-                        if (currentOrder?.status !== 'SERVED') return;
-                        if (confirm('Are you sure you want to generate the bill for this order?')) {
-                          try {
-                            await generateBill(orderId);
-                            // Optional: Show success message/toast
-                          } catch {
-                            alert('Failed to generate bill');
-                          }
-                        }
-                      }}
-                    disabled={currentOrder?.status !== 'SERVED'}
-                  >
-                    <Icon name="receipt" size={24} color="white" />
-                    <span className="font-bold text-lg">Generate Bill</span>
-                  </button>
-                  {currentOrder?.status !== 'SERVED' && (
-                    <p className="text-center text-xs text-slate-400">Order must be served before billing</p>
+                  {role !== 'serving_staff' && (
+                    <>
+                      <button
+                        className={`w-full text-white rounded-2xl py-4 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 ${currentOrder?.status === 'SERVED'
+                          ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
+                          : 'bg-slate-400 opacity-50 cursor-not-allowed'
+                          }`}
+                        onClick={
+                          async () => {
+                            if (currentOrder?.status !== 'SERVED') return;
+                            if (confirm('Are you sure you want to generate the bill for this order?')) {
+                              try {
+                                await generateBill(orderId);
+                                // Optional: Show success message/toast
+                              } catch {
+                                alert('Failed to generate bill');
+                              }
+                            }
+                          }}
+                        disabled={currentOrder?.status !== 'SERVED'}
+                      >
+                        <Icon name="receipt" size={24} color="white" />
+                        <span className="font-bold text-lg">Generate Bill</span>
+                      </button>
+                      {currentOrder?.status !== 'SERVED' && (
+                        <p className="text-center text-xs text-slate-400">Order must be served before billing</p>
+                      )}
+                    </>
                   )}
 
                   <div className="bg-blue-50 rounded-2xl p-4 flex items-center gap-3 text-blue-800 border border-blue-100">

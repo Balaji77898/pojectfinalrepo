@@ -3,7 +3,7 @@
 import React from 'react';
 
 interface StatusBadgeProps {
-    status: 'ACTIVE' | 'INACTIVE';
+    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | string;
     className?: string;
 }
 

@@ -1,36 +1,73 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '../components/Icon';
 import { useAuth } from '../contexts/AuthContext';
+import { staffAuthService, StaffProfile } from '../lib/staff-auth.service';
 
 export default function Profile() {
   const { role, logout } = useAuth();
   const router = useRouter();
-
-
-
+  const [profile, setProfile] = useState<StaffProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    
     if (!role) {
       router.push('/admin/login');
+      return;
     }
+
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const data = await staffAuthService.getProfile();
+        setProfile(data);
+      } catch (err: unknown) {
+        console.error('Failed to load profile:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load profile';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
   }, [role, router]);
 
   const handleLogout = () => {
     logout();
   };
 
-
-
-
+  // Only keep Personal Information for now as others are placeholders
   const menuItems = [
     { id: '1', icon: 'person-outline' as const, label: 'Personal Information', color: '#7B1F1F', bg: 'bg-primary/10' },
-    { id: '2', icon: 'time-outline' as const, label: 'Shift Schedule', color: '#f43f5e', bg: 'bg-accent/10' },
-    { id: '3', icon: 'settings-outline' as const, label: 'Settings', color: '#64748b', bg: 'bg-slate-100' },
-    { id: '4', icon: 'help-circle-outline' as const, label: 'Help & Support', color: '#C8A951', bg: 'bg-success-light' },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-ivory flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-ivory flex flex-col items-center justify-center p-6">
+        <div className="text-red-600 mb-4 text-center">
+          <Icon name="information-circle" size={48} color="#dc2626" />
+          <p className="mt-2 text-lg font-medium">{error}</p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-ivory flex flex-col font-sans">
@@ -49,13 +86,13 @@ export default function Profile() {
                 </div>
                 <div>
                     <h1 className="text-4xl font-serif text-white mb-1 tracking-tight drop-shadow-md">
-                      John Doe
+                      {profile?.name || 'Staff Member'}
                     </h1>
                     <div className="flex items-center gap-3">
                         <p className="text-gold text-sm font-medium tracking-wider uppercase opacity-90">
-                          {role?.replace('_', ' ') || 'Staff'} Member
+                          {profile?.role?.replace(/_/g, ' ') || role?.replace(/_/g, ' ') || 'Staff'}
                         </p>
-                        <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full border border-white/30">ACTIVE NOW</span>
+                        <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full border border-white/30">{profile?.is_active ? 'ACTIVE NOW' : 'INACTIVE'}</span>
                     </div>
                 </div>
              </div>
@@ -68,22 +105,60 @@ export default function Profile() {
       <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-12 -mt-10 relative z-20">
          <div className="bg-white rounded-[40px] shadow-card border border-white/50 p-8 md:p-12">
              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                 {/* Profile Details */}
+                 <div className="col-span-1 space-y-6">
+                    <h3 className="text-xl font-serif text-slate-900 mb-6 border-b pb-2">Personal Details</h3>
+                    
+                    <div className="flex items-start">
+                        <div className="w-8 mt-1"><Icon name="information-circle" size={20} color="#64748b" /></div>
+                        <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Email</p>
+                            <p className="text-slate-900 font-medium">{profile?.email || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-start">
+                        <div className="w-8 mt-1"><Icon name="phone-portrait-outline" size={20} color="#64748b" /></div>
+                        <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Phone</p>
+                            <p className="text-slate-900 font-medium">{profile?.phone || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-start">
+                        <div className="w-8 mt-1"><Icon name="restaurant-outline" size={20} color="#64748b" /></div>
+                        <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Restaurant</p>
+                            <p className="text-slate-900 font-medium">{profile?.restaurant_name || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-start">
+                        <div className="w-8 mt-1"><Icon name="calendar-outline" size={20} color="#64748b" /></div>
+                        <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Joined On</p>
+                            <p className="text-slate-900 font-medium">
+                                {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
+                            </p>
+                        </div>
+                    </div>
+                 </div>
+
                  {/* Menu Options */}
-                 <div className="col-span-1 md:col-span-2 space-y-4">
-                     <h3 className="text-xl font-serif text-slate-900 mb-6">Account Settings</h3>
+                 <div className="col-span-1 space-y-4">
+                     <h3 className="text-xl font-serif text-slate-900 mb-6 border-b pb-2">Account Settings</h3>
                      {menuItems.map((item) => (
                         <button
                           key={item.id}
-                          className="w-full bg-white border border-slate-100 rounded-2xl p-6 flex items-center hover:shadow-lg hover:border-primary/20 transition-all group"
+                          className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex items-center hover:shadow-md hover:border-primary/20 transition-all group"
                         >
-                          <div className={`w-12 h-12 ${item.bg} rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform`}>
-                            <Icon name={item.icon} size={24} color={item.color} />
+                          <div className={`w-10 h-10 ${item.bg} rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform`}>
+                            <Icon name={item.icon} size={20} color={item.color} />
                           </div>
                           <div className="flex-1 text-left">
-                              <span className="text-slate-900 font-bold text-lg group-hover:text-primary transition-colors">{item.label}</span>
-                              <p className="text-slate-400 text-sm">Manage your {item.label.toLowerCase()}</p>
+                              <span className="text-slate-900 font-bold text-base group-hover:text-primary transition-colors">{item.label}</span>
                           </div>
-                          <Icon name="chevron-forward" size={24} color="#cbd5e1" className="group-hover:translate-x-1 transition-transform" />
+                          <Icon name="chevron-forward" size={20} color="#cbd5e1" className="group-hover:translate-x-1 transition-transform" />
                         </button>
                       ))}
                  </div>
@@ -91,8 +166,7 @@ export default function Profile() {
 
              <div className="border-t border-slate-100 pt-8 flex justify-between items-center">
                  <div className="text-left">
-                      <p className="text-slate-900 font-bold text-sm">RestaurantOS Identity</p>
-                      <p className="text-slate-400 text-xs mt-1">v2.5.0 • Enterprise Edition</p>
+                      <p className="text-slate-900 font-bold text-sm">Restaurant Staff App</p>
                  </div>
                  <button
                     className="bg-red-50 text-red-600 border border-red-100 px-8 py-4 rounded-xl font-bold hover:bg-red-100 transition-colors flex items-center"

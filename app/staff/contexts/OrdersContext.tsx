@@ -10,6 +10,8 @@ export interface Order {
   customerName?: string;
   items: number;
   total: number;
+  subtotal?: number;
+  tax?: number;
   status: OrderStatus;
   time: string;
   createdAt: string; // ISO format
@@ -47,13 +49,17 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         return {
         id: apiOrder.id,
         orderNumber: apiOrder.id.substring(0, 8).toUpperCase(), 
-        table: apiOrder.table_id && apiOrder.table_id !== 'null' && apiOrder.table_id !== 'undefined'
-          ? `Table ${apiOrder.table_id}` 
-          : (apiOrder.order_type === 'DINE_IN' ? 'Dine In' : (apiOrder.customer_name || 'Takeaway')),
+        table: apiOrder.table_number 
+          ? `Table ${apiOrder.table_number}`
+          : (apiOrder.table_id && apiOrder.table_id !== 'null' && apiOrder.table_id !== 'undefined'
+              ? `Table ${apiOrder.table_id}` 
+              : (apiOrder.order_type === 'DINE_IN' ? 'Dine In' : (apiOrder.customer_name || 'Takeaway'))),
         customerName: apiOrder.customer_name || '', 
         items: apiOrder.items?.length || 0, 
         itemsDetails: apiOrder.items || [],
         total: parseFloat(apiOrder.total_amount) || 0,
+        subtotal: apiOrder.subtotal ? parseFloat(apiOrder.subtotal) : (parseFloat(apiOrder.total_amount) || 0) * 0.95, // Fallback if API doesn't send subtotal
+        tax: apiOrder.tax_amount ? parseFloat(apiOrder.tax_amount) : (parseFloat(apiOrder.total_amount) || 0) * 0.05, // Fallback if API doesn't send tax
         status: mapApiStatusToOrderStatus(apiOrder.status),
         time: formattedTime,
         createdAt: apiOrder.created_at,

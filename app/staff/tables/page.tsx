@@ -44,8 +44,8 @@ export default function Tables() {
           id: t.id,
           name: t.table_number.startsWith('Table') ? t.table_number : `Table ${t.table_number}`,
           status: t.table_status === 'EMPTY' ? 'available' : 'occupied',
-          seats: 4, // Default as API doesn't return capacity yet
-          server: 'Staff'
+          seats: 0, // Hidden in UI if 0
+          server: undefined
         }));
         setTables(mappedTables);
       } catch (error) {
@@ -153,11 +153,15 @@ export default function Tables() {
                   <div className="flex-1">
                     <p className="admin-card-title text-lg">{item.name}</p>
                     <div className="flex items-center mt-1">
-                      <Icon name="people-outline" size={14} color="#94a3b8" />
-                      <span className="admin-card-subtitle ml-1">{item.seats} seats</span>
+                      {item.seats > 0 && (
+                        <>
+                          <Icon name="people-outline" size={14} color="#94a3b8" />
+                          <span className="admin-card-subtitle ml-1">{item.seats} seats</span>
+                        </>
+                      )}
                       {item.server && (
                         <>
-                          <span className="text-text/30 mx-2">•</span>
+                          {item.seats > 0 && <span className="text-text/30 mx-2">•</span>}
                           <span className="admin-card-subtitle">{item.server}</span>
                         </>
                       )}
@@ -190,13 +194,15 @@ export default function Tables() {
                       <span className="text-primary font-semibold text-sm ml-1 group-hover/btn:text-white">Add Items</span>
                     </button>
                   )}
-                  <button
-                    className="flex-1 bg-success/10 hover:bg-gold rounded-xl py-2.5 flex items-center justify-center transition-colors group/bill"
-                    onClick={(e) => { e.stopPropagation(); router.push('/staff/billing-payment'); }}
-                  >
-                    <Icon name="receipt-outline" size={16} color="currentColor" className="text-[#C8A951] group-hover/bill:text-white" />
-                    <span className="text-[#C8A951] font-semibold text-sm ml-1 group-hover/bill:text-white">Bill</span>
-                  </button>
+                  {role !== 'serving_staff' && (
+                    <button
+                      className="flex-1 bg-success/10 hover:bg-gold rounded-xl py-2.5 flex items-center justify-center transition-colors group/bill"
+                      onClick={(e) => { e.stopPropagation(); router.push('/staff/billing-payment'); }}
+                    >
+                      <Icon name="receipt-outline" size={16} color="currentColor" className="text-[#C8A951] group-hover/bill:text-white" />
+                      <span className="text-[#C8A951] font-semibold text-sm ml-1 group-hover/bill:text-white">Bill</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
