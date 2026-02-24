@@ -1,11 +1,9 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Utensils, LayoutGrid, Receipt, Users, User, LogOut, Building2 } from 'lucide-react';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { authService } from '../lib/auth.service';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,8 +21,17 @@ interface MenuItem {
 export default function Dashboard() {
     const router = useRouter();
     const { user } = useAuth();
-    const { restaurant, isLoading: restaurantLoading } = useRestaurant();
+    const { restaurant, isLoading: restaurantLoading, refetch } = useRestaurant();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+    // Trigger a restaurant data fetch on mount (post-login).
+    // The RestaurantContext skips the fetch if no token exists at initial load.
+    useEffect(() => {
+        if (!restaurant && !restaurantLoading) {
+            refetch();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleLogout = () => {
         authService.logout();

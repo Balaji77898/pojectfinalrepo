@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { restaurantService, RestaurantProfile } from '../lib/restaurant.service';
+import { authService } from '../lib/auth.service';
 
 interface RestaurantContextType {
     restaurant: RestaurantProfile | null;
@@ -14,10 +15,16 @@ const RestaurantContext = createContext<RestaurantContextType | undefined>(undef
 
 export function RestaurantProvider({ children }: { children: ReactNode }) {
     const [restaurant, setRestaurant] = useState<RestaurantProfile | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const fetchRestaurant = async () => {
+        // Only fetch if the user is authenticated — the endpoint requires a JWT token.
+        if (!authService.isAuthenticated()) {
+            setIsLoading(false);
+            return;
+        }
+
         try {
             setIsLoading(true);
             setError(null);
@@ -32,9 +39,10 @@ export function RestaurantProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Fetch restaurant data on mount
+    // Only run when a token is present — avoids a 401 on the landing/login pages.
     useEffect(() => {
         fetchRestaurant();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const value: RestaurantContextType = {

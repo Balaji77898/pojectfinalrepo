@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '../lib/auth.service';
 
@@ -10,36 +10,18 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const router = useRouter();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+
+    // Synchronous check — localStorage is available immediately on the client.
+    // This runs during render (before paint) so there is no flicker or spinner.
+    const isAuthenticated = authService.isAuthenticated();
 
     useEffect(() => {
-        const checkAuth = () => {
-            const authenticated = authService.isAuthenticated();
+        if (!isAuthenticated) {
+            router.replace('/admin/login');
+        }
+    }, [isAuthenticated, router]);
 
-            if (!authenticated) {
-                router.push('/admin/login');
-            } else {
-                setIsAuthenticated(true);
-            }
-
-            setIsLoading(false);
-        };
-
-        checkAuth();
-    }, [router]);
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-paper-white">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ruby-red mx-auto"></div>
-                    <p className="mt-4 text-text-muted">Verifying authentication...</p>
-                </div>
-            </div>
-        );
-    }
-
+    // If not authenticated, render nothing while the redirect happens.
     if (!isAuthenticated) {
         return null;
     }

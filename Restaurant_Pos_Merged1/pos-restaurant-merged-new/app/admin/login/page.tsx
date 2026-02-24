@@ -1,5 +1,5 @@
 "use client";
-import { useState, FormEvent, ChangeEvent } from 'react';
+import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -29,6 +29,14 @@ export default function AdminLogin() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    // Redirect already-authenticated users away from the login page.
+    // Using useEffect (not a conditional render) so hooks order is always stable.
+    useEffect(() => {
+        if (authService.isAuthenticated()) {
+            router.replace('/admin/dashboard');
+        }
+    }, [router]);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -81,15 +89,23 @@ export default function AdminLogin() {
             <div className="absolute top-0 left-0 w-64 h-64 bg-gold-start/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 right-0 w-64 h-64 bg-ruby-red/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
 
+            {/*
+              Use a stable `key` so the card animates only ONCE on initial mount.
+              Without this, every setState call (typing, tab switch) could
+              re-trigger the motion animation causing flicker.
+            */}
             <motion.div
+                key="login-card"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
                 className="bg-card-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gold-start/20 relative z-10"
             >
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-serif font-bold text-ruby-red mb-2">Portal Access</h1>
                     <div className="flex justify-center gap-4 mt-4">
                         <button
+                            type="button"
                             onClick={() => { setLoginType('admin'); setError(''); }}
                             className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${loginType === 'admin'
                                 ? 'bg-ruby-red text-white shadow-md'
@@ -99,6 +115,7 @@ export default function AdminLogin() {
                             Admin Login
                         </button>
                         <button
+                            type="button"
                             onClick={() => { setLoginType('staff'); setError(''); }}
                             className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${loginType === 'staff'
                                 ? 'bg-ruby-red text-white shadow-md'

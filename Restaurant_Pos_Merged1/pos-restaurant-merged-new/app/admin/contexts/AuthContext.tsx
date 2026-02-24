@@ -22,41 +22,41 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    // Initialize directly from localStorage — synchronous, no flicker.
+    const [user, setUser] = useState<User | null>(() => {
+        // This initializer only runs on the client (useState lazy init).
+        // On SSR it returns null, on client it reads localStorage.
+        if (typeof window === 'undefined') return null;
+        return authService.getUser();
+    });
 
-    // Check authentication status on mount and validate with backend
+    // isLoading is only true if we have a token but no user data yet
+    // (edge case: logged in before we added user storage)
+    const [isLoading, setIsLoading] = useState(false);
+
+    // If we have a token but no user data, fetch user data once.
     useEffect(() => {
-        const checkAuth = async () => {
-            const token = authService.getToken();
+        const token = authService.getToken();
+        const storedUser = authService.getUser();
 
-            if (!token) {
-                setIsLoading(false);
-                return;
-            }
-
-            // Validate session with backend API
-            const userData = await authService.validateSession();
-
-            if (userData) {
-                setUser(userData);
-            } else {
-                // Session invalid, clear everything
-                setUser(null);
-            }
-
-            setIsLoading(false);
-        };
-
-        checkAuth();
+        if (token && !storedUser) {
+            // Token exists but no user data — fetch from backend once
+            setIsLoading(true);
+            authService.validateSession()
+                .then((userData) => {
+                    if (userData) setUser(userData);
+                    else setUser(null);
+                })
+                .catch(() => setUser(null))
+                .finally(() => setIsLoading(false));
+        }
     }, []);
 
     const login = async (email: string, password: string) => {
         try {
             await authService.login({ email, password });
-
-            // Validate session and get fresh user data from API
-            const userData = await authService.validateSession();
+            // Read user from localStorage — auth.service stored it during login
+            const userData = authService.getUser();
             setUser(userData);
         } catch (error) {
             throw error;
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const value: AuthContextType = {
         user,
-        isAuthenticated: !!user,
+        isAuthenticated: !!authService.getToken(),
         isLoading,
         login,
         logout,

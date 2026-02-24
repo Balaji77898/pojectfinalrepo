@@ -4,7 +4,10 @@
  */
 
 export const API_CONFIG = {
-    BASE_URL: 'https://superconservatively-drouthiest-karoline.ngrok-free.dev',
+    // Empty string = relative URL → goes through local Next.js proxy routes.
+    // The proxy routes (app/api/admin/...) forward server-side to the ngrok backend,
+    // bypassing browser CORS restrictions entirely.
+    BASE_URL: '',
     ENDPOINTS: {
         ADMIN: {
             LOGIN: '/api/admin/login',

@@ -42,9 +42,12 @@ class AuthService {
                 this.setToken(response.token);
             }
 
-            // Store user data if provided
+            // Store user data if provided by the login response
             if (response.user) {
                 this.setUser(response.user);
+            } else {
+                // If login response doesn't include user, build a minimal user object from credentials
+                this.setUser({ email: credentials.email });
             }
 
             return response;
@@ -58,16 +61,11 @@ class AuthService {
      * Logout user
      */
     logout(): void {
-        // Clear all auth data
         this.clearToken();
         this.clearUser();
 
-        // Force a hard redirect to login page (clears all state)
         if (typeof window !== 'undefined') {
-            // Clear all localStorage to ensure clean state
             localStorage.clear();
-
-            // Use window.location.replace for hard redirect (no back button)
             window.location.replace('/admin/login');
         }
     }
@@ -108,7 +106,7 @@ class AuthService {
     }
 
     /**
-     * Get user data
+     * Get user data from localStorage (synchronous — no network call)
      */
     getUser(): User | null {
         if (typeof window === 'undefined') return null;
@@ -126,15 +124,15 @@ class AuthService {
     }
 
     /**
-     * Check if user is authenticated
+     * Check if user is authenticated (synchronous localStorage check)
      */
     isAuthenticated(): boolean {
         return !!this.getToken();
     }
 
     /**
-     * Validate session with backend and get current user
-     * Calls /api/admin/me to verify token and get user data
+     * Validate session with backend and get fresh user data.
+     * Only call this when you need to verify the token is still valid server-side.
      */
     async validateSession(): Promise<User | null> {
         try {
@@ -143,13 +141,11 @@ class AuthService {
                 return null;
             }
 
-            // Call /api/admin/me to validate session and get user data
             const user = await apiService.get<User>(
                 API_CONFIG.ENDPOINTS.ADMIN.ME,
-                true // Requires authentication
+                true
             );
 
-            // Update stored user data with fresh data from API
             if (user) {
                 this.setUser(user);
             }
@@ -157,7 +153,6 @@ class AuthService {
             return user;
         } catch (error) {
             console.error('Session validation error:', error);
-            // Clear invalid token
             this.clearToken();
             this.clearUser();
             return null;
