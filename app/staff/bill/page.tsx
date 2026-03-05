@@ -1,23 +1,69 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '../components/Icon';
 import { Animated } from '../components/Animated';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigationState } from '../contexts/NavigationContext';
+import { useOrders } from '../contexts/OrdersContext';
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
 
 export default function Bill() {
   const { role } = useAuth();
   const router = useRouter();
   const { navState } = useNavigationState();
+  const { orders } = useOrders();
+  const receiptRef = useRef<HTMLDivElement>(null);
 
-  const table = (navState?.table as string) ?? '';
-  const orderTotal = parseFloat((navState?.orderTotal as string) ?? '0');
-  const tipAmount = parseFloat((navState?.tipAmount as string) ?? '0');
-  const finalTotal = parseFloat((navState?.finalTotal as string) ?? '0');
+  const orderId = (navState?.orderId as string) ?? '';
+  const currentOrder = orders.find(o => o.id === orderId);
+  const orderItems = currentOrder?.itemsDetails || [];
+
+  const table = (navState?.table as string) ?? currentOrder?.table ?? '';
+  const orderTotal = Math.round(parseFloat((navState?.orderTotal as string) ?? currentOrder?.total?.toString() ?? '0'));
+  const tipAmount = Math.round(parseFloat((navState?.tipAmount as string) ?? '0'));
+  const finalTotal = Math.round(parseFloat((navState?.finalTotal as string) ?? orderTotal.toString()));
   const paymentMethod = (navState?.paymentMethod as string) ?? '';
   const [billNumber] = useState(() => (navState?.billNumber as string) ?? `BILL-${Date.now().toString().slice(-8)}`);
-  const [date] = useState(() => new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }));
+  const [date] = useState(() => {
+    if (currentOrder?.createdAt) {
+      return new Date(currentOrder.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+    return currentOrder?.time || new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  });
+
+  const handleDownloadPDF = async () => {
+    if (!receiptRef.current) return;
+    try {
+      const dataUrl = await toPng(receiptRef.current, { 
+        cacheBust: true,
+        backgroundColor: '#ffffff',
+        pixelRatio: 2,
+        style: { boxShadow: 'none' },
+        filter: (node: HTMLElement) => {
+          return !node?.hasAttribute?.('data-html2canvas-ignore');
+        }
+      });
+      
+      const tempPdf = new jsPDF();
+      const imgProps = tempPdf.getImageProperties(dataUrl);
+      const imgWidth = imgProps.width / 2;
+      const imgHeight = imgProps.height / 2;
+
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'pt',
+        format: [imgWidth, imgHeight]
+      });
+      
+      pdf.addImage(dataUrl, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`Receipt-${billNumber}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF', error);
+      alert(`Failed to generate PDF receipt: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-ivory flex flex-col font-sans">
@@ -30,7 +76,7 @@ export default function Bill() {
       <div className="flex-1 flex items-center justify-center p-6 relative z-10">
          <div className="w-full max-w-lg">
             <Animated type="fadeInUp" duration={0.4}>
-              <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 relative">
+              <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 relative" ref={receiptRef}>
                   {/* Decorative serrated edge at top */}
                   <div className="absolute top-0 left-0 w-full h-2 bg-primary"></div>
                   
@@ -48,11 +94,10 @@ export default function Bill() {
 
                      {/* Receipt Card */}
                      <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-8 relative overflow-hidden">
-                        {/* Receipt texture overlay or just simple styling */}
                          <div className="space-y-4">
                               <div className="flex justify-between items-center pb-4 border-b border-dashed border-slate-200">
                                   <span className="text-slate-500 text-sm font-semibold uppercase tracking-wider">Total Amount</span>
-                                  <span className="text-3xl font-black text-slate-900">₹{finalTotal.toFixed(2)}</span>
+                                  <span className="text-3xl font-black text-slate-900">₹{finalTotal}</span>
                               </div>
                               
                               <div className="space-y-3 pt-2">
@@ -71,13 +116,7 @@ export default function Bill() {
                                    <div className="flex justify-between">
                                        <span className="text-slate-600">Payment Method</span>
                                        <span className="text-slate-900 font-bold capitalize flex items-center">
-                                           <Icon 
-                                               name={paymentMethod === 'cash' ? 'rupee' : 'phone-portrait-outline'} 
-                                               size={18} 
-                                               color="#0f172a" 
-                                               className="mr-2" 
-                                           />
-                                           {paymentMethod}
+                                           {paymentMethod || 'N/A'}
                                        </span>
                                    </div>
                               </div>
@@ -86,25 +125,40 @@ export default function Bill() {
 
                      {/* Breakdown */}
                      <div className="space-y-3 mb-8 px-2">
+                        {orderItems.length > 0 && (
+                            <div className="space-y-2 mb-4 pb-4 border-b border-slate-100">
+                                <h3 className="text-slate-900 font-bold mb-3 text-sm uppercase tracking-wider">Order Items</h3>
+                                {orderItems.map((item, idx: number) => (
+                                    <div key={idx} className="flex justify-between text-sm">
+                                        <span className="text-slate-600">{item.quantity} x {item.name}</span>
+                                        <span className="text-slate-900 font-semibold">₹{Math.round(item.quantity * parseFloat(item.price))}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <div className="flex justify-between text-sm">
                             <span className="text-slate-500">Subtotal</span>
-                            <span className="text-slate-900 font-semibold">₹{orderTotal.toFixed(2)}</span>
+                            <span className="text-slate-900 font-semibold shrink-0">₹{Math.round(currentOrder?.subtotal || 0)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-slate-500">Tax</span>
+                            <span className="text-slate-900 font-semibold shrink-0">₹{Math.round(currentOrder?.tax || 0)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-slate-500">Tip</span>
-                            <span className="text-slate-900 font-semibold">₹{tipAmount.toFixed(2)}</span>
+                            <span className="text-slate-900 font-semibold shrink-0">₹{tipAmount}</span>
                         </div>
                         <div className="flex justify-between text-lg pt-2 border-t border-slate-100">
                              <span className="text-slate-900 font-bold">Total Paid</span>
-                             <span className="text-primary font-black">₹{finalTotal.toFixed(2)}</span>
+                             <span className="text-primary font-black shrink-0">₹{finalTotal}</span>
                         </div>
                      </div>
 
                      {/* Actions */}
-                     <div className="flex flex-col gap-3">
+                     <div className="flex flex-col gap-3" data-html2canvas-ignore="true">
                          <button
                             className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold flex items-center justify-center transition-colors shadow-lg"
-                             onClick={() => console.log('Print receipt')}
+                             onClick={handleDownloadPDF}
                          >
                             <Icon name="print-outline" size={20} color="white" className="mr-2" />
                             Print Receipt

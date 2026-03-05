@@ -46,6 +46,17 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         // Use the centralized date utility
         const formattedTime = formatTime(apiOrder.created_at);
 
+        const items = apiOrder.items || [];
+        
+        // Calculate totals dynamically if API returns 0 or null
+        const calculatedSubtotal = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+        const calculatedTax = calculatedSubtotal * 0.05; // Assuming 5% GST base if not provided
+        const calculatedTotal = calculatedSubtotal + calculatedTax;
+
+        const apiTotal = parseFloat(apiOrder.total_amount) || 0;
+        const apiSubtotal = parseFloat(apiOrder.subtotal || '0');
+        const apiTax = parseFloat(apiOrder.tax_amount || '0');
+
         return {
         id: apiOrder.id,
         orderNumber: apiOrder.id.substring(0, 8).toUpperCase(), 
@@ -55,11 +66,11 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
               ? `Table ${apiOrder.table_id}` 
               : (apiOrder.order_type === 'DINE_IN' ? 'Dine In' : (apiOrder.customer_name || 'Takeaway'))),
         customerName: apiOrder.customer_name || '', 
-        items: apiOrder.items?.length || 0, 
-        itemsDetails: apiOrder.items || [],
-        total: parseFloat(apiOrder.total_amount) || 0,
-        subtotal: apiOrder.subtotal ? parseFloat(apiOrder.subtotal) : (parseFloat(apiOrder.total_amount) || 0) * 0.95, // Fallback if API doesn't send subtotal
-        tax: apiOrder.tax_amount ? parseFloat(apiOrder.tax_amount) : (parseFloat(apiOrder.total_amount) || 0) * 0.05, // Fallback if API doesn't send tax
+        items: items.length || 0, 
+        itemsDetails: items,
+        total: apiTotal > 0 ? apiTotal : calculatedTotal,
+        subtotal: Math.round(apiSubtotal > 0 ? apiSubtotal : calculatedSubtotal),
+        tax: Math.round(apiTax > 0 ? apiTax : calculatedTax),
         status: mapApiStatusToOrderStatus(apiOrder.status),
         time: formattedTime,
         createdAt: apiOrder.created_at,

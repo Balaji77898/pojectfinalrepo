@@ -2,42 +2,38 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '../components/Icon';
-import { Gradient } from '../components/Gradient';
 import { Animated } from '../components/Animated';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigationState } from '../contexts/NavigationContext';
 import { useOrders } from '../contexts/OrdersContext';
 
-type BillingStatus = 'unpaid' | 'pending' | 'paid';
-type PaymentMethod = 'cash' | 'upi';
+type BillingStatus = 'billed' | 'paid';
 
 interface TableBilling {
   id: string;
   table: string;
   items: number;
+  subtotal: number;
   total: number;
   status: BillingStatus;
   time: string;
   orderItems?: { name: string; qty: number; price: number }[];
 }
 
-function mapOrderStatusToBillingStatus(orderStatus: string): BillingStatus {
+function mapOrderStatusToBillingStatus(orderStatus: string): BillingStatus | null {
   const status = orderStatus.toUpperCase();
   if (status === 'PAID') return 'paid';
-  if (status === 'BILLED') return 'pending';
-  return 'unpaid';
+  // Include all orders that are active and not yet paid entirely under 'billed' tab
+  if (status !== 'CANCELLED') return 'billed';
+  return null;
 }
 
 export default function BillingPayment() {
   const { role } = useAuth();
   const router = useRouter();
   const { setNavState } = useNavigationState();
-  const { orders, payOrder } = useOrders();
+  const { orders } = useOrders();
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
-  const [tipAmount, setTipAmount] = useState('');
-  const [tableForPayment, setTableForPayment] = useState<TableBilling | null>(null);
   const [showRevenueView, setShowRevenueView] = useState(false);
 
   useEffect(() => {
@@ -47,42 +43,39 @@ export default function BillingPayment() {
   }, [role, router]);
 
   const allTablesBilling: TableBilling[] = useMemo(() => {
-    return orders.map(order => ({
-      id: order.id,
-      table: order.table,
-      items: order.items,
-      total: order.total,
-      status: mapOrderStatusToBillingStatus(order.status),
-      time: order.time,
-    }));
+    return orders
+      .filter(order => {
+        const status = mapOrderStatusToBillingStatus(order.status);
+        return status !== null;
+      })
+      .map(order => ({
+        id: order.id,
+        table: order.table,
+        items: order.items,
+        subtotal: Math.round(order.subtotal || 0),
+        total: Math.round(order.total),
+        status: mapOrderStatusToBillingStatus(order.status) as BillingStatus,
+        time: order.time,
+      }));
   }, [orders]);
 
   const billingFilters = [
     { id: 'all', label: 'All', count: allTablesBilling.length },
-    { id: 'unpaid', label: 'Unpaid', count: allTablesBilling.filter(t => t.status === 'unpaid').length, color: '#ef4444' },
-    { id: 'pending', label: 'Pending', count: allTablesBilling.filter(t => t.status === 'pending').length, color: '#f59e0b' },
+    { id: 'billed', label: 'Billed', count: allTablesBilling.filter(t => t.status === 'billed').length, color: '#f59e0b' },
     { id: 'paid', label: 'Paid', count: allTablesBilling.filter(t => t.status === 'paid').length, color: '#C8A951' },
   ];
 
-  const paymentMethods = [
-    { id: 'cash' as PaymentMethod, label: 'Cash', icon: 'rupee' as const, color: '#C8A951' },
-    { id: 'upi' as PaymentMethod, label: 'UPI', icon: 'phone-portrait-outline' as const, color: '#7B1F1F' },
-  ];
-
-  const tipPresets = [0, 10, 15, 20];
-
   const filteredBilling = activeFilter === 'all' ? allTablesBilling : allTablesBilling.filter(item => item.status === activeFilter);
-  const totalUnpaid = allTablesBilling.filter(t => t.status === 'unpaid').reduce((sum, t) => sum + t.total, 0);
-  const totalPending = allTablesBilling.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.total, 0);
+  const totalBilled = allTablesBilling.filter(t => t.status === 'billed').reduce((sum, t) => sum + t.total, 0);
   const totalPaid = allTablesBilling.filter(t => t.status === 'paid').reduce((sum, t) => sum + t.total, 0);
-  const grandTotal = totalUnpaid + totalPending + totalPaid;
+  const grandTotal = totalBilled + totalPaid;
 
   const tableRevenueMap = allTablesBilling.reduce((acc, bill) => {
     const tableName = bill.table;
     if (!acc[tableName]) {
       acc[tableName] = { total: 0, orders: 0 };
     }
-    acc[tableName].total += bill.total;
+    acc[tableName].total += Math.round(bill.total);
     acc[tableName].orders += 1;
     return acc;
   }, {} as Record<string, { total: number; orders: number }>);
@@ -99,16 +92,9 @@ export default function BillingPayment() {
 
   const getStatusConfig = (status: BillingStatus) => {
     switch (status) {
-      case 'unpaid':
+      case 'billed':
         return {
-          label: 'UNPAID',
-          bg: '#FEE2E2',
-          color: '#DC2626',
-          icon: 'alert-circle' as const,
-        };
-      case 'pending':
-        return {
-          label: 'PENDING',
+          label: 'BILLED',
           bg: '#FEF3C7',
           color: '#D97706',
           icon: 'time' as const,
@@ -123,48 +109,6 @@ export default function BillingPayment() {
     }
   };
 
-  const openPaymentModal = (table: TableBilling) => {
-    setTableForPayment(table);
-    setSelectedPaymentMethod(null);
-    setTipAmount('');
-    setShowPaymentModal(true);
-  };
-
-  const handleConfirmPayment = async () => {
-    if (!tableForPayment || !selectedPaymentMethod) return;
-    const taxAmount = tableForPayment.total * 0.05;
-    const tip = parseFloat(tipAmount) || 0;
-    const finalTotal = tableForPayment.total + taxAmount + tip;
-
-    try {
-      if (payOrder) {
-        // In billing page, table.id is currently used as order id mock, but should be real ID
-        await payOrder(tableForPayment.id, selectedPaymentMethod, finalTotal);
-      }
-
-      setShowPaymentModal(false);
-
-      setNavState({
-        orderNumber: tableForPayment.id,
-        table: tableForPayment.table,
-        orderTotal: (tableForPayment.total + taxAmount).toFixed(2),
-        tipAmount: tip.toFixed(2),
-        finalTotal: finalTotal.toFixed(2),
-        paymentMethod: selectedPaymentMethod
-      });
-
-      router.push('/staff/bill');
-    } catch (error) {
-      alert('Payment failed. Please try again.');
-      console.error(error);
-    }
-  };
-
-  const calculateTipFromPercent = (percent: number) => {
-    if (!tableForPayment) return '0';
-    const taxAmount = tableForPayment.total * 0.05;
-    return ((tableForPayment.total + taxAmount) * percent / 100).toFixed(0);
-  };
 
   const BillCard = ({ item, index }: { item: TableBilling; index: number }) => {
     const config = getStatusConfig(item.status);
@@ -204,37 +148,24 @@ export default function BillingPayment() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-slate-900 font-black text-2xl">₹{item.total}</p>
+                <p className="text-slate-900 font-black text-2xl">₹{Math.round(item.total)}</p>
               </div>
             </div>
 
-            {item.status === 'unpaid' ? (
+            {item.status === 'billed' ? (
               <button
                 className="w-full mt-4 rounded-2xl overflow-hidden hover:scale-[0.98] transition-transform"
                 onClick={(e) => { 
                   e.stopPropagation(); 
-                  // Navigate to order details to generate bill
+                  // Navigate to order details for both bill generation and payment processing
                   setNavState({ table: item.table, orderId: item.id });
                   router.push('/staff/order-details');
                 }}
               >
                 <div className="bg-indigo-50 border border-indigo-100 py-3 flex items-center justify-center">
                   <Icon name="receipt-outline" size={18} color="#4338ca" />
-                  <span className="text-indigo-700 font-bold text-sm ml-2">View to Generate Bill</span>
+                  <span className="text-indigo-700 font-bold text-sm ml-2">View Order</span>
                 </div>
-              </button>
-            ) : item.status === 'pending' ? (
-              <button
-                className="w-full mt-4 rounded-2xl overflow-hidden hover:scale-[0.98] transition-transform"
-                onClick={(e) => { e.stopPropagation(); openPaymentModal(item); }}
-              >
-                <Gradient
-                  colors={['#C8A951', '#B8993D']}
-                  className="py-3 flex items-center justify-center"
-                >
-                  <Icon name="wallet" size={18} color="white" />
-                  <span className="text-white font-bold text-sm ml-2">Process Payment</span>
-                </Gradient>
               </button>
             ) : null}
           </div>
@@ -286,7 +217,7 @@ export default function BillingPayment() {
             </div>
             <div>
               <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Total Revenue</h3>
-              <p className="text-3xl font-serif font-black text-slate-900">₹{grandTotal.toLocaleString()}</p>
+              <p className="text-3xl font-serif font-black text-slate-900">₹{Math.round(grandTotal).toLocaleString()}</p>
             </div>
           </div>
 
@@ -297,18 +228,18 @@ export default function BillingPayment() {
             </div>
             <div>
               <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Collected</h3>
-              <p className="text-3xl font-serif font-black text-slate-900">₹{totalPaid.toLocaleString()}</p>
+              <p className="text-3xl font-serif font-black text-slate-900">₹{Math.round(totalPaid).toLocaleString()}</p>
             </div>
           </div>
 
-          {/* Pending */}
+          {/* Billed */}
           <div className="bg-white rounded-[32px] p-6 shadow-card flex items-center border border-[#E2E8F0]">
-            <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mr-6">
-              <Icon name="time" size={32} color="#dc2626" />
+            <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mr-6">
+              <Icon name="time" size={32} color="#f59e0b" />
             </div>
             <div>
-              <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Pending</h3>
-              <p className="text-3xl font-serif font-black text-slate-900">₹{(totalUnpaid + totalPending).toLocaleString()}</p>
+              <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Billed</h3>
+              <p className="text-3xl font-serif font-black text-slate-900">₹{Math.round(totalBilled).toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -388,7 +319,7 @@ export default function BillingPayment() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-primary font-black text-2xl">₹{tableData.total}</p>
+                        <p className="text-primary font-black text-2xl">₹{Math.round(tableData.total)}</p>
                       </div>
                     </div>
                   </Animated>
@@ -398,88 +329,6 @@ export default function BillingPayment() {
           )}
         </div>
       </div>
-
-      {/* Payment Modal (Overlay) */}
-      {showPaymentModal && tableForPayment && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setShowPaymentModal(false)}
-        >
-          <Animated type="fadeInUp" duration={0.3} className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden">
-            <div onClick={(e) => e.stopPropagation()}>
-              <div className="bg-primary px-8 py-6 flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl font-serif text-white">Process Payment</h2>
-                  <p className="text-white/80 text-sm mt-1">{tableForPayment.table}</p>
-                </div>
-                <button
-                  className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
-                  onClick={() => setShowPaymentModal(false)}
-                >
-                  <Icon name="close" size={24} color="white" />
-                </button>
-              </div>
-
-              <div className="p-8">
-                <div className="mb-8">
-                  <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Select Method</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    {paymentMethods.map((method) => (
-                      <button
-                        key={method.id}
-                        className={`rounded-2xl p-4 border-2 transition-all flex flex-col items-center gap-2 ${selectedPaymentMethod === method.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-[#E2E8F0] bg-white hover:border-slate-200'
-                          }`}
-                        onClick={() => setSelectedPaymentMethod(method.id)}
-                      >
-                        <div className={`${selectedPaymentMethod === method.id ? 'text-primary' : 'text-slate-400'}`}>
-                          <Icon name={method.icon} size={32} color="currentColor" />
-                        </div>
-                        <span className={`font-bold ${selectedPaymentMethod === method.id ? 'text-primary' : 'text-slate-600'}`}>{method.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-8">
-                  <div className="flex justify-between items-center mb-3">
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Add Tip</p>
-                    {tipAmount && <span className="text-primary font-bold">₹{tipAmount}</span>}
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 mb-4">
-                    {tipPresets.map((percent) => (
-                      <button
-                        key={percent}
-                        className={`rounded-xl py-2 font-bold transition-colors ${calculateTipFromPercent(percent) === tipAmount ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                        onClick={() => setTipAmount(calculateTipFromPercent(percent))}
-                      >
-                        {percent}%
-                      </button>
-                    ))}
-                  </div>
-                  <input
-                    type="number"
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary font-bold text-slate-900 placeholder:font-normal"
-                    placeholder="Custom amount (₹)"
-                    value={tipAmount}
-                    onChange={(e) => setTipAmount(e.target.value)}
-                  />
-                </div>
-
-                <button
-                  className={`w-full rounded-xl py-4 flex items-center justify-center transition-all ${!selectedPaymentMethod ? 'opacity-50 cursor-not-allowed bg-slate-200' : 'bg-gold hover:bg-yellow-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'}`}
-                  onClick={handleConfirmPayment}
-                  disabled={!selectedPaymentMethod}
-                >
-                  <Icon name="checkmark-circle" size={24} color={!selectedPaymentMethod ? "#94a3b8" : "white"} />
-                  <span className={`font-bold text-lg ml-2 ${!selectedPaymentMethod ? 'text-slate-400' : 'text-white'}`}>Confirm Payment</span>
-                </button>
-              </div>
-            </div>
-          </Animated>
-        </div>
-      )}
     </div>
   );
 }

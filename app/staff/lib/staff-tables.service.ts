@@ -8,10 +8,10 @@ import { staffAuthService } from './staff-auth.service';
 
 export interface StaffTable {
     id: string;
-    table_number: string;
+    table_number: number | string;
     table_status: 'EMPTY' | 'OCCUPIED';
-    qr_token: string;
     is_active: boolean;
+    created_at: string;
 }
 
 class StaffTablesService {
@@ -23,7 +23,7 @@ class StaffTablesService {
 
         try {
             const response = await fetch(
-                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TABLES.LIST}`,
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.TABLES}`,
                 {
                     method: 'GET',
                     headers: {
@@ -39,7 +39,14 @@ class StaffTablesService {
                 throw new Error(errorData.message || 'Failed to fetch tables');
             }
 
-            return await response.json();
+            const data = await response.json();
+            
+            // Handle both array and object response formats
+            if (Array.isArray(data)) {
+                return data;
+            }
+            
+            return data.tables || [];
         } catch (error) {
             console.error('Error fetching staff tables:', error);
             throw error;

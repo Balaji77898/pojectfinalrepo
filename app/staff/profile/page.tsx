@@ -39,11 +39,6 @@ export default function Profile() {
     logout();
   };
 
-  // Only keep Personal Information for now as others are placeholders
-  const menuItems = [
-    { id: '1', icon: 'person-outline' as const, label: 'Personal Information', color: '#7B1F1F', bg: 'bg-primary/10' },
-  ];
-
   if (loading) {
     return (
       <div className="min-h-screen bg-ivory flex items-center justify-center">
@@ -104,9 +99,9 @@ export default function Profile() {
       {/* Main Content */}
       <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-12 -mt-10 relative z-20">
          <div className="bg-white rounded-[40px] shadow-card border border-white/50 p-8 md:p-12">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+             <div className="max-w-2xl mx-auto mb-12">
                  {/* Profile Details */}
-                 <div className="col-span-1 space-y-6">
+                 <div className="space-y-6">
                     <h3 className="text-xl font-serif text-slate-900 mb-6 border-b pb-2">Personal Details</h3>
                     
                     <div className="flex items-start">
@@ -142,25 +137,6 @@ export default function Profile() {
                             </p>
                         </div>
                     </div>
-                 </div>
-
-                 {/* Menu Options */}
-                 <div className="col-span-1 space-y-4">
-                     <h3 className="text-xl font-serif text-slate-900 mb-6 border-b pb-2">Account Settings</h3>
-                     {menuItems.map((item) => (
-                        <button
-                          key={item.id}
-                          className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex items-center hover:shadow-md hover:border-primary/20 transition-all group"
-                        >
-                          <div className={`w-10 h-10 ${item.bg} rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform`}>
-                            <Icon name={item.icon} size={20} color={item.color} />
-                          </div>
-                          <div className="flex-1 text-left">
-                              <span className="text-slate-900 font-bold text-base group-hover:text-primary transition-colors">{item.label}</span>
-                          </div>
-                          <Icon name="chevron-forward" size={20} color="#cbd5e1" className="group-hover:translate-x-1 transition-transform" />
-                        </button>
-                      ))}
                  </div>
              </div>
 

@@ -53,8 +53,8 @@ export default function OrderDetails() {
     table: currentOrder?.table || tableFromNav || 'Unknown Table',
     server: 'Staff', // TODO: Add server name from API when available
     time: currentOrder?.time || 'Just now',
-    subtotal: currentOrder?.subtotal || (currentOrder?.total || 0) * 0.95,
-    tax: currentOrder?.tax || (currentOrder?.total || 0) * 0.05,
+    subtotal: currentOrder?.subtotal || 0,
+    tax: currentOrder?.tax || 0,
     total: currentOrder?.total || 0,
   };
 
@@ -66,8 +66,8 @@ export default function OrderDetails() {
   ];
 
   const tipPresets = [0, 10, 15, 20];
-  const tip = parseFloat(tipAmount) || 0;
-  const finalTotal = orderInfo.total + tip;
+  const tip = Math.round(parseFloat(tipAmount) || 0);
+  const finalTotal = Math.round(orderInfo.total + tip);
 
   const handleProceedToPayment = () => {
     setSelectedPaymentMethod(null);
@@ -95,11 +95,12 @@ export default function OrderDetails() {
       setShowPaymentModal(false);
 
       setNavState({
+        orderId: orderId,
         orderNumber: orderInfo.orderNumber,
         table: orderInfo.table,
-        orderTotal: orderInfo.total.toFixed(2),
-        tipAmount: tip.toFixed(2),
-        finalTotal: finalTotal.toFixed(2),
+        orderTotal: Math.round(orderInfo.total).toString(),
+        tipAmount: tip.toString(),
+        finalTotal: finalTotal.toString(),
         paymentMethod: selectedPaymentMethod,
       });
 
@@ -247,9 +248,9 @@ export default function OrderDetails() {
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="text-lg font-bold text-text group-hover:text-primary transition-colors">{item.name}</h3>
-                            <p className="text-text/70 font-medium text-sm">Qty: {item.quantity} × <span className="font-mono">₹{parseFloat(item.price).toFixed(2)}</span></p>
+                            <p className="text-text/70 font-medium text-sm">Qty: {item.quantity} × <span className="font-mono">₹{Math.round(parseFloat(item.price))}</span></p>
                           </div>
-                          <p className="text-text font-black text-lg">₹{(item.quantity * parseFloat(item.price)).toFixed(2)}</p>
+                          <p className="text-text font-black text-lg">₹{Math.round(item.quantity * parseFloat(item.price))}</p>
                         </div>
                         {item.notes && (
                           <div className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-3 py-1 rounded-lg text-xs font-bold mt-2 border border-amber-100">
@@ -278,70 +279,41 @@ export default function OrderDetails() {
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center text-text/70">
                   <span className="font-medium">Subtotal</span>
-                  <span className="font-bold text-text">₹{orderInfo.subtotal.toFixed(2)}</span>
+                  <span className="font-bold text-text">₹{Math.round(orderInfo.subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center text-text/70">
-                  <span className="font-medium">Tax (8%)</span>
-                  <span className="font-bold text-text">₹{orderInfo.tax.toFixed(2)}</span>
+                  <span className="font-medium">Tax</span>
+                  <span className="font-bold text-text">₹{Math.round(orderInfo.tax)}</span>
                 </div>
                 <div className="h-px bg-ivory-200 my-2"></div>
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-text">Total</span>
-                  <span className="text-3xl font-black text-primary">₹{orderInfo.total.toFixed(2)}</span>
+                  <span className="text-3xl font-black text-primary">₹{Math.round(orderInfo.total)}</span>
                 </div>
               </div>
 
               {role === 'billing_staff' ? (
-                <button
-                  className={`w-full rounded-2xl py-5 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative ${currentOrder?.status === 'BILLED' || currentOrder?.status === 'SERVED'
-                      ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
-                      : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                    }`}
-                  onClick={currentOrder?.status === 'BILLED' || currentOrder?.status === 'SERVED' ? handleProceedToPayment : undefined}
-                  disabled={currentOrder?.status !== 'BILLED' && currentOrder?.status !== 'SERVED'}
-                >
-                  <div className="absolute inset-0 bg-linear-to-r from-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="relative flex items-center justify-center gap-3">
-                    <Icon name="wallet" size={24} color={currentOrder?.status === 'BILLED' ? "white" : "#94a3b8"} />
-                    <span className="font-bold text-lg">Proceed to Payment</span>
-                  </div>
-                </button>
-              ) : (
-
                 <div className="space-y-4">
-                  {role !== 'serving_staff' && (
-                    <>
-                      <button
-                        className={`w-full text-white rounded-2xl py-4 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 ${currentOrder?.status === 'SERVED'
-                          ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
-                          : 'bg-slate-400 opacity-50 cursor-not-allowed'
-                          }`}
-                        onClick={
-                          async () => {
-                            if (currentOrder?.status !== 'SERVED') return;
-                            if (confirm('Are you sure you want to generate the bill for this order?')) {
-                              try {
-                                await generateBill(orderId);
-                                // Optional: Show success message/toast
-                              } catch {
-                                alert('Failed to generate bill');
-                              }
-                            }
-                          }}
-                        disabled={currentOrder?.status !== 'SERVED'}
-                      >
-                        <Icon name="receipt" size={24} color="white" />
-                        <span className="font-bold text-lg">Generate Bill</span>
-                      </button>
-                      {currentOrder?.status !== 'SERVED' && (
-                        <p className="text-center text-xs text-slate-400">Order must be served before billing</p>
-                      )}
-                    </>
-                  )}
-
+                  <button
+                    className={`w-full rounded-2xl py-5 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative ${currentOrder?.status === 'BILLED' || currentOrder?.status === 'SERVED'
+                        ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
+                        : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                      }`}
+                    onClick={currentOrder?.status === 'BILLED' || currentOrder?.status === 'SERVED' ? handleProceedToPayment : undefined}
+                    disabled={currentOrder?.status !== 'BILLED' && currentOrder?.status !== 'SERVED'}
+                  >
+                    <div className="absolute inset-0 bg-linear-to-r from-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative flex items-center justify-center gap-3">
+                      <Icon name="wallet" size={24} color={currentOrder?.status === 'BILLED' ? "white" : "#94a3b8"} />
+                      <span className="font-bold text-lg">Proceed to Payment</span>
+                    </div>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
                   <div className="bg-blue-50 rounded-2xl p-4 flex items-center gap-3 text-blue-800 border border-blue-100">
                     <Icon name="information-circle" size={24} color="#1e40af" />
-                    <p className="text-sm font-medium">Payment is handled by the cashier console.</p>
+                    <p className="text-sm font-medium">Billing and payment are handled by the billing staff.</p>
                   </div>
                 </div>
               )}

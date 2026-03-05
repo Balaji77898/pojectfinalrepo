@@ -35,21 +35,44 @@ export default function Tables() {
 
   const [tables, setTables] = useState<Table[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTables = async () => {
       try {
         const data = await staffTablesService.getTables();
-        const mappedTables: Table[] = data.map(t => ({
-          id: t.id,
-          name: t.table_number.startsWith('Table') ? t.table_number : `Table ${t.table_number}`,
-          status: t.table_status === 'EMPTY' ? 'available' : 'occupied',
-          seats: 0, // Hidden in UI if 0
-          server: undefined
-        }));
+        
+        let tablesArray: unknown[] = data;
+        // In case service doesn't parse data correctly, safeguard here
+        const dataObj = data as { data?: unknown[] };
+        if (!Array.isArray(data) && data && Array.isArray(dataObj.data)) {
+           tablesArray = dataObj.data;
+        } else if (!Array.isArray(tablesArray)) {
+           tablesArray = [];
+        }
+
+        const mappedTables: Table[] = tablesArray.map((t: unknown) => {
+          const tableData = t as { id: string, table_number: string | number, table_status: string };
+          const tableName = typeof tableData.table_number === 'string' && tableData.table_number.startsWith('Table')
+            ? tableData.table_number
+            : `Table ${tableData.table_number}`;
+
+          return {
+            id: tableData.id,
+            name: tableName,
+            status: tableData.table_status === 'EMPTY' ? 'available' : 'occupied',
+            seats: 0, // Hidden in UI if 0
+            server: undefined
+          };
+        });
         setTables(mappedTables);
-      } catch (error) {
+      } catch (error: Error | unknown) {
         console.error('Failed to fetch tables:', error);
+        if (error instanceof Error) {
+           setErrorMsg(error.message);
+        } else {
+           setErrorMsg(String(error));
+        }
       } finally {
         setIsLoading(false);
       }
@@ -74,7 +97,9 @@ export default function Tables() {
     { id: 'all', label: 'All', count: tables.length },
     { id: 'available', label: 'Available', count: tables.filter(t => t.status === 'available').length },
     { id: 'occupied', label: 'Occupied', count: tables.filter(t => t.status === 'occupied').length },
-    { id: 'needs-bill', label: 'Needs Bill', count: tables.filter(t => t.status === 'needs-bill').length },
+    ...(role !== 'serving_staff' 
+      ? [{ id: 'needs-bill', label: 'Needs Bill', count: tables.filter(t => t.status === 'needs-bill').length }]
+      : [])
   ];
 
   const filteredTables = activeFilter === 'all'
@@ -183,9 +208,9 @@ export default function Tables() {
                 </div>
               </div>
 
-              {(item.status === 'occupied' || item.status === 'needs-bill') && (
+              {(item.status === 'occupied' || item.status === 'needs-bill') && role !== 'serving_staff' && (
                 <div className="flex gap-2 mt-4 pt-4 border-t border-ivory-200">
-                  {role !== 'serving_staff' && role !== 'billing_staff' && (
+                  {role !== 'billing_staff' && (
                     <button
                       className="flex-1 bg-primary/10 hover:bg-primary hover:text-white rounded-xl py-2.5 flex items-center justify-center transition-colors group/btn"
                       onClick={(e) => { e.stopPropagation(); setNavState({ table: item.name }); router.push('/staff/order-details'); }}
@@ -194,15 +219,13 @@ export default function Tables() {
                       <span className="text-primary font-semibold text-sm ml-1 group-hover/btn:text-white">Add Items</span>
                     </button>
                   )}
-                  {role !== 'serving_staff' && (
-                    <button
-                      className="flex-1 bg-success/10 hover:bg-gold rounded-xl py-2.5 flex items-center justify-center transition-colors group/bill"
-                      onClick={(e) => { e.stopPropagation(); router.push('/staff/billing-payment'); }}
-                    >
-                      <Icon name="receipt-outline" size={16} color="currentColor" className="text-[#C8A951] group-hover/bill:text-white" />
-                      <span className="text-[#C8A951] font-semibold text-sm ml-1 group-hover/bill:text-white">Bill</span>
-                    </button>
-                  )}
+                  <button
+                    className="flex-1 bg-success/10 hover:bg-gold rounded-xl py-2.5 flex items-center justify-center transition-colors group/bill"
+                    onClick={(e) => { e.stopPropagation(); router.push('/staff/billing-payment'); }}
+                  >
+                    <Icon name="receipt-outline" size={16} color="currentColor" className="text-[#C8A951] group-hover/bill:text-white" />
+                    <span className="text-[#C8A951] font-semibold text-sm ml-1 group-hover/bill:text-white">Bill</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -284,6 +307,7 @@ export default function Tables() {
                   <Icon name="grid-outline" size={48} color="#94a3b8" />
                 </div>
                 <p className="text-text text-xl font-bold">No tables found</p>
+                {errorMsg && <p className="text-red-500 font-bold mt-4">Error: {errorMsg}</p>}
               </Animated>
             )}
           </div>

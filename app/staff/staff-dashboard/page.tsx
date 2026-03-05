@@ -181,7 +181,7 @@ export default function StaffDashboard() {
                                   {item.time}
                               </p>
                           </div>
-                          <span className="text-xl font-black text-slate-900 group-hover:text-primary transition-colors">₹{item.amount}</span>
+                          <span className="text-xl font-black text-slate-900 group-hover:text-primary transition-colors">₹{Math.round(item.amount)}</span>
                       </div>
                     </button>
                   </Animated>
