@@ -165,15 +165,15 @@ export default function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
                                 Price (₹) *
                             </label>
                             <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={formData.price || ''}
-                                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ruby-red focus:border-transparent"
-                                placeholder="0.00"
-                                required
-                            />
+                                    type="number"
+                                    step="1"
+                                    min="0"
+                                    value={formData.price || ''}
+                                    onChange={(e) => setFormData({ ...formData, price: Math.round(parseFloat(e.target.value) || 0) })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ruby-red focus:border-transparent"
+                                    placeholder="0"
+                                    required
+                                />
                         </div>
 
                         <div>

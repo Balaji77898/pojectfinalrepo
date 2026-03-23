@@ -38,7 +38,7 @@ export default function MenuItemCard({ item, categoryName, onEdit }: MenuItemCar
                     />
                 </div>
             ) : (
-                <div className="h-48 bg-gradient-to-br from-ruby-red/10 to-gold-start/10 flex items-center justify-center">
+                <div className="h-48 bg-linear-to-br from-ruby-red/10 to-gold-start/10 flex items-center justify-center">
                     <DollarSign className="text-ruby-red/30" size={64} />
                 </div>
             )}
@@ -59,7 +59,7 @@ export default function MenuItemCard({ item, categoryName, onEdit }: MenuItemCar
                     </div>
                     <div className="text-right">
                         <div className="text-xl font-bold text-ruby-red">
-                            ₹{Number(item.price).toFixed(2)}
+                            ₹{(() => { const p = Math.round(Number(item.price) * 100) / 100; return p % 1 === 0 ? p.toFixed(0) : p.toFixed(2); })()}
                         </div>
                     </div>
                 </div>

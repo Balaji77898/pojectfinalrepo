@@ -25,9 +25,14 @@ export default function TablesTable({ tables, onDelete, onViewQR }: TablesTableP
         return styles[status];
     };
 
-    const handleToggle = async (id: string) => {
+    const handleToggle = async (table: Table) => {
+        // Cannot deactivate a table that is currently occupied
+        if (table.is_active && table.table_status === TableStatus.OCCUPIED) {
+            alert(`Table ${table.table_number} is currently occupied. Please wait until the table is empty before deactivating it.`);
+            return;
+        }
         try {
-            await toggleTableStatus(id);
+            await toggleTableStatus(table.id);
         } catch (error: any) {
             alert(error.message || 'Failed to toggle table status');
         }
@@ -142,16 +147,24 @@ export default function TablesTable({ tables, onDelete, onViewQR }: TablesTableP
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                                        <button
-                                            onClick={() => handleToggle(table.id)}
-                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${table.is_active ? 'bg-green-600' : 'bg-gray-300'
+                                        <div className="flex flex-col items-center gap-1">
+                                            <button
+                                                onClick={() => handleToggle(table)}
+                                                title={table.is_active && table.table_status === TableStatus.OCCUPIED ? 'Cannot deactivate – table is occupied' : table.is_active ? 'Click to deactivate' : 'Click to activate'}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                                    table.is_active && table.table_status === TableStatus.OCCUPIED
+                                                        ? 'bg-green-600 cursor-not-allowed opacity-60'
+                                                        : table.is_active ? 'bg-green-600 cursor-pointer' : 'bg-gray-300 cursor-pointer'
                                                 }`}
-                                        >
-                                            <span
-                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${table.is_active ? 'translate-x-6' : 'translate-x-1'
-                                                    }`}
-                                            />
-                                        </button>
+                                            >
+                                                <span
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${table.is_active ? 'translate-x-6' : 'translate-x-1'}`}
+                                                />
+                                            </button>
+                                            {table.is_active && table.table_status === TableStatus.OCCUPIED && (
+                                                <span className="text-[10px] text-orange-500 font-medium">Occupied</span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
                                         <div className="flex items-center justify-center gap-2">

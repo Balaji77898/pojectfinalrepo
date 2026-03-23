@@ -10,19 +10,20 @@ interface OrdersTableProps {
 }
 
 export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
-    const getOrderTypeBadge = (type?: OrderType) => {
+    const getOrderTypeBadge = (type?: OrderType | string) => {
         if (!type) return { style: 'bg-gray-100 text-gray-800 border-gray-300', label: 'N/A' };
+        const normType = type.toString().toUpperCase().replace(/-/g, '_');
         const styles: Record<string, string> = {
-            [OrderType.DINE_IN]: 'bg-blue-100 text-blue-800 border-blue-300',
-            [OrderType.TAKEAWAY]: 'bg-purple-100 text-purple-800 border-purple-300',
-            [OrderType.DELIVERY]: 'bg-green-100 text-green-800 border-green-300',
+            DINE_IN: 'bg-blue-100 text-blue-800 border-blue-300',
+            TAKEAWAY: 'bg-purple-100 text-purple-800 border-purple-300',
+            DELIVERY: 'bg-green-100 text-green-800 border-green-300',
         };
         const labels: Record<string, string> = {
-            [OrderType.DINE_IN]: 'Dine-In',
-            [OrderType.TAKEAWAY]: 'Takeaway',
-            [OrderType.DELIVERY]: 'Delivery',
+            DINE_IN: 'Dine-In',
+            TAKEAWAY: 'Takeaway',
+            DELIVERY: 'Delivery',
         };
-        return { style: styles[type] || 'bg-gray-100 text-gray-800 border-gray-300', label: labels[type] || type };
+        return { style: styles[normType] || 'bg-gray-100 text-gray-800 border-gray-300', label: labels[normType] || type };
     };
 
     const getStatusBadge = (status: OrderStatus) => {

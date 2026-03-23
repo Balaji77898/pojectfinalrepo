@@ -18,12 +18,22 @@ export default function CategoryManager({ selectedCategory, onSelectCategory }: 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newCategory.name.trim()) return;
+        const trimmedName = newCategory.name.trim();
+        if (!trimmedName) return;
+
+        // Prevent duplicate category names (case-insensitive)
+        const isDuplicate = categories.some(
+            (cat) => cat.name.trim().toLowerCase() === trimmedName.toLowerCase()
+        );
+        if (isDuplicate) {
+            alert(`A category named "${trimmedName}" already exists. Please use a different name.`);
+            return;
+        }
 
         setIsSubmitting(true);
         try {
             await addCategory({
-                name: newCategory.name,
+                name: trimmedName,
                 description: newCategory.description || undefined,
             });
             setNewCategory({ name: '', description: '' });

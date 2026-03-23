@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '../lib/auth.service';
 
@@ -10,19 +10,21 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const router = useRouter();
-
-    // Synchronous check — localStorage is available immediately on the client.
-    // This runs during render (before paint) so there is no flicker or spinner.
-    const isAuthenticated = authService.isAuthenticated();
+    // Start as null = "not yet determined" to avoid SSR/client mismatch.
+    // On the server localStorage doesn't exist, so we must not read it during SSR.
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
     useEffect(() => {
-        if (!isAuthenticated) {
+        const auth = authService.isAuthenticated();
+        setIsAuthenticated(auth);
+        if (!auth) {
             router.replace('/admin/login');
         }
-    }, [isAuthenticated, router]);
+    }, [router]);
 
-    // If not authenticated, render nothing while the redirect happens.
-    if (!isAuthenticated) {
+    // null = still determining (initial server render or just-mounted client)
+    // Render nothing until we know — avoids both hydration mismatch and content flash.
+    if (isAuthenticated === null || isAuthenticated === false) {
         return null;
     }
 
