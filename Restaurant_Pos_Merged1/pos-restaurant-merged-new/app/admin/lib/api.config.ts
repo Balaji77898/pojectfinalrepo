@@ -5,8 +5,8 @@
 
 export const API_CONFIG = {
     // Empty string = relative URL → goes through local Next.js proxy routes.
-    // The proxy routes (app/api/admin/...) forward server-side to the ngrok backend,
-    // bypassing browser CORS restrictions entirely.
+    // The proxy routes (app/api/admin/...) forward server-side to the live Render backend
+    // (https://pos-backend-s380.onrender.com), bypassing browser CORS restrictions entirely.
     BASE_URL: '',
     ENDPOINTS: {
         ADMIN: {
@@ -43,7 +43,6 @@ export const API_CONFIG = {
     },
     HEADERS: {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
     },
 } as const;
 

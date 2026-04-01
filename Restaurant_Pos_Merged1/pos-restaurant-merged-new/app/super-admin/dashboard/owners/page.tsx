@@ -31,7 +31,7 @@ export default function OwnersPage() {
         if (!token) throw new Error("No auth token found");
 
         const res = await fetch(
-          "http://localhost:5000/api/super-admin/owners",
+          "https://pos-backend-s380.onrender.com/api/super-admin/owners",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -39,7 +39,9 @@ export default function OwnersPage() {
           }
         );
 
-        const data = await res.json();
+        const json = await res.json();
+        // Unwrap { success, message, data } envelope
+        const data = (json.data ?? json);
         setOwners(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to fetch owners");

@@ -25,7 +25,7 @@ type Owner = {
   restaurants: Restaurant[];
 };
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://pos-backend-s380.onrender.com/api";
 
 /* ---------------- PAGE ---------------- */
 
@@ -51,9 +51,11 @@ export default function OwnerDetailsPage() {
           },
         });
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch owner");
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || "Failed to fetch owner");
 
+        // Unwrap { success, message, data } envelope
+        const data = json.data ?? json;
         setOwner(data);
       } catch (err: any) {
         console.error("Owner fetch failed:", err.message);
@@ -83,11 +85,13 @@ export default function OwnerDetailsPage() {
         }
       );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message);
 
+      // Unwrap envelope and update status
+      const result = json.data ?? json;
       setOwner((prev) =>
-        prev ? { ...prev, status: data.status } : prev
+        prev ? { ...prev, status: result.status } : prev
       );
     } catch (err: any) {
       console.error("Toggle status failed:", err.message);

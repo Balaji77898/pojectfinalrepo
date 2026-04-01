@@ -31,7 +31,7 @@ const theme = {
 
 /* ================= CONFIG ================= */
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://pos-backend-s380.onrender.com/api";
 type Tab = "Details" | "Owner" | "Tax" | "Operations" | "Danger";
 
 /* ================= PAGE ================= */
@@ -51,9 +51,14 @@ export default function ManageRestaurantPage() {
   /* ================= FETCH ================= */
 
   useEffect(() => {
-    fetch(`${API_BASE}/super-admin/restaurants/${id}`)
+    const token = localStorage.getItem("superadmin_token") || "";
+    fetch(`${API_BASE}/super-admin/restaurants/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(res => res.json())
-      .then(res => {
+      .then(json => {
+        // Unwrap { success, message, data } envelope
+        const res = json.data ?? json;
         setData(res);
         setDraft(res);
       });

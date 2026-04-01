@@ -86,7 +86,22 @@ class ApiService {
             }
 
             if (!response.ok) {
-                throw new Error(data.message || data || `HTTP error! status: ${response.status}`);
+                // Backend error envelope: { success: false, message: "..." }
+                const errMsg = (typeof data === 'object' && data !== null)
+                    ? (data.message || JSON.stringify(data))
+                    : (data || `HTTP error! status: ${response.status}`);
+                throw new Error(errMsg);
+            }
+
+            // Unwrap the standard backend envelope: { success: true, message: "...", data: {...} }
+            // If the response matches this shape, return only the `data` field.
+            if (
+                data !== null &&
+                typeof data === 'object' &&
+                'success' in data &&
+                'data' in data
+            ) {
+                return data.data as T;
             }
 
             return data as T;

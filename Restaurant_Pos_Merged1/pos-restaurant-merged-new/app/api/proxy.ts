@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_BASE = 'https://superconservatively-drouthiest-karoline.ngrok-free.dev';
+const BACKEND_BASE = 'https://pos-backend-s380.onrender.com';
 
 /**
- * Generic proxy helper — forwards any request to the ngrok backend.
+ * Generic proxy helper — forwards any request to the live Render backend.
  * Runs server-side so there is no CORS issue.
  */
 export async function proxyToBackend(
@@ -12,10 +12,9 @@ export async function proxyToBackend(
 ): Promise<NextResponse> {
     const url = `${BACKEND_BASE}${backendPath}`;
 
-    // Forward only necessary headers; add ngrok bypass header
+    // Forward only necessary headers
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
     };
 
     // Forward Authorization header if present

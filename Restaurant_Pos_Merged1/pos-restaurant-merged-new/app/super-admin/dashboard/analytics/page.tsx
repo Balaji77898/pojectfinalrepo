@@ -27,7 +27,7 @@ type TopRestaurant = {
   orders: number;
 };
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://pos-backend-s380.onrender.com/api";
 
 /* ---------------- PAGE ---------------- */
 
@@ -50,9 +50,11 @@ export default function AnalyticsPage() {
           },
         });
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to load analytics");
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || "Failed to load analytics");
 
+        // Unwrap { success, message, data } envelope
+        const data = json.data ?? json;
         setStats(data.stats);
         setTopRestaurants(data.topRestaurants || []);
       } catch (err: any) {

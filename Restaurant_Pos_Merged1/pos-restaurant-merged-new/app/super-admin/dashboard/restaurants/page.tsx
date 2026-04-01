@@ -51,13 +51,15 @@ export default function RestaurantsPage() {
     if (!token) return;
     setLoading(true);
     const res = await fetch(
-      "http://localhost:5000/api/super-admin/restaurants",
+      "https://pos-backend-s380.onrender.com/api/super-admin/restaurants",
       {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
-    const data = await res.json();
-    setRestaurants(data);
+    const json = await res.json();
+    // Unwrap { success, message, data } envelope
+    const data = json.data ?? json;
+    setRestaurants(Array.isArray(data) ? data : []);
     setLoading(false);
   };
 
@@ -251,7 +253,7 @@ function AddRestaurantModal({
 
     setSaving(true);
     const res = await fetch(
-      "http://localhost:5000/api/super-admin/onboard-restaurant",
+      "https://pos-backend-s380.onrender.com/api/super-admin/onboard-restaurant",
       {
         method: "POST",
         headers: {

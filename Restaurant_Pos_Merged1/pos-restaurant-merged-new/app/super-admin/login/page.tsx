@@ -22,7 +22,7 @@ export default function SuperAdminLogin() {
   setLoading(true);
 
   try {
-    const res = await fetch("http://localhost:5000/api/auth/login", {
+    const res = await fetch("https://pos-backend-s380.onrender.com/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -30,11 +30,14 @@ export default function SuperAdminLogin() {
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await res.json();
+    const json = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.message || "Login failed");
+      throw new Error(json.message || "Login failed");
     }
+
+    // Unwrap { success, message, data } envelope
+    const data = json.data ?? json;
 
     // ✅ Save token + role
     localStorage.setItem("superadmin_token", data.token);
