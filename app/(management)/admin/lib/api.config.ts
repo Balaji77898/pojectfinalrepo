@@ -4,7 +4,7 @@
  */
 
 export const API_CONFIG = {
-    BASE_URL: 'https://pos-backend-s380.onrender.com',
+    BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://pos-backend-s380.onrender.com',
     ENDPOINTS: {
         ADMIN: {
             LOGIN: '/api/admin/login',

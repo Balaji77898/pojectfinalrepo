@@ -47,19 +47,32 @@ class StaffAuthService {
                 password: credentials.password.trim()
             };
 
+            const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.LOGIN}`;
+            console.log('Attempting staff login at:', url);
+
             const response = await fetch(
-                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.LOGIN}`,
+                url,
                 {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'ngrok-skip-browser-warning': 'true',
                     },
                     body: JSON.stringify(payload),
                 }
             );
 
-            const data = await response.json();
+            // Handle non-JSON responses
+            const contentType = response.headers.get('content-type');
+            let data;
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error('Non-JSON response from server:', text);
+                throw new Error('Server returned an invalid response. Please check your backend.');
+            }
             console.log('Staff login response:', { status: response.status, data });
 
             if (!response.ok) {

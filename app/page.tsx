@@ -61,7 +61,12 @@ export default function Home() {
         router.push('/staff/staff-dashboard');
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
+      console.error('Login Error details:', err);
+      if (err instanceof Error && err.message.toLowerCase().includes('failed to fetch')) {
+        setError('Network Error: Could not connect to the backend. Please check if your Render service is Active and CORS is allowed.');
+      } else {
+        setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }
