@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-
+import { API_CONFIG } from "@/app/admin/lib/api.config";
 /* ================= TYPES ================= */
 interface FoodItem {
   id: number;
@@ -35,19 +35,11 @@ export default function MenuPage() {
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
 
   /* ================= DATA ================= */
-  const foodItems: FoodItem[] = [
-    { id: 1, name: "Paneer Tikka", description: "Grilled cottage cheese with aromatic spices", category: "Starters", price: 250, image: "/images/paneer.jpg", type: "veg" },
-    { id: 2, name: "Chicken Tikka", description: "Tender chicken marinated in traditional spices", category: "Starters", price: 280, image: "/images/chicken.jpg", type: "nonveg" },
-    { id: 3, name: "Veg Spring Rolls", description: "Crispy rolls filled with fresh vegetables", category: "Starters", price: 180, image: "/images/springroll.jpg", type: "veg" },
-    { id: 4, name: "Dal Makhani", description: "Creamy black lentils slow-cooked to perfection", category: "Main Course", price: 220, image: "/images/dal.jpg", type: "veg" },
-    { id: 5, name: "Butter Chicken", description: "Classic creamy tomato curry with tender chicken", category: "Main Course", price: 320, image: "/images/butter.jpg", type: "nonveg" },
-    { id: 6, name: "Jeera Rice", description: "Fragrant basmati rice with cumin", category: "Rice", price: 150, image: "/images/rice.jpg", type: "veg" },
-  ];
-
-  const categories = ["All", "Starters", "Main Course", "Rice"];
+  const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
+  const [categories, setCategories] = useState<string[]>(["All"]);
   const sliderImages = ["/images/paneer.jpg", "/images/rice.jpg", "/images/butter.jpg", "/images/dal.jpg", "/images/springroll.jpg"];
 
-  /* ================= STORAGE ================= */
+  /* ================= STORAGE & FETCH ================= */
   useEffect(() => {
     const name = localStorage.getItem("customerName") || "Guest";
     const table = localStorage.getItem("tableNumber") || "";
@@ -57,13 +49,42 @@ export default function MenuPage() {
     if (name && table) {
       const key = `currentCart_${table}_${name}`;
       const stored = localStorage.getItem(key);
-      // Only load cart if it exists, otherwise start with empty cart
       if (stored) {
         setCart(JSON.parse(stored));
       }
     }
 
-    setTimeout(() => setLoading(false), 800);
+    const fetchMenu = async () => {
+      try {
+        const res = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CUSTOMER.MENU}`, {
+          headers: API_CONFIG.HEADERS,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Map backend items to frontend format (handle potential field mismatches gracefully)
+          const mappedItems: FoodItem[] = data.map((item: any) => ({
+            id: item.id || item._id,
+            name: item.name || "Unknown Item",
+            description: item.description || "",
+            category: item.category?.name || item.category || "General",
+            price: Number(item.price) || 0,
+            image: item.image_url || item.image || "/images/paneer.jpg",
+            type: item.type === "non-veg" || item.type === "nonveg" || item.is_veg === false ? "nonveg" : "veg",
+          }));
+          setFoodItems(mappedItems);
+          
+          // Extract unique categories
+          const uniqueCats = Array.from(new Set(mappedItems.map(i => i.category))).filter(Boolean);
+          setCategories(["All", ...uniqueCats]);
+        }
+      } catch (err) {
+        console.error("Error fetching menu:", err);
+      } finally {
+        setTimeout(() => setLoading(false), 500);
+      }
+    };
+
+    fetchMenu();
   }, []);
 
   // Stagger animation for items

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import jsPDF from "jspdf";
+import { API_CONFIG } from "@/app/admin/lib/api.config";
 
 const PARCEL_CHARGE = 20;
 const GST_RATE = 0.05;
@@ -34,26 +35,8 @@ export default function PaymentPage() {
   const gst = subtotal * GST_RATE;
   const total = subtotal + gst;
 
- const saveOrderHistory = () => {
-  const key = `allOrders_${customer.table}_${customer.name}`;
-  const existingOrders = JSON.parse(localStorage.getItem(key) || "[]");
-
-  const newOrder = {
-    id: Date.now(),
-    date: new Date().toISOString(), // ✅ FIXED DATE FORMAT
-    status: 0, // ✅ Each order has its own status (0 = Placed)
-    items: cart,
-    subtotal,
-    gst,
-    total,
-  };
-
-  localStorage.setItem(key, JSON.stringify([...existingOrders, newOrder]));
-
-  const cartKey = `currentCart_${customer.table}_${customer.name}`;
-  localStorage.removeItem(cartKey);
-};
-
+ // Remove local OrderHistory logic since the backend will store it.
+ // We will still remove the cart from localStorage upon successful order creation.
 
   const downloadInvoice = () => {
     if (!cart.length) return alert("Cart is empty");
@@ -226,15 +209,40 @@ export default function PaymentPage() {
     doc.save(`Invoice_${customer.name}_${Date.now()}.pdf`);
   };
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (!cart.length) return alert("Cart is empty");
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      saveOrderHistory();
+    try {
+      const orderPayload = {
+        customerName: customer.name,
+        customerMobile: customer.mobile,
+        tableNumber: customer.table,
+        items: cart,
+        subtotal,
+        gst,
+        total,
+      };
+
+      const res = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CUSTOMER.ORDERS}`, {
+        method: "POST",
+        headers: API_CONFIG.HEADERS,
+        body: JSON.stringify(orderPayload),
+      });
+
+      if (!res.ok) throw new Error("Failed to place order on the server.");
+
+      // Clear local cart
+      const cartKey = `currentCart_${customer.table}_${customer.name}`;
+      localStorage.removeItem(cartKey);
+
       setShowConfirm(true);
-    }, 2500);
+    } catch (err: any) {
+      console.error(err);
+      alert("Failed to place order. Please try again or contact staff.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

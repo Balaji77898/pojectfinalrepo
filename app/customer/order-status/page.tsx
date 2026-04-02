@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_CONFIG } from "@/app/admin/lib/api.config";
 
 const PARCEL_CHARGE = 20;
 
@@ -37,38 +38,49 @@ export default function OrderStatusPage() {
     const name = localStorage.getItem("customerName") || "Guest";
     const mobile = localStorage.getItem("customerMobile") || "";
     const table = localStorage.getItem("tableNumber") || "1";
-
     setCustomer({ name, mobile, table });
 
-    // Get all orders and filter for today only
-    const ordersKey = `allOrders_${table}_${name}`;
-    const allOrders = JSON.parse(localStorage.getItem(ordersKey) || "[]");
-    
-    const today = new Date().toDateString();
-    const todayOrders = allOrders
-      .filter((order: any) => new Date(order.date).toDateString() === today)
-      .map((order: any) => ({ ...order, activeStep: 0 })); // Add independent step per order
-
-    setTodaysOrders(todayOrders);
-  }, []);
-
-  // Animate steps for each order independently
-  useEffect(() => {
-    const intervals: any[] = [];
-    todaysOrders.forEach((order, idx) => {
-      const interval = setInterval(() => {
-        setTodaysOrders(prev => {
-          const newOrders = [...prev];
-          if (newOrders[idx].activeStep < steps.length - 1) {
-            newOrders[idx].activeStep += 1;
-          }
-          return newOrders;
+    const fetchOrders = async () => {
+      if (!mobile) return; // Need mobile to fetch specific orders
+      try {
+        const res = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CUSTOMER.ORDERS}?mobile=${mobile}`, {
+          headers: API_CONFIG.HEADERS,
         });
-      }, 4000);
-      intervals.push(interval);
-    });
-    return () => intervals.forEach(clearInterval);
-  }, [todaysOrders.length]);
+        if (res.ok) {
+          const data = await res.json();
+          // Assume data is an array of orders. Map their status to activeStep (0-3)
+          // Also filter for today if backend doesn't automatically filter
+          const today = new Date().toDateString();
+          const mappedOrders = data
+            .filter((order: any) => new Date(order.date || order.created_at).toDateString() === today)
+            .map((order: any) => {
+               // Map backend status to 0-3 step. Adjust as needed.
+               let activeStep = 0;
+               const st = order.status;
+               if (typeof st === "number") activeStep = st;
+               else if (st === "preparing") activeStep = 1;
+               else if (st === "ready") activeStep = 2;
+               else if (st === "completed" || st === "served") activeStep = 3;
+
+               return {
+                 ...order,
+                 activeStep,
+                 // fallback if backend uses different item fields
+                 items: order.items || [],
+               };
+            });
+          setTodaysOrders(mappedOrders);
+        }
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+      }
+    };
+
+    fetchOrders();
+    // Poll every 10 seconds
+    const interval = setInterval(fetchOrders, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleAddMore = () => {
     const cartKey = `currentCart_${customer.table}_${customer.name}`;

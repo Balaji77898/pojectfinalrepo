@@ -4,7 +4,7 @@
  */
 
 export const API_CONFIG = {
-    BASE_URL: 'https://superconservatively-drouthiest-karoline.ngrok-free.dev',
+    BASE_URL: 'https://pos-backend-s380.onrender.com',
     ENDPOINTS: {
         ADMIN: {
             LOGIN: '/api/admin/login',
@@ -43,6 +43,11 @@ export const API_CONFIG = {
             UPDATE_STATUS: (id: string) => `/api/admin/orders/${id}/status`,
             PROFILE: '/api/staff/me',
             TABLES: '/api/admin/tables',
+        },
+        CUSTOMER: {
+            MENU: '/api/customer/menu',
+            ORDERS: '/api/customer/orders',
+            TABLE: (id: string) => `/api/customer/table/${id}`, // Assumed endpoint for verifying table
         },
     },
     HEADERS: {

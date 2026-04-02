@@ -1,6 +1,6 @@
 'use client';
 
-import "../globals.css"
+import "../../globals.css"
 // import { usePathname } from 'next/navigation';
 
 import { AuthProvider } from "./contexts/AuthContext"
