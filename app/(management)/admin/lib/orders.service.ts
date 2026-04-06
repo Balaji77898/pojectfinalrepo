@@ -3,7 +3,8 @@
  * Handles read-only order viewing
  */
 
-import { apiService } from './api.service';
+import { apiService, normalizeResponse } from './api.service';
+
 import { API_CONFIG } from './api.config';
 
 // Order Type Enum
@@ -65,11 +66,11 @@ class OrdersService {
      */
     async getOrdersList(): Promise<Order[]> {
         try {
-            const orders = await apiService.get<Order[]>(
+            const response = await apiService.get<any>(
                 API_CONFIG.ENDPOINTS.ORDERS.LIST,
                 true
             );
-            return orders;
+            return normalizeResponse(response, []) as Order[];
         } catch (error) {
             console.error('Failed to fetch orders list:', error);
             throw error;
@@ -81,11 +82,11 @@ class OrdersService {
      */
     async getOrderDetails(id: string): Promise<OrderDetails> {
         try {
-            const order = await apiService.get<OrderDetails>(
+            const response = await apiService.get<any>(
                 API_CONFIG.ENDPOINTS.ORDERS.DETAILS(id),
                 true
             );
-            return order;
+            return normalizeResponse(response, response) as OrderDetails;
         } catch (error) {
             console.error('Failed to fetch order details:', error);
             throw error;

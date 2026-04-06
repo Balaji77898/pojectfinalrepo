@@ -3,7 +3,8 @@
  * Handles restaurant table management
  */
 
-import { apiService } from './api.service';
+import { apiService, normalizeResponse } from './api.service';
+
 import { API_CONFIG } from './api.config';
 
 // Table Status Enum
@@ -34,11 +35,11 @@ class TablesService {
      */
     async getTablesList(): Promise<Table[]> {
         try {
-            const tables = await apiService.get<Table[]>(
+            const response = await apiService.get<any>(
                 API_CONFIG.ENDPOINTS.TABLES.LIST,
                 true
             );
-            return tables;
+            return normalizeResponse(response, []) as Table[];
         } catch (error) {
             console.error('Failed to fetch tables list:', error);
             throw error;
