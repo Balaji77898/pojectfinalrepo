@@ -65,12 +65,12 @@ class StaffOrdersService {
 
             const data = await response.json();
             
-            // Handle both array and object response formats
-            if (Array.isArray(data)) {
-                return data;
-            }
+            // Handle various response structures: data, orders, or flat array
+            if (Array.isArray(data)) return data;
+            if (data.data && Array.isArray(data.data)) return data.data;
+            if (data.orders && Array.isArray(data.orders)) return data.orders;
             
-            return data.orders || [];
+            return [];
         } catch (error) {
             console.error('Error fetching staff orders:', error);
             throw error;

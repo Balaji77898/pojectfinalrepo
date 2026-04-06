@@ -41,12 +41,13 @@ class StaffTablesService {
 
             const data = await response.json();
             
-            // Handle both array and object response formats
-            if (Array.isArray(data)) {
-                return data;
-            }
+            // Handle various response structures: data, tables, or flat array
+            if (Array.isArray(data)) return data;
+            if (data.data && Array.isArray(data.data)) return data.data;
+            if (data.tables && Array.isArray(data.tables)) return data.tables;
+            if (data.items && Array.isArray(data.items)) return data.items;
             
-            return data.tables || [];
+            return [];
         } catch (error) {
             console.error('Error fetching staff tables:', error);
             throw error;

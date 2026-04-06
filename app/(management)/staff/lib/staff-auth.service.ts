@@ -243,7 +243,7 @@ class StaffAuthService {
             }
 
             const data = await response.json();
-            return data.staff || data;
+            return data.data || data.staff || data;
         } catch (error) {
             console.error('Error fetching staff profile:', error);
             throw error;
