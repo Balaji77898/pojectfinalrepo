@@ -46,13 +46,21 @@ class StaffOrdersService {
         }
 
         try {
+            const authHeaders = {
+                'Authorization': `Bearer ${token}`,
+                // Some backends expect token in alternate headers
+                'x-access-token': token,
+                'x-auth-token': token,
+            };
+
             const response = await fetch(
                 `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.ORDERS}`,
                 {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        ...authHeaders,
                         'ngrok-skip-browser-warning': 'true',
                     },
                 }
@@ -87,13 +95,20 @@ class StaffOrdersService {
         }
 
         try {
+            const authHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'x-access-token': token,
+                'x-auth-token': token,
+            };
+
             const response = await fetch(
                 `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
                 {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        ...authHeaders,
                         'ngrok-skip-browser-warning': 'true',
                     },
                     body: JSON.stringify({ status }),
@@ -120,13 +135,20 @@ class StaffOrdersService {
         }
 
         try {
+            const authHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'x-access-token': token,
+                'x-auth-token': token,
+            };
+
             const response = await fetch(
                 `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
                 {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        ...authHeaders,
                         'ngrok-skip-browser-warning': 'true',
                     },
                     body: JSON.stringify({ status: 'BILLED' }),
@@ -153,13 +175,20 @@ class StaffOrdersService {
         }
 
         try {
+            const authHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'x-access-token': token,
+                'x-auth-token': token,
+            };
+
             const response = await fetch(
                 `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
                 {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        ...authHeaders,
                         'ngrok-skip-browser-warning': 'true',
                     },
                     body: JSON.stringify({

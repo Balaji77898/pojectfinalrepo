@@ -22,13 +22,21 @@ class StaffTablesService {
         }
 
         try {
+            const authHeaders = {
+                'Authorization': `Bearer ${token}`,
+                // Some backends expect token in alternate headers
+                'x-access-token': token,
+                'x-auth-token': token,
+            };
+
             const response = await fetch(
                 `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.TABLES}`,
                 {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        ...authHeaders,
                         'ngrok-skip-browser-warning': 'true',
                     },
                 }
