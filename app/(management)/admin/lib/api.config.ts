@@ -38,11 +38,12 @@ export const API_CONFIG = {
         },
         STAFF_APP: {
             LOGIN: '/api/staff/login',
-            ORDERS: '/api/admin/orders',
-            DETAILS: (id: string) => `/api/admin/orders/${id}`,
-            UPDATE_STATUS: (id: string) => `/api/admin/orders/${id}/status`,
+            // Staff app uses Admin order/table APIs (per backend routes)
+            ORDERS: '/api/admin/orders', // GET /api/admin/orders
+            DETAILS: (id: string) => `/api/admin/orders/${id}`, // GET /api/admin/orders/:id
+            UPDATE_STATUS: (id: string) => `/api/admin/orders/${id}/status`, // PATCH /api/admin/orders/:id/status
+            TABLES: '/api/admin/tables', // GET /api/admin/tables
             PROFILE: '/api/staff/me',
-            TABLES: '/api/admin/tables',
         },
         CUSTOMER: {
             MENU: '/api/customer/menu',
