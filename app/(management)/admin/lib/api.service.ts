@@ -5,6 +5,23 @@
 
 import { API_CONFIG, TOKEN_KEY } from './api.config';
 
+/**
+ * Normalizes API response to handle various response structures (data, items, user, etc.)
+ */
+export function normalizeResponse<T>(data: any, fallback: T): T {
+    if (!data) return fallback;
+    
+    // Check for common wrapper fields
+    if (data.data !== undefined) return data.data;
+    if (data.items !== undefined && Array.isArray(data.items)) return data.items;
+    if (data.restaurant !== undefined) return data.restaurant;
+    if (data.user !== undefined) return data.user;
+    if (data.staff !== undefined) return data.staff;
+    
+    return data;
+}
+
+
 interface RequestOptions {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     headers?: Record<string, string>;
@@ -73,6 +90,7 @@ class ApiService {
         }
 
         try {
+            console.log(`[API REQUEST] ${method} ${url}`, body ? { body } : '');
             const response = await fetch(url, config);
 
             // Handle non-JSON responses
@@ -85,13 +103,16 @@ class ApiService {
                 data = await response.text();
             }
 
+            console.log(`[API RESPONSE] ${method} ${url}`, { status: response.status, data });
+
             if (!response.ok) {
-                throw new Error(data.message || data || `HTTP error! status: ${response.status}`);
+                const message = data.message || (typeof data === 'string' ? data : JSON.stringify(data)) || `HTTP error! status: ${response.status}`;
+                throw new Error(message);
             }
 
             return data as T;
         } catch (error) {
-            console.error('API Request Error:', error);
+            console.error(`[API ERROR] ${method} ${url}`, error);
             throw error;
         }
     }

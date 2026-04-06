@@ -3,7 +3,8 @@
  * Handles staff member management
  */
 
-import { apiService } from './api.service';
+import { apiService, normalizeResponse } from './api.service';
+
 import { API_CONFIG } from './api.config';
 
 // Staff Role Enum
@@ -44,11 +45,11 @@ class StaffService {
      */
     async getStaffList(): Promise<StaffMember[]> {
         try {
-            const staff = await apiService.get<StaffMember[]>(
+            const response = await apiService.get<any>(
                 API_CONFIG.ENDPOINTS.STAFF.LIST,
                 true
             );
-            return staff;
+            return normalizeResponse(response, []) as StaffMember[];
         } catch (error) {
             console.error('Failed to fetch staff list:', error);
             throw error;

@@ -3,7 +3,8 @@
  * Handles menu categories and items management
  */
 
-import { apiService } from './api.service';
+import { apiService, normalizeResponse } from './api.service';
+
 import { API_CONFIG } from './api.config';
 
 // Category Interface
@@ -63,11 +64,11 @@ class MenuService {
      */
     async getCategories(): Promise<Category[]> {
         try {
-            const categories = await apiService.get<Category[]>(
+            const response = await apiService.get<any>(
                 API_CONFIG.ENDPOINTS.MENU.CATEGORIES,
                 true
             );
-            return categories;
+            return normalizeResponse(response, []) as Category[];
         } catch (error) {
             console.error('Failed to fetch categories:', error);
             throw error;
@@ -96,11 +97,11 @@ class MenuService {
      */
     async getMenuItems(): Promise<MenuItem[]> {
         try {
-            const items = await apiService.get<MenuItem[]>(
+            const response = await apiService.get<any>(
                 API_CONFIG.ENDPOINTS.MENU.ITEMS,
                 true
             );
-            return items;
+            return normalizeResponse(response, []) as MenuItem[];
         } catch (error) {
             console.error('Failed to fetch menu items:', error);
             throw error;

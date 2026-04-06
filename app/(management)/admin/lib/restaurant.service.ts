@@ -3,7 +3,8 @@
  * Handles fetching and managing restaurant profile data
  */
 
-import { apiService } from './api.service';
+import { apiService, normalizeResponse } from './api.service';
+
 import { API_CONFIG } from './api.config';
 
 export interface RestaurantProfile {
@@ -32,12 +33,12 @@ class RestaurantService {
      */
     async getRestaurantProfile(): Promise<RestaurantProfile> {
         try {
-            const profile = await apiService.get<RestaurantProfile>(
+            const response = await apiService.get<any>(
                 API_CONFIG.ENDPOINTS.ADMIN.RESTAURANT,
                 true // Requires authentication
             );
-
-            return profile;
+            
+            return normalizeResponse(response, response) as RestaurantProfile;
         } catch (error) {
             console.error('Failed to fetch restaurant profile:', error);
             throw error;

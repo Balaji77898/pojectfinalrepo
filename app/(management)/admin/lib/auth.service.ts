@@ -3,7 +3,8 @@
  * Handles login, logout, and token management
  */
 
-import { apiService } from './api.service';
+import { apiService, normalizeResponse } from './api.service';
+
 import { API_CONFIG, TOKEN_KEY, USER_KEY } from './api.config';
 
 interface LoginCredentials {
@@ -43,8 +44,9 @@ class AuthService {
             }
 
             // Store user data if provided
-            if (response.user) {
-                this.setUser(response.user);
+            const userData = normalizeResponse(response, null);
+            if (userData) {
+                this.setUser(userData);
             }
 
             return response;
@@ -144,10 +146,12 @@ class AuthService {
             }
 
             // Call /api/admin/me to validate session and get user data
-            const user = await apiService.get<User>(
+            const response = await apiService.get<any>(
                 API_CONFIG.ENDPOINTS.ADMIN.ME,
                 true // Requires authentication
             );
+
+            const user = normalizeResponse(response, null);
 
             // Update stored user data with fresh data from API
             if (user) {
