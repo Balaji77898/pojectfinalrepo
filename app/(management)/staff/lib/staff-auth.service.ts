@@ -81,29 +81,33 @@ class StaffAuthService {
 
             // Handle various response structures:
             // 1. Standard: { user: { ... } }
-            // 2. Flat: { role: "...", name: "..." }
+            // 2. Wrapped: { data: { ... } }
             // 3. Staff specific: { staff: { ... } }
+            // 4. Flat: { role: "...", name: "..." }
             
-            const userData = data.user || data.staff || data;
+            const userData = data.data || data.user || data.staff || data;
             const rawRole = (userData.role || '').toLowerCase().trim();
-            console.log('Raw role from API:', rawRole);
+            console.log('Role detection:', { rawRole, userData });
 
-            let determinedRole: StaffRole = 'billing_staff'; // Default fallback
+            let determinedRole: StaffRole | null = null;
             
-            // Check for serving staff variations
-            if (rawRole === 'serving_staff' || rawRole === 'server' || rawRole.includes('serving')) {
+            // Comprehensive role detection
+            if (rawRole === 'serving_staff' || rawRole === 'server' || rawRole === 'waiter' || rawRole.includes('serving')) {
                 determinedRole = 'serving_staff';
             } 
-            // Check for billing staff variations
-            else if (rawRole === 'billing_staff' || rawRole === 'cashier' || rawRole.includes('billing')) {
+            else if (rawRole === 'billing_staff' || rawRole === 'cashier' || rawRole === 'billing' || rawRole.includes('billing')) {
                 determinedRole = 'billing_staff';
             }
 
-            // Validate role match
+            // Validate role exists
+            if (!determinedRole) {
+                throw new Error(`Profile role not recognized. Received: "${rawRole}". Please contact administrator.`);
+            }
+
+            // ENFORCE STRICT SEPARATION: Validate role match with user selection
             if (role !== determinedRole) {
-                 // Optional: You could auto-switch the role here instead of throwing error if preferred.
-                 // But for now, we enforce the selection as per "Login as [Role]" button semantic.
-                 throw new Error(`Invalid role. You are registered as ${determinedRole.replace('_', ' ')}, not ${role.replace('_', ' ')}.`);
+                 const roleType = determinedRole.replace('_', ' ');
+                 throw new Error(`Access Denied: You are registered as ${roleType}. Please use the ${roleType} login option.`);
             }
 
             const normalizedUser: StaffUser = {
