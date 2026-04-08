@@ -150,15 +150,17 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
-                                            {orderDetails.items.map((item) => (
-                                                <tr key={item.id}>
-                                                    <td className="px-4 py-3 text-text-primary">{item.name}</td>
+                                            {orderDetails.items?.map((item, index) => (
+                                                <tr key={item.id || index}>
+                                                    <td className="px-4 py-3 text-text-primary">
+                                                        {item.name || (item as any).menu_item?.name || (item as any).menu_item?.default_name || 'Unknown Item'}
+                                                    </td>
                                                     <td className="px-4 py-3 text-center text-text-primary">{item.quantity}</td>
                                                     <td className="px-4 py-3 text-right text-text-primary">
-                                                        ${Number(item.price).toFixed(2)}
+                                                        {Number(item.price || 0).toFixed(2)}
                                                     </td>
                                                     <td className="px-4 py-3 text-right font-semibold text-text-primary">
-                                                        ${Number(item.subtotal).toFixed(2)}
+                                                        {Number(item.subtotal || 0).toFixed(2)}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -173,16 +175,16 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-text-primary">
                                         <span>Subtotal</span>
-                                        <span className="font-semibold">${Number(orderDetails.subtotal).toFixed(2)}</span>
+                                        <span className="font-semibold">{Number(orderDetails.subtotal || 0).toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-text-primary">
                                         <span>Tax</span>
-                                        <span className="font-semibold">${Number(orderDetails.tax).toFixed(2)}</span>
+                                        <span className="font-semibold">{Number(orderDetails.tax || 0).toFixed(2)}</span>
                                     </div>
                                     <div className="border-t border-gray-300 pt-2 mt-2">
                                         <div className="flex justify-between text-lg font-bold text-ruby-red">
                                             <span>Total</span>
-                                            <span>${Number(orderDetails.total_amount).toFixed(2)}</span>
+                                            <span>{Number(orderDetails.total_amount || 0).toFixed(2)}</span>
                                         </div>
                                     </div>
                                 </div>
