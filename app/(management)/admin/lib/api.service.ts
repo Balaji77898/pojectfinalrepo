@@ -56,7 +56,16 @@ class ApiService {
         if (requiresAuth) {
             const token = this.getToken();
             if (token) {
+                // Send standard Authorization header
                 headers['Authorization'] = `Bearer ${token}`;
+                
+                // EXTRA: Send fallback headers for backend compatibility (matching staff app patterns)
+                headers['x-access-token'] = token;
+                headers['x-auth-token'] = token;
+                
+                console.log('[AUTH] Token injected into request headers');
+            } else {
+                console.warn('[AUTH] Request requires auth but no token was found in localStorage');
             }
         }
 

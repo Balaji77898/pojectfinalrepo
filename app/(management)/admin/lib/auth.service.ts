@@ -38,13 +38,14 @@ class AuthService {
                 false // Don't require auth for login
             );
 
-            // Store token
-            if (response.token) {
-                this.setToken(response.token);
+            // Store token - check multiple possible locations
+            const token = response.token || (response as any).accessToken || response.data?.token || response.user?.token || (response as any).data?.accessToken;
+            if (token) {
+                this.setToken(token);
             }
 
-            // Store user data if provided
-            const userData = normalizeResponse(response, null);
+            // Store user data - check multiple possible locations
+            const userData = normalizeResponse(response, null) || response.user || response.data || response.staff;
             if (userData) {
                 this.setUser(userData);
             }
