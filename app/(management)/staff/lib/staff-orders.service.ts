@@ -73,14 +73,54 @@ class StaffOrdersService {
 
             const data = await response.json();
             
-            // Handle various response structures: data, orders, or flat array
+            // Handle various response structures: data, orders, items, or flat array
             if (Array.isArray(data)) return data;
             if (data.data && Array.isArray(data.data)) return data.data;
             if (data.orders && Array.isArray(data.orders)) return data.orders;
+            if (data.items && Array.isArray(data.items)) return data.items;
             
             return [];
         } catch (error) {
             console.error('Error fetching staff orders:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get order details
+     */
+    async getOrderDetails(orderId: string): Promise<StaffOrder> {
+        const token = staffAuthService.getToken();
+        if (!token) throw new Error('No authentication token found');
+
+        try {
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.DETAILS(orderId)}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'x-access-token': token,
+                        'x-auth-token': token,
+                        'ngrok-skip-browser-warning': 'true',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to fetch order details');
+            }
+
+            const data = await response.json();
+            
+            if (data.data) return data.data;
+            if (data.order) return data.order;
+            return data;
+        } catch (error) {
+            console.error('Error fetching order details:', error);
             throw error;
         }
     }

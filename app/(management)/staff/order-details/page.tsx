@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '../components/Icon';
 
@@ -11,6 +11,7 @@ import { useNavigationState } from '../contexts/NavigationContext';
 
 
 type PaymentMethod = 'cash' | 'upi';
+import { staffOrdersService, StaffOrderItem, StaffOrder } from '../lib/staff-orders.service';
 
 export default function OrderDetails() {
   const { role } = useAuth();
@@ -31,7 +32,24 @@ export default function OrderDetails() {
     return orders.find(o => o.id === orderId);
   }, [orders, orderId]);
 
-  const orderItems = currentOrder?.itemsDetails || [];
+  const [detailedOrder, setDetailedOrder] = useState<StaffOrder | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
+  useEffect(() => {
+    if (orderId) {
+      setIsLoadingDetails(true);
+      staffOrdersService.getOrderDetails(orderId).then((data) => {
+        setDetailedOrder(data);
+      }).catch(err => {
+        console.error('Failed to fetch order details', err);
+      }).finally(() => {
+        setIsLoadingDetails(false);
+      });
+    }
+  }, [orderId]);
+
+  // Merge context order items and detailed API items
+  const orderItems = detailedOrder?.items || currentOrder?.itemsDetails || [];
 
   const handleUpdateStatus = async (status: OrderStatus) => {
     if (orderId && setOrderStatus) {
@@ -53,9 +71,9 @@ export default function OrderDetails() {
     table: currentOrder?.table || tableFromNav || 'Unknown Table',
     server: 'Staff', // TODO: Add server name from API when available
     time: currentOrder?.time || 'Just now',
-    subtotal: currentOrder?.subtotal || 0,
-    tax: currentOrder?.tax || 0,
-    total: currentOrder?.total || 0,
+    subtotal: detailedOrder?.subtotal ? parseFloat(detailedOrder.subtotal) : (currentOrder?.subtotal || 0),
+    tax: detailedOrder?.tax_amount ? parseFloat(detailedOrder.tax_amount) : (currentOrder?.tax || 0),
+    total: detailedOrder?.total_amount ? parseFloat(detailedOrder.total_amount) : (currentOrder?.total || 0),
   };
 
   // ... (rest of code)
