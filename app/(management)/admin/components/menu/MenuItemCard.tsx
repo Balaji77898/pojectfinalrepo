@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Edit2, Trash2, Clock, DollarSign } from 'lucide-react';
+import { Edit2, Trash2, Clock, Utensils } from 'lucide-react';
 import { MenuItem } from '../../lib/menu.service';
 import { useMenu } from '../../contexts/MenuContext';
 
@@ -40,7 +40,7 @@ export default function MenuItemCard({ item, categoryName, onEdit, onDelete }: M
                 </div>
             ) : (
                 <div className="h-48 bg-gradient-to-br from-ruby-red/10 to-gold-start/10 flex items-center justify-center">
-                    <DollarSign className="text-ruby-red/30" size={64} />
+                    <Utensils className="text-ruby-red/30" size={64} />
                 </div>
             )}
 
@@ -60,7 +60,7 @@ export default function MenuItemCard({ item, categoryName, onEdit, onDelete }: M
                     </div>
                     <div className="text-right">
                         <div className="text-xl font-bold text-ruby-red">
-                            ${Number(item.price).toFixed(2)}
+                            ₹{Number(item.price).toFixed(2)}
                         </div>
                     </div>
                 </div>
