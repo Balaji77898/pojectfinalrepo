@@ -23,10 +23,7 @@ class StaffTablesService {
 
         try {
             const authHeaders = {
-                'Authorization': `Bearer ${token}`,
-                // Some backends expect token in alternate headers
-                'x-access-token': token,
-                'x-auth-token': token,
+                'Authorization': `Bearer ${token}`
             };
 
             const response = await fetch(
