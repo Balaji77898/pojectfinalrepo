@@ -236,6 +236,8 @@ class StaffAuthService {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
+                        'x-access-token': token,
+                        'x-auth-token': token,
                         'ngrok-skip-browser-warning': 'true',
                     },
                 }

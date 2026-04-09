@@ -47,7 +47,9 @@ class StaffOrdersService {
 
         try {
             const authHeaders = {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'x-access-token': token,
+                'x-auth-token': token,
             };
 
             const response = await fetch(
@@ -99,6 +101,8 @@ class StaffOrdersService {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'Authorization': `Bearer ${token}`,
+                        'x-access-token': token,
+                        'x-auth-token': token,
                         'ngrok-skip-browser-warning': 'true',
                     },
                 }
@@ -131,7 +135,9 @@ class StaffOrdersService {
 
         try {
             const authHeaders = {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'x-access-token': token,
+                'x-auth-token': token,
             };
 
             const response = await fetch(
