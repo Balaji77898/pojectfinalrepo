@@ -118,7 +118,8 @@ class StaffAuthService {
             };
 
             // Store token and user data
-            const token = data.token || data.user?.token;
+            // Robust token extraction checking multiple possible locations
+            const token = data.token || data.data?.token || data.user?.token || (data as any).accessToken;
             if (token) {
                 this.setToken(token);
             }

@@ -50,7 +50,8 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     // Fetch data when authenticated
     useEffect(() => {
         const fetchData = async () => {
-            if (!authLoading && isAuthenticated) {
+            const token = localStorage.getItem('admin_auth_token');
+            if (token) {
                 setIsLoading(true);
                 setError(null);
                 await Promise.all([fetchCategories(), fetchMenuItems()]);

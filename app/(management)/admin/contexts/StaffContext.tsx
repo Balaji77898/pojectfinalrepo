@@ -37,7 +37,8 @@ export function StaffProvider({ children }: { children: ReactNode }) {
     // Fetch data when authenticated
     useEffect(() => {
         const fetchData = async () => {
-            if (!authLoading && isAuthenticated) {
+            const token = localStorage.getItem('admin_auth_token');
+            if (token) {
                 setIsLoading(true);
                 await fetchStaff();
                 setIsLoading(false);
