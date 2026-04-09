@@ -1,5 +1,9 @@
 'use client';
-import React, { createContext, useContext, useMemo, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useMemo, useState, ReactNode, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import { staffOrdersService, StaffOrder, StaffOrderItem } from '../lib/staff-orders.service';
+import { staffAuthService } from '../lib/staff-auth.service';
+import { formatTime } from '../lib/date-utils';
 
 export type OrderStatus = 'PLACED' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'SERVED' | 'BILLED' | 'PAID' | 'CANCELLED';
 
@@ -30,28 +34,31 @@ interface OrdersContextType {
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 
-import { staffOrdersService, StaffOrder, StaffOrderItem } from '../lib/staff-orders.service';
-import { formatTime } from '../lib/date-utils';
+function mapApiStatusToOrderStatus(apiStatus: string): OrderStatus {
+  return (apiStatus || 'PLACED').toUpperCase() as OrderStatus;
+}
 
 export function OrdersProvider({ children }: { children: ReactNode }) {
   const { user, isLoading: authLoading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchOrders = React.useCallback(async () => {
+  const fetchOrders = useCallback(async () => {
     // Only fetch if we have a token or user
-    const token = staffAuthService.getToken();
+    const token = staffAuthService.getToken(); 
     if (!token) return;
 
     try {
       const data = await staffOrdersService.getOrders();
-      // ... mapping code ...
+      
       const mappedOrders: Order[] = data.map((apiOrder: StaffOrder) => {
         const formattedTime = formatTime(apiOrder.created_at);
         const items = apiOrder.items || [];
+        
         const calculatedSubtotal = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
         const calculatedTax = calculatedSubtotal * 0.05;
         const calculatedTotal = calculatedSubtotal + calculatedTax;
+
         const apiTotal = parseFloat(apiOrder.total_amount) || 0;
         const apiSubtotal = parseFloat(apiOrder.subtotal || '0');
         const apiTax = parseFloat(apiOrder.tax_amount || '0');
@@ -74,7 +81,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
           time: formattedTime,
           createdAt: apiOrder.created_at,
           itemsPreview: apiOrder.items?.map((item: StaffOrderItem) => `${item.quantity}x ${item.name}`) || [],
-        }
+        };
       });
       setOrders(mappedOrders);
     } catch (error) {
@@ -84,7 +91,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!authLoading && user) {
       fetchOrders();
       const interval = setInterval(fetchOrders, 30000);
@@ -95,8 +102,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchOrders, user, authLoading]);
 
-  const setOrderStatus = React.useCallback(async (id: string, status: OrderStatus) => {
-    // Optimistic update
+  const setOrderStatus = useCallback(async (id: string, status: OrderStatus) => {
     setOrders((prev) =>
       prev.map((order) => (order.id === id ? { ...order, status } : order)),
     );
@@ -105,16 +111,13 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       await staffOrdersService.updateStatus(id, status);
     } catch (error) {
       console.error('Failed to update status:', error);
-      // Revert on failure (optional, or show toast)
-      // For now logging error. Re-fetch could also fix state.
       fetchOrders();
     }
   }, [fetchOrders]);
 
-  const generateBill = React.useCallback(async (id: string) => {
+  const generateBill = useCallback(async (id: string) => {
     try {
       await staffOrdersService.generateBill(id);
-      // Refresh orders to get updated status
       await fetchOrders();
     } catch (error) {
       console.error('Failed to generate bill:', error);
@@ -122,10 +125,9 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchOrders]);
 
-  const payOrder = React.useCallback(async (id: string, paymentMethod: string, amount: number) => {
+  const payOrder = useCallback(async (id: string, paymentMethod: string, amount: number) => {
     try {
       await staffOrdersService.payOrder(id, paymentMethod, amount);
-      // Refresh orders to get updated status
       await fetchOrders();
     } catch (error) {
       console.error('Failed to pay order:', error);
@@ -146,10 +148,6 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
   );
 
   return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;
-}
-
-function mapApiStatusToOrderStatus(apiStatus: string): OrderStatus {
-  return apiStatus.toUpperCase() as OrderStatus;
 }
 
 export function useOrders() {
