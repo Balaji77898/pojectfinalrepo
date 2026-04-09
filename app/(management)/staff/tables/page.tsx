@@ -39,11 +39,15 @@ export default function Tables() {
 
   useEffect(() => {
     const fetchTables = async () => {
+      // Only fetch if we have a role/user (authenticated)
+      if (!role) return;
+
       try {
+        setIsLoading(true);
         const data = await staffTablesService.getTables();
         
+        // ... mapping logic ...
         let tablesArray: unknown[] = data;
-        // In case service doesn't parse data correctly, safeguard here
         const dataObj = data as { data?: unknown[] };
         if (!Array.isArray(data) && data && Array.isArray(dataObj.data)) {
            tablesArray = dataObj.data;
@@ -61,11 +65,12 @@ export default function Tables() {
             id: tableData.id,
             name: tableName,
             status: tableData.table_status === 'EMPTY' ? 'available' : 'occupied',
-            seats: 0, // Hidden in UI if 0
+            seats: 0, 
             server: undefined
           };
         });
         setTables(mappedTables);
+        setErrorMsg(null);
       } catch (error: Error | unknown) {
         console.error('Failed to fetch tables:', error);
         if (error instanceof Error) {
@@ -78,10 +83,12 @@ export default function Tables() {
       }
     };
 
-    fetchTables();
-    const interval = setInterval(fetchTables, 30000); // Poll every 30s
-    return () => clearInterval(interval);
-  }, []);
+    if (role) {
+      fetchTables();
+      const interval = setInterval(fetchTables, 30000); // Poll every 30s
+      return () => clearInterval(interval);
+    }
+  }, [role]);
 
   const handleStatusClick = (e: React.MouseEvent) => {
     e.stopPropagation();

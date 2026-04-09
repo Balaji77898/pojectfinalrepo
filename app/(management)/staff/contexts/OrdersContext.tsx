@@ -34,49 +34,48 @@ import { staffOrdersService, StaffOrder, StaffOrderItem } from '../lib/staff-ord
 import { formatTime } from '../lib/date-utils';
 
 export function OrdersProvider({ children }: { children: ReactNode }) {
+  const { user, isLoading: authLoading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchOrders = React.useCallback(async () => {
+    // Only fetch if we have a token or user
+    const token = staffAuthService.getToken();
+    if (!token) return;
+
     try {
       const data = await staffOrdersService.getOrders();
-
-      // Map API response to Order interface
+      // ... mapping code ...
       const mappedOrders: Order[] = data.map((apiOrder: StaffOrder) => {
-        // Use the centralized date utility
         const formattedTime = formatTime(apiOrder.created_at);
-
         const items = apiOrder.items || [];
-        
-        // Calculate totals dynamically if API returns 0 or null
         const calculatedSubtotal = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
-        const calculatedTax = calculatedSubtotal * 0.05; // Assuming 5% GST base if not provided
+        const calculatedTax = calculatedSubtotal * 0.05;
         const calculatedTotal = calculatedSubtotal + calculatedTax;
-
         const apiTotal = parseFloat(apiOrder.total_amount) || 0;
         const apiSubtotal = parseFloat(apiOrder.subtotal || '0');
         const apiTax = parseFloat(apiOrder.tax_amount || '0');
 
         return {
-        id: apiOrder.id,
-        orderNumber: apiOrder.id.substring(0, 8).toUpperCase(), 
-        table: apiOrder.table_number 
-          ? `Table ${apiOrder.table_number}`
-          : (apiOrder.table_id && apiOrder.table_id !== 'null' && apiOrder.table_id !== 'undefined'
-              ? `Table ${apiOrder.table_id}` 
+          id: apiOrder.id,
+          orderNumber: apiOrder.id.substring(0, 8).toUpperCase(),
+          table: apiOrder.table_number
+            ? `Table ${apiOrder.table_number}`
+            : (apiOrder.table_id && apiOrder.table_id !== 'null' && apiOrder.table_id !== 'undefined'
+              ? `Table ${apiOrder.table_id}`
               : (apiOrder.order_type === 'DINE_IN' ? 'Dine In' : (apiOrder.customer_name || 'Takeaway'))),
-        customerName: apiOrder.customer_name || '', 
-        items: items.length || 0, 
-        itemsDetails: items,
-        total: apiTotal > 0 ? apiTotal : calculatedTotal,
-        subtotal: Math.round(apiSubtotal > 0 ? apiSubtotal : calculatedSubtotal),
-        tax: Math.round(apiTax > 0 ? apiTax : calculatedTax),
-        status: mapApiStatusToOrderStatus(apiOrder.status),
-        time: formattedTime,
-        createdAt: apiOrder.created_at,
-        itemsPreview: apiOrder.items?.map((item: StaffOrderItem) => `${item.quantity}x ${item.name}`) || [], 
-      }});
-      console.log('Mapped Orders with items:', mappedOrders); // Debug log
+          customerName: apiOrder.customer_name || '',
+          items: items.length || 0,
+          itemsDetails: items,
+          total: apiTotal > 0 ? apiTotal : calculatedTotal,
+          subtotal: Math.round(apiSubtotal > 0 ? apiSubtotal : calculatedSubtotal),
+          tax: Math.round(apiTax > 0 ? apiTax : calculatedTax),
+          status: mapApiStatusToOrderStatus(apiOrder.status),
+          time: formattedTime,
+          createdAt: apiOrder.created_at,
+          itemsPreview: apiOrder.items?.map((item: StaffOrderItem) => `${item.quantity}x ${item.name}`) || [],
+        }
+      });
       setOrders(mappedOrders);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
@@ -86,11 +85,15 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
   }, []);
 
   React.useEffect(() => {
-    fetchOrders();
-    // Optional: Poll for updates every 30 seconds
-    const interval = setInterval(fetchOrders, 30000);
-    return () => clearInterval(interval);
-  }, [fetchOrders]);
+    if (!authLoading && user) {
+      fetchOrders();
+      const interval = setInterval(fetchOrders, 30000);
+      return () => clearInterval(interval);
+    } else if (!authLoading && !user) {
+      setOrders([]);
+      setIsLoading(false);
+    }
+  }, [fetchOrders, user, authLoading]);
 
   const setOrderStatus = React.useCallback(async (id: string, status: OrderStatus) => {
     // Optimistic update

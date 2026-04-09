@@ -37,11 +37,15 @@ export function RestaurantProvider({ children }: { children: ReactNode }) {
     // Fetch restaurant data when authenticated
     useEffect(() => {
         const checkAndFetch = async () => {
-            // Check for token directly from service (more resilient than waiting for AuthContext's async state)
-            const hasToken = !!restaurantService.getRestaurantProfile; // just a placeholder for logic
+            // Check for token directly from service
             const token = localStorage.getItem('admin_auth_token');
             
-            if (token) {
+            // Wait for auth context to stabilize if it's currently loading
+            if (authLoading && !token) {
+                return;
+            }
+
+            if (token || isAuthenticated) {
                 await fetchRestaurant();
             } else if (!authLoading && !isAuthenticated) {
                 setRestaurant(null);
