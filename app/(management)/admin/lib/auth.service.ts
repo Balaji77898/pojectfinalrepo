@@ -13,9 +13,13 @@ interface LoginCredentials {
 }
 
 interface LoginResponse {
-    token: string;
+    token?: string;
+    accessToken?: string;
     user?: any;
+    data?: any;
+    staff?: any;
     message?: string;
+    [key: string]: any;
 }
 
 interface User {
@@ -39,7 +43,7 @@ class AuthService {
             );
 
             // Store token - check multiple possible locations
-            const token = response.token || (response as any).accessToken || response.data?.token || response.user?.token || (response as any).data?.accessToken;
+            const token = response.token || response.accessToken || response.data?.token || response.user?.token || response.data?.accessToken;
             if (token) {
                 this.setToken(token);
             }

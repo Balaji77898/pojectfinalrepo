@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ordersService, Order, OrderDetails } from '../lib/orders.service';
+import { useAuth } from './AuthContext';
 
 interface OrdersContextType {
     orders: Order[];
@@ -14,6 +15,7 @@ interface OrdersContextType {
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 
 export function OrdersProvider({ children }: { children: ReactNode }) {
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -29,15 +31,21 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Fetch data on mount
+    // Fetch data when authenticated
     useEffect(() => {
         const fetchData = async () => {
-            setIsLoading(true);
-            await fetchOrders();
-            setIsLoading(false);
+            if (!authLoading && isAuthenticated) {
+                setIsLoading(true);
+                await fetchOrders();
+                setIsLoading(false);
+            } else if (!authLoading && !isAuthenticated) {
+                setOrders([]);
+                setError(null);
+                setIsLoading(false);
+            }
         };
         fetchData();
-    }, []);
+    }, [isAuthenticated, authLoading]);
 
     const getOrderDetails = async (id: string): Promise<OrderDetails> => {
         return await ordersService.getOrderDetails(id);

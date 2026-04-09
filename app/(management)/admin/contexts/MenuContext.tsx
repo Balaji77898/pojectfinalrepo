@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { menuService, Category, MenuItem } from '../lib/menu.service';
+import { useAuth } from './AuthContext';
 
 interface MenuContextType {
     categories: Category[];
@@ -20,6 +21,7 @@ interface MenuContextType {
 const MenuContext = createContext<MenuContextType | undefined>(undefined);
 
 export function MenuProvider({ children }: { children: ReactNode }) {
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
     const [categories, setCategories] = useState<Category[]>([]);
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -45,16 +47,23 @@ export function MenuProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Fetch data on mount
+    // Fetch data when authenticated
     useEffect(() => {
         const fetchData = async () => {
-            setIsLoading(true);
-            setError(null);
-            await Promise.all([fetchCategories(), fetchMenuItems()]);
-            setIsLoading(false);
+            if (!authLoading && isAuthenticated) {
+                setIsLoading(true);
+                setError(null);
+                await Promise.all([fetchCategories(), fetchMenuItems()]);
+                setIsLoading(false);
+            } else if (!authLoading && !isAuthenticated) {
+                setCategories([]);
+                setMenuItems([]);
+                setError(null);
+                setIsLoading(false);
+            }
         };
         fetchData();
-    }, []);
+    }, [isAuthenticated, authLoading]);
 
     const addCategory = async (data: { name: string; description?: string }) => {
         await menuService.createCategory(data);

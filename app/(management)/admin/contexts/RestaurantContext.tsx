@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { restaurantService, RestaurantProfile } from '../lib/restaurant.service';
+import { useAuth } from './AuthContext';
 
 interface RestaurantContextType {
     restaurant: RestaurantProfile | null;
@@ -13,6 +14,7 @@ interface RestaurantContextType {
 const RestaurantContext = createContext<RestaurantContextType | undefined>(undefined);
 
 export function RestaurantProvider({ children }: { children: ReactNode }) {
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
     const [restaurant, setRestaurant] = useState<RestaurantProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -32,10 +34,16 @@ export function RestaurantProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Fetch restaurant data on mount
+    // Fetch restaurant data when authenticated
     useEffect(() => {
-        fetchRestaurant();
-    }, []);
+        if (!authLoading && isAuthenticated) {
+            fetchRestaurant();
+        } else if (!authLoading && !isAuthenticated) {
+            setRestaurant(null);
+            setError(null);
+            setIsLoading(false);
+        }
+    }, [isAuthenticated, authLoading]);
 
     const value: RestaurantContextType = {
         restaurant,

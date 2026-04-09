@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { tablesService, Table, CreateTableRequest } from '../lib/tables.service';
+import { useAuth } from './AuthContext';
 
 interface TablesContextType {
     tables: Table[];
@@ -16,6 +17,7 @@ interface TablesContextType {
 const TablesContext = createContext<TablesContextType | undefined>(undefined);
 
 export function TablesProvider({ children }: { children: ReactNode }) {
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
     const [tables, setTables] = useState<Table[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -31,15 +33,21 @@ export function TablesProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Fetch data on mount
+    // Fetch data when authenticated
     useEffect(() => {
         const fetchData = async () => {
-            setIsLoading(true);
-            await fetchTables();
-            setIsLoading(false);
+            if (!authLoading && isAuthenticated) {
+                setIsLoading(true);
+                await fetchTables();
+                setIsLoading(false);
+            } else if (!authLoading && !isAuthenticated) {
+                setTables([]);
+                setError(null);
+                setIsLoading(false);
+            }
         };
         fetchData();
-    }, []);
+    }, [isAuthenticated, authLoading]);
 
     const addTable = async (data: CreateTableRequest): Promise<Table> => {
         const newTable = await tablesService.createTable(data);

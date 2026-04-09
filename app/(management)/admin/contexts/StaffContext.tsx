@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { staffService, StaffMember, CreateStaffRequest, UpdateStaffRequest } from '../lib/staff.service';
+import { useAuth } from './AuthContext';
 
 interface StaffContextType {
     staff: StaffMember[];
@@ -17,6 +18,7 @@ interface StaffContextType {
 const StaffContext = createContext<StaffContextType | undefined>(undefined);
 
 export function StaffProvider({ children }: { children: ReactNode }) {
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
     const [staff, setStaff] = useState<StaffMember[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -32,15 +34,21 @@ export function StaffProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Fetch data on mount
+    // Fetch data when authenticated
     useEffect(() => {
         const fetchData = async () => {
-            setIsLoading(true);
-            await fetchStaff();
-            setIsLoading(false);
+            if (!authLoading && isAuthenticated) {
+                setIsLoading(true);
+                await fetchStaff();
+                setIsLoading(false);
+            } else if (!authLoading && !isAuthenticated) {
+                setStaff([]);
+                setError(null);
+                setIsLoading(false);
+            }
         };
         fetchData();
-    }, []);
+    }, [isAuthenticated, authLoading]);
 
     const addStaff = async (data: CreateStaffRequest) => {
         await staffService.createStaff(data);
