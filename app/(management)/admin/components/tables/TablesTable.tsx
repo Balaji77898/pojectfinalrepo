@@ -12,10 +12,15 @@ interface TablesTableProps {
     onViewQR: (table: Table) => void;
 }
 
-const CUSTOMER_APP_URL = process.env.NEXT_PUBLIC_CUSTOMER_APP_URL || 'https://customer-app.com';
-
 export default function TablesTable({ tables, onDelete, onViewQR }: TablesTableProps) {
     const { toggleTableStatus } = useTables();
+    const [origin, setOrigin] = React.useState('');
+
+    React.useEffect(() => {
+        setOrigin(window.location.origin);
+    }, []);
+
+    const baseUrl = process.env.NEXT_PUBLIC_CUSTOMER_APP_URL || origin || 'https://customer-app.com';
 
     const getStatusBadge = (status: TableStatus) => {
         const styles = {
@@ -40,7 +45,7 @@ export default function TablesTable({ tables, onDelete, onViewQR }: TablesTableP
         tempDiv.style.left = '-9999px';
         document.body.appendChild(tempDiv);
 
-        const qrUrl = `${CUSTOMER_APP_URL}/customer/scan-qr?table=${table.qr_token}`;
+        const qrUrl = `${baseUrl}/customer/scan-qr?table=${table.qr_token}`;
 
         // Use React to render QRCodeCanvas
         import('react-dom/client').then(({ createRoot }) => {
@@ -113,7 +118,7 @@ export default function TablesTable({ tables, onDelete, onViewQR }: TablesTableP
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                         {tables.map((table) => {
-                            const qrUrl = `${CUSTOMER_APP_URL}/order?table=${table.qr_token}`;
+                            const qrUrl = `${baseUrl}/customer/scan-qr?table=${table.qr_token}`;
 
                             return (
                                 <tr key={table.id} className="transition-colors hover:bg-gray-50">
