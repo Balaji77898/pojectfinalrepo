@@ -12,9 +12,6 @@ interface QRCodeDisplayProps {
     showCopy?: boolean;
 }
 
-// Customer app URL - should be configurable via environment variable
-const CUSTOMER_APP_URL = process.env.NEXT_PUBLIC_CUSTOMER_APP_URL || 'https://customer-app.com';
-
 export default function QRCodeDisplay({
     qrToken,
     tableNumber,
@@ -24,9 +21,16 @@ export default function QRCodeDisplay({
 }: QRCodeDisplayProps) {
     const qrRef = useRef<HTMLDivElement>(null);
     const [copied, setCopied] = React.useState(false);
+    const [origin, setOrigin] = React.useState('');
+
+    React.useEffect(() => {
+        setOrigin(window.location.origin);
+    }, []);
+
+    const baseUrl = process.env.NEXT_PUBLIC_CUSTOMER_APP_URL || origin || 'https://customer-app.com';
 
     // Generate QR URL - Point to the customer scan-qr page with the table token
-    const qrUrl = `${CUSTOMER_APP_URL}/customer/scan-qr?table=${qrToken}`;
+    const qrUrl = `${baseUrl}/customer/scan-qr?table=${qrToken}`;
 
     const downloadQRCode = (format: 'png' | 'svg' = 'png') => {
         const canvas = qrRef.current?.querySelector('canvas');
