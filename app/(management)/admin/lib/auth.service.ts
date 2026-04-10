@@ -39,13 +39,21 @@ class AuthService {
             );
 
             // Store token - check multiple possible locations
-            const token = response.token || (response as any).accessToken || response.data?.token || response.user?.token || (response as any).data?.accessToken;
+            const token = response.token || 
+                (response as any).accessToken || 
+                (response as any).data?.token || 
+                response.user?.token || 
+                (response as any).data?.accessToken;
+            
             if (token) {
                 this.setToken(token);
             }
 
             // Store user data - check multiple possible locations
-            const userData = normalizeResponse(response, null) || response.user || response.data || response.staff;
+            const userData = normalizeResponse(response, null) || 
+                response.user || 
+                (response as any).data || 
+                (response as any).staff;
             if (userData) {
                 this.setUser(userData);
             }
