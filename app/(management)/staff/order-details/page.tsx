@@ -95,14 +95,30 @@ export default function OrderDetails() {
 
   const calculateTipFromPercent = (percent: number) => ((orderInfo.total * percent) / 100).toFixed(0);
 
+  /** Billing staff can collect payment for any open order; generateBill runs when needed in confirm handler */
+  const billingCanProceedToPayment =
+    role === 'billing_staff' &&
+    !!currentOrder &&
+    !['PAID', 'CANCELLED'].includes(currentOrder.status);
+
   const handleConfirmPayment = async () => {
     if (!selectedPaymentMethod) return;
 
     try {
       if (orderId && payOrder) {
-        // If order is not yet billed, generate bill first (single flow for billing staff)
-        if (currentOrder?.status === 'SERVED' || currentOrder?.status === 'PLACED' || currentOrder?.status === 'CONFIRMED' || currentOrder?.status === 'PREPARING' || currentOrder?.status === 'READY') {
-          // Although logically should be SERVED, we safeguard other statues just in case
+        // If order is not yet billed, generate bill first (billing staff may open from any active status)
+        const s = currentOrder?.status;
+        if (
+          s &&
+          s !== 'BILLED' &&
+          s !== 'PAID' &&
+          s !== 'CANCELLED' &&
+          (s === 'SERVED' ||
+            s === 'PLACED' ||
+            s === 'CONFIRMED' ||
+            s === 'PREPARING' ||
+            s === 'READY')
+        ) {
           await generateBill(orderId);
         }
 
@@ -313,16 +329,16 @@ export default function OrderDetails() {
               {role === 'billing_staff' ? (
                 <div className="space-y-4">
                   <button
-                    className={`w-full rounded-2xl py-5 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative ${currentOrder?.status === 'BILLED' || currentOrder?.status === 'SERVED'
+                    className={`w-full rounded-2xl py-5 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative ${billingCanProceedToPayment
                         ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
                         : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                       }`}
-                    onClick={currentOrder?.status === 'BILLED' || currentOrder?.status === 'SERVED' ? handleProceedToPayment : undefined}
-                    disabled={currentOrder?.status !== 'BILLED' && currentOrder?.status !== 'SERVED'}
+                    onClick={billingCanProceedToPayment ? handleProceedToPayment : undefined}
+                    disabled={!billingCanProceedToPayment}
                   >
                     <div className="absolute inset-0 bg-linear-to-r from-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="relative flex items-center justify-center gap-3">
-                      <Icon name="wallet" size={24} color={currentOrder?.status === 'BILLED' ? "white" : "#94a3b8"} />
+                      <Icon name="wallet" size={24} color={billingCanProceedToPayment ? "white" : "#94a3b8"} />
                       <span className="font-bold text-lg">Proceed to Payment</span>
                     </div>
                   </button>
