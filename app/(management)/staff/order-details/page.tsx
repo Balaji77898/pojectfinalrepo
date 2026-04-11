@@ -11,7 +11,7 @@ import { useNavigationState } from '../contexts/NavigationContext';
 
 
 type PaymentMethod = 'cash' | 'upi';
-import { staffOrdersService, StaffOrderItem, StaffOrder } from '../lib/staff-orders.service';
+import { staffOrdersService, StaffOrder, normalizeStaffOrderItems } from '../lib/staff-orders.service';
 
 export default function OrderDetails() {
   const { role } = useAuth();
@@ -48,8 +48,11 @@ export default function OrderDetails() {
     }
   }, [orderId]);
 
-  // Merge context order items and detailed API items
-  const orderItems = detailedOrder?.items || currentOrder?.itemsDetails || [];
+  // Merge + normalize API line items (menu_item.name, item_name, etc.)
+  const orderItems = useMemo(() => {
+    const raw = detailedOrder?.items || currentOrder?.itemsDetails || [];
+    return normalizeStaffOrderItems(raw);
+  }, [detailedOrder, currentOrder]);
 
   const handleUpdateStatus = async (status: OrderStatus) => {
     if (orderId && setOrderStatus) {
@@ -79,7 +82,7 @@ export default function OrderDetails() {
   // ... (rest of code)
 
   const paymentMethods = [
-    { id: 'cash' as PaymentMethod, label: 'Cash', icon: 'cash-outline' as const, color: '#C8A951' },
+    { id: 'cash' as PaymentMethod, label: 'Cash', icon: 'rupee' as const, color: '#C8A951' },
     { id: 'upi' as PaymentMethod, label: 'UPI', icon: 'phone-portrait-outline' as const, color: '#7B1F1F' },
   ];
 
@@ -122,11 +125,35 @@ export default function OrderDetails() {
           await generateBill(orderId);
         }
 
-        // Then process payment
-        await payOrder(orderId, selectedPaymentMethod, finalTotal);
+        await payOrder(orderId, selectedPaymentMethod, finalTotal, {
+          orderTotal: Math.round(orderInfo.total),
+          tip,
+        });
       }
 
       setShowPaymentModal(false);
+
+      const billSnapshot = {
+        items: orderItems.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: Math.round(parseFloat(item.price) || 0),
+          lineTotal: Math.round(item.quantity * (parseFloat(item.price) || 0)),
+        })),
+        subtotal: Math.round(orderInfo.subtotal),
+        tax: Math.round(orderInfo.tax),
+        taxRatePct:
+          orderInfo.subtotal > 0
+            ? Math.round((orderInfo.tax / orderInfo.subtotal) * 1000) / 10
+            : 0,
+        orderTotal: Math.round(orderInfo.total),
+        tip,
+        grandTotal: finalTotal,
+        orderNumber: orderInfo.orderNumber,
+        table: orderInfo.table,
+        paymentMethod: selectedPaymentMethod,
+        orderId,
+      };
 
       setNavState({
         orderId: orderId,
@@ -136,11 +163,13 @@ export default function OrderDetails() {
         tipAmount: tip.toString(),
         finalTotal: finalTotal.toString(),
         paymentMethod: selectedPaymentMethod,
+        billSnapshot: JSON.stringify(billSnapshot),
       });
 
       router.push('/staff/bill');
     } catch (error) {
-      alert('Payment failed. Please try again.');
+      const msg = error instanceof Error ? error.message : 'Payment failed. Please try again.';
+      alert(msg);
       console.error(error);
     }
   };

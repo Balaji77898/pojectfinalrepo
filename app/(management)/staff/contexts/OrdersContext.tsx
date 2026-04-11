@@ -1,7 +1,7 @@
 'use client';
 import React, { createContext, useContext, useMemo, useState, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { staffOrdersService, StaffOrder, StaffOrderItem } from '../lib/staff-orders.service';
+import { staffOrdersService, StaffOrder, StaffOrderItem, normalizeStaffOrderItems, PayOrderMeta } from '../lib/staff-orders.service';
 import { staffAuthService } from '../lib/staff-auth.service';
 import { formatTime } from '../lib/date-utils';
 
@@ -27,7 +27,7 @@ interface OrdersContextType {
   orders: Order[];
   setOrderStatus: (id: string, status: OrderStatus) => void;
   generateBill: (id: string) => Promise<void>;
-  payOrder: (id: string, paymentMethod: string, amount: number) => Promise<void>;
+  payOrder: (id: string, paymentMethod: string, grandTotal: number, meta?: PayOrderMeta) => Promise<void>;
   refreshOrders: () => Promise<void>;
   isLoading: boolean;
 }
@@ -53,7 +53,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       
       const mappedOrders: Order[] = data.map((apiOrder: StaffOrder) => {
         const formattedTime = formatTime(apiOrder.created_at);
-        const items = apiOrder.items || [];
+        const items = normalizeStaffOrderItems(apiOrder.items || []);
         
         const calculatedSubtotal = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
         const calculatedTax = calculatedSubtotal * 0.05;
@@ -125,9 +125,9 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchOrders]);
 
-  const payOrder = useCallback(async (id: string, paymentMethod: string, amount: number) => {
+  const payOrder = useCallback(async (id: string, paymentMethod: string, grandTotal: number, meta?: PayOrderMeta) => {
     try {
-      await staffOrdersService.payOrder(id, paymentMethod, amount);
+      await staffOrdersService.payOrder(id, paymentMethod, grandTotal, meta);
       await fetchOrders();
     } catch (error) {
       console.error('Failed to pay order:', error);
