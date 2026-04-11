@@ -122,7 +122,8 @@ export default function OrderDetails() {
             s === 'PREPARING' ||
             s === 'READY')
         ) {
-          await generateBill(orderId);
+          // API rejects PLACED → BILLED; walk CONFIRMED → … → SERVED → BILLED first
+          await generateBill(orderId, s);
         }
 
         await payOrder(orderId, selectedPaymentMethod, finalTotal, {

@@ -26,7 +26,7 @@ export interface Order {
 interface OrdersContextType {
   orders: Order[];
   setOrderStatus: (id: string, status: OrderStatus) => void;
-  generateBill: (id: string) => Promise<void>;
+  generateBill: (id: string, currentStatus?: OrderStatus) => Promise<void>;
   payOrder: (id: string, paymentMethod: string, grandTotal: number, meta?: PayOrderMeta) => Promise<void>;
   refreshOrders: () => Promise<void>;
   isLoading: boolean;
@@ -115,9 +115,9 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchOrders]);
 
-  const generateBill = useCallback(async (id: string) => {
+  const generateBill = useCallback(async (id: string, currentStatus?: OrderStatus) => {
     try {
-      await staffOrdersService.generateBill(id);
+      await staffOrdersService.generateBill(id, currentStatus);
       await fetchOrders();
     } catch (error) {
       console.error('Failed to generate bill:', error);

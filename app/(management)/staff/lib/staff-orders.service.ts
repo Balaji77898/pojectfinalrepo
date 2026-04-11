@@ -246,9 +246,36 @@ class StaffOrdersService {
     }
 
     /**
-     * Generate bill for an order
+     * Backend order of statuses before BILLED (same as staff UI). Cannot skip e.g. PLACED → BILLED.
      */
-    async generateBill(orderId: string): Promise<void> {
+    private static readonly STATUS_CHAIN_TO_BILLED = [
+        'PLACED',
+        'CONFIRMED',
+        'PREPARING',
+        'READY',
+        'SERVED',
+        'BILLED',
+    ] as const;
+
+    /**
+     * Move order to BILLED. If `currentStatus` is in the kitchen chain, applies each PATCH in order.
+     */
+    async generateBill(orderId: string, currentStatus?: string): Promise<void> {
+        const chain = StaffOrdersService.STATUS_CHAIN_TO_BILLED;
+        const s = (currentStatus || '').toUpperCase().trim();
+
+        if (s === 'BILLED' || s === 'PAID') return;
+
+        const idx = chain.findIndex((x) => x === s);
+
+        if (idx >= 0) {
+            for (let i = idx + 1; i < chain.length; i++) {
+                await this.updateStatus(orderId, chain[i]);
+            }
+            return;
+        }
+
+        // Unknown status: try a single BILLED transition (may still fail)
         const token = staffAuthService.getToken();
         if (!token) {
             throw new Error('No authentication token found');
