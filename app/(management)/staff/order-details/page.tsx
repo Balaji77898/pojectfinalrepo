@@ -98,31 +98,27 @@ export default function OrderDetails() {
 
   const calculateTipFromPercent = (percent: number) => ((orderInfo.total * percent) / 100).toFixed(0);
 
-  /** Billing staff can collect payment for any open order; generateBill runs when needed in confirm handler */
+  /** Billing: backend RBAC usually allows only SERVED→BILLED→PAID, not kitchen steps. */
   const billingCanProceedToPayment =
     role === 'billing_staff' &&
     !!currentOrder &&
-    !['PAID', 'CANCELLED'].includes(currentOrder.status);
+    !['PAID', 'CANCELLED'].includes(currentOrder.status) &&
+    (currentOrder.status === 'SERVED' || currentOrder.status === 'BILLED');
 
   const handleConfirmPayment = async () => {
     if (!selectedPaymentMethod) return;
 
     try {
       if (orderId && payOrder) {
-        // If order is not yet billed, generate bill first (billing staff may open from any active status)
         const s = currentOrder?.status;
-        if (
-          s &&
-          s !== 'BILLED' &&
-          s !== 'PAID' &&
-          s !== 'CANCELLED' &&
-          (s === 'SERVED' ||
-            s === 'PLACED' ||
-            s === 'CONFIRMED' ||
-            s === 'PREPARING' ||
-            s === 'READY')
-        ) {
-          // API rejects PLACED → BILLED; walk CONFIRMED → … → SERVED → BILLED first
+        if (role === 'billing_staff' && s && !['SERVED', 'BILLED'].includes(s)) {
+          alert(
+            'This order must be marked Served by serving staff before you can bill or take payment.',
+          );
+          return;
+        }
+
+        if (s === 'SERVED') {
           await generateBill(orderId, s);
         }
 
@@ -358,6 +354,16 @@ export default function OrderDetails() {
 
               {role === 'billing_staff' ? (
                 <div className="space-y-4">
+                  {currentOrder &&
+                    !['SERVED', 'BILLED', 'PAID', 'CANCELLED'].includes(currentOrder.status) && (
+                      <div className="rounded-2xl p-4 flex gap-3 text-amber-900 bg-amber-50 border border-amber-100 text-sm">
+                        <Icon name="information-circle" size={22} color="#b45309" />
+                        <p>
+                          Payment is available after serving staff finishes the kitchen flow and marks this order{" "}
+                          <strong>Served</strong>. Billing can then generate the bill and collect payment.
+                        </p>
+                      </div>
+                    )}
                   <button
                     className={`w-full rounded-2xl py-5 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative ${billingCanProceedToPayment
                         ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'

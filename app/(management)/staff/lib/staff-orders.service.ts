@@ -245,71 +245,39 @@ class StaffOrdersService {
         }
     }
 
-    /**
-     * Backend order of statuses before BILLED (same as staff UI). Cannot skip e.g. PLACED → BILLED.
-     */
-    private static readonly STATUS_CHAIN_TO_BILLED = [
-        'PLACED',
-        'CONFIRMED',
-        'PREPARING',
-        'READY',
-        'SERVED',
-        'BILLED',
-    ] as const;
+    private static async readErrorMessage(response: Response): Promise<string> {
+        const text = await response.text();
+        let message = `Request failed (${response.status})`;
+        try {
+            const err = JSON.parse(text) as Record<string, unknown>;
+            message =
+                (typeof err.message === 'string' && err.message) ||
+                (typeof err.error === 'string' && err.error) ||
+                (typeof err.detail === 'string' && err.detail) ||
+                message;
+        } catch {
+            if (text?.trim()) message = text.trim().slice(0, 280);
+        }
+        return message;
+    }
 
     /**
-     * Move order to BILLED. If `currentStatus` is in the kitchen chain, applies each PATCH in order.
+     * Bill the order (SERVED → BILLED) with a single PATCH.
+     * Billing staff are usually not allowed to set kitchen statuses (PLACED→CONFIRMED→…),
+     * so we do not auto-chain those — serving staff must reach Served first.
      */
     async generateBill(orderId: string, currentStatus?: string): Promise<void> {
-        const chain = StaffOrdersService.STATUS_CHAIN_TO_BILLED;
         const s = (currentStatus || '').toUpperCase().trim();
 
         if (s === 'BILLED' || s === 'PAID') return;
 
-        const idx = chain.findIndex((x) => x === s);
-
-        if (idx >= 0) {
-            for (let i = idx + 1; i < chain.length; i++) {
-                await this.updateStatus(orderId, chain[i]);
-            }
-            return;
-        }
-
-        // Unknown status: try a single BILLED transition (may still fail)
-        const token = staffAuthService.getToken();
-        if (!token) {
-            throw new Error('No authentication token found');
-        }
-
-        try {
-            const authHeaders = {
-                'Authorization': `Bearer ${token}`,
-                'x-access-token': token,
-                'x-auth-token': token,
-            };
-
-            const response = await fetch(
-                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        ...authHeaders,
-                        'ngrok-skip-browser-warning': 'true',
-                    },
-                    body: JSON.stringify({ status: 'BILLED' }),
-                }
+        if (s !== 'SERVED') {
+            throw new Error(
+                'Order must be Served before billing. Have serving staff complete Confirm → Prepare → Ready → Served, then you can collect payment.',
             );
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to generate bill');
-            }
-        } catch (error) {
-            console.error('Error generating bill:', error);
-            throw error;
         }
+
+        await this.updateStatus(orderId, 'BILLED');
     }
 
     /**
@@ -330,56 +298,77 @@ class StaffOrdersService {
         const normalizedMethod =
             methodLower === 'cash' ? 'CASH' : methodLower === 'upi' ? 'UPI' : String(paymentMethod).toUpperCase();
 
-        try {
-            const authHeaders = {
-                'Authorization': `Bearer ${token}`,
-                'x-access-token': token,
-                'x-auth-token': token,
-            };
+        const authHeaders = {
+            Authorization: `Bearer ${token}`,
+            'x-access-token': token,
+            'x-auth-token': token,
+        };
 
-            // `amount` / `paid_amount` = cash/UPI collected (invoice + tip). `total_amount` = invoice before tip.
-            const payload: Record<string, unknown> = {
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`;
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            ...authHeaders,
+            'ngrok-skip-browser-warning': 'true',
+        };
+
+        // Try shapes common in strict backends (unknown fields or status PAID may be rejected).
+        const bodies: Record<string, unknown>[] = [
+            { status: 'PAID', payment_method: normalizedMethod, amount: totalPaid },
+            { status: 'PAID', payment_method: methodLower, amount: totalPaid },
+            {
+                status: 'PAID',
+                payment_method: normalizedMethod,
+                amount: totalPaid,
+                tip_amount: tip,
+                total_amount: orderTotal,
+            },
+            {
                 status: 'PAID',
                 payment_status: 'PAID',
                 payment_method: normalizedMethod,
-                paymentMethod: normalizedMethod,
                 amount: totalPaid,
                 paid_amount: totalPaid,
-                total_paid: totalPaid,
                 total_amount: orderTotal,
                 tip_amount: tip,
-                tipAmount: tip,
-            };
+            },
+            {
+                payment_status: 'PAID',
+                payment_method: normalizedMethod,
+                paid_amount: totalPaid,
+                tip_amount: tip,
+            },
+            {
+                status: 'COMPLETED',
+                payment_status: 'PAID',
+                payment_method: normalizedMethod,
+                amount: totalPaid,
+            },
+        ];
 
-            const response = await fetch(
-                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
-                {
+        let lastMessage = 'Payment failed';
+
+        try {
+            for (const body of bodies) {
+                const response = await fetch(url, {
                     method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        ...authHeaders,
-                        'ngrok-skip-browser-warning': 'true',
-                    },
-                    body: JSON.stringify(payload),
-                }
-            );
+                    headers,
+                    body: JSON.stringify(body),
+                });
 
-            if (!response.ok) {
-                const text = await response.text();
-                let message = `Payment failed (${response.status})`;
-                try {
-                    const err = JSON.parse(text) as Record<string, unknown>;
-                    message =
-                        (typeof err.message === 'string' && err.message) ||
-                        (typeof err.error === 'string' && err.error) ||
-                        (typeof err.detail === 'string' && err.detail) ||
-                        message;
-                } catch {
-                    if (text?.trim()) message = text.trim().slice(0, 280);
-                }
-                throw new Error(message);
+                if (response.ok) return;
+
+                lastMessage = await StaffOrdersService.readErrorMessage(response);
+                const tryNext =
+                    response.status === 403 ||
+                    (response.status === 400 &&
+                        /not allowed|invalid transition|cannot set status|unknown field|extra|unexpected|forbidden/i.test(
+                            lastMessage,
+                        ));
+                if (!tryNext) throw new Error(lastMessage);
             }
+
+            throw new Error(lastMessage);
         } catch (error) {
             console.error('Error processing payment:', error);
             throw error;
