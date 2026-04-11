@@ -1,7 +1,7 @@
 'use client';
 import React, { createContext, useContext, useMemo, useState, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { staffOrdersService, StaffOrder, StaffOrderItem, normalizeStaffOrderItems, PayOrderMeta } from '../lib/staff-orders.service';
+import { staffOrdersService, StaffOrder, StaffOrderItem, normalizeStaffOrderItems } from '../lib/staff-orders.service';
 import { staffAuthService } from '../lib/staff-auth.service';
 import { formatTime } from '../lib/date-utils';
 
@@ -26,8 +26,8 @@ export interface Order {
 interface OrdersContextType {
   orders: Order[];
   setOrderStatus: (id: string, status: OrderStatus) => void;
-  generateBill: (id: string, currentStatus?: OrderStatus) => Promise<void>;
-  payOrder: (id: string, paymentMethod: string, grandTotal: number, meta?: PayOrderMeta) => Promise<void>;
+  generateBill: (id: string) => Promise<void>;
+  payOrder: (id: string, paymentMethod: string, amount: number) => Promise<void>;
   refreshOrders: () => Promise<void>;
   isLoading: boolean;
 }
@@ -115,9 +115,9 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchOrders]);
 
-  const generateBill = useCallback(async (id: string, currentStatus?: OrderStatus) => {
+  const generateBill = useCallback(async (id: string) => {
     try {
-      await staffOrdersService.generateBill(id, currentStatus);
+      await staffOrdersService.generateBill(id);
       await fetchOrders();
     } catch (error) {
       console.error('Failed to generate bill:', error);
@@ -125,9 +125,9 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchOrders]);
 
-  const payOrder = useCallback(async (id: string, paymentMethod: string, grandTotal: number, meta?: PayOrderMeta) => {
+  const payOrder = useCallback(async (id: string, paymentMethod: string, amount: number) => {
     try {
-      await staffOrdersService.payOrder(id, paymentMethod, grandTotal, meta);
+      await staffOrdersService.payOrder(id, paymentMethod, amount);
       await fetchOrders();
     } catch (error) {
       console.error('Failed to pay order:', error);

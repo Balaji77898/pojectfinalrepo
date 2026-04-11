@@ -108,12 +108,6 @@ function normalizeStaffOrder(order: StaffOrder): StaffOrder {
     };
 }
 
-export type PayOrderMeta = {
-    /** Invoice total (subtotal + tax), excluding tip — helps backends validate payment */
-    orderTotal?: number;
-    tip?: number;
-};
-
 class StaffOrdersService {
     /**
      * Get all orders for the current staff's restaurant
@@ -245,130 +239,84 @@ class StaffOrdersService {
         }
     }
 
-    private static async readErrorMessage(response: Response): Promise<string> {
-        const text = await response.text();
-        let message = `Request failed (${response.status})`;
-        try {
-            const err = JSON.parse(text) as Record<string, unknown>;
-            message =
-                (typeof err.message === 'string' && err.message) ||
-                (typeof err.error === 'string' && err.error) ||
-                (typeof err.detail === 'string' && err.detail) ||
-                message;
-        } catch {
-            if (text?.trim()) message = text.trim().slice(0, 280);
-        }
-        return message;
-    }
-
     /**
-     * Bill the order (SERVED → BILLED) with a single PATCH.
-     * Billing staff are usually not allowed to set kitchen statuses (PLACED→CONFIRMED→…),
-     * so we do not auto-chain those — serving staff must reach Served first.
+     * Generate bill for an order
      */
-    async generateBill(orderId: string, currentStatus?: string): Promise<void> {
-        const s = (currentStatus || '').toUpperCase().trim();
-
-        if (s === 'BILLED' || s === 'PAID') return;
-
-        if (s !== 'SERVED') {
-            throw new Error(
-                'Order must be Served before billing. Have serving staff complete Confirm → Prepare → Ready → Served, then you can collect payment.',
-            );
-        }
-
-        await this.updateStatus(orderId, 'BILLED');
-    }
-
-    /**
-     * Process payment for an order (PATCH .../orders/:id/status).
-     * Sends common field aliases so different backends can read amount / tip / method.
-     */
-    async payOrder(orderId: string, paymentMethod: string, grandTotal: number, meta?: PayOrderMeta): Promise<void> {
+    async generateBill(orderId: string): Promise<void> {
         const token = staffAuthService.getToken();
         if (!token) {
             throw new Error('No authentication token found');
         }
 
-        const tip = Math.max(0, Math.round(meta?.tip ?? 0));
-        const orderTotal = Math.round(meta?.orderTotal ?? grandTotal - tip);
-        const totalPaid = Math.round(grandTotal);
+        try {
+            const authHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'x-access-token': token,
+                'x-auth-token': token,
+            };
 
-        const methodLower = String(paymentMethod).toLowerCase();
-        const normalizedMethod =
-            methodLower === 'cash' ? 'CASH' : methodLower === 'upi' ? 'UPI' : String(paymentMethod).toUpperCase();
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        ...authHeaders,
+                        'ngrok-skip-browser-warning': 'true',
+                    },
+                    body: JSON.stringify({ status: 'BILLED' }),
+                }
+            );
 
-        const authHeaders = {
-            Authorization: `Bearer ${token}`,
-            'x-access-token': token,
-            'x-auth-token': token,
-        };
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to generate bill');
+            }
+        } catch (error) {
+            console.error('Error generating bill:', error);
+            throw error;
+        }
+    }
 
-        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`;
-        const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            ...authHeaders,
-            'ngrok-skip-browser-warning': 'true',
-        };
-
-        // Try shapes common in strict backends (unknown fields or status PAID may be rejected).
-        const bodies: Record<string, unknown>[] = [
-            { status: 'PAID', payment_method: normalizedMethod, amount: totalPaid },
-            { status: 'PAID', payment_method: methodLower, amount: totalPaid },
-            {
-                status: 'PAID',
-                payment_method: normalizedMethod,
-                amount: totalPaid,
-                tip_amount: tip,
-                total_amount: orderTotal,
-            },
-            {
-                status: 'PAID',
-                payment_status: 'PAID',
-                payment_method: normalizedMethod,
-                amount: totalPaid,
-                paid_amount: totalPaid,
-                total_amount: orderTotal,
-                tip_amount: tip,
-            },
-            {
-                payment_status: 'PAID',
-                payment_method: normalizedMethod,
-                paid_amount: totalPaid,
-                tip_amount: tip,
-            },
-            {
-                status: 'COMPLETED',
-                payment_status: 'PAID',
-                payment_method: normalizedMethod,
-                amount: totalPaid,
-            },
-        ];
-
-        let lastMessage = 'Payment failed';
+    /**
+     * Process payment for an order
+     */
+    async payOrder(orderId: string, paymentMethod: string, amount: number): Promise<void> {
+        const token = staffAuthService.getToken();
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
 
         try {
-            for (const body of bodies) {
-                const response = await fetch(url, {
+            const authHeaders = {
+                'Authorization': `Bearer ${token}`,
+                'x-access-token': token,
+                'x-auth-token': token,
+            };
+
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(orderId)}`,
+                {
                     method: 'PATCH',
-                    headers,
-                    body: JSON.stringify(body),
-                });
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        ...authHeaders,
+                        'ngrok-skip-browser-warning': 'true',
+                    },
+                    body: JSON.stringify({
+                        status: 'PAID',
+                        payment_method: paymentMethod,
+                        amount: amount
+                    }),
+                }
+            );
 
-                if (response.ok) return;
-
-                lastMessage = await StaffOrdersService.readErrorMessage(response);
-                const tryNext =
-                    response.status === 403 ||
-                    (response.status === 400 &&
-                        /not allowed|invalid transition|cannot set status|unknown field|extra|unexpected|forbidden/i.test(
-                            lastMessage,
-                        ));
-                if (!tryNext) throw new Error(lastMessage);
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to process payment');
             }
-
-            throw new Error(lastMessage);
         } catch (error) {
             console.error('Error processing payment:', error);
             throw error;

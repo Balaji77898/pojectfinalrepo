@@ -82,7 +82,7 @@ export default function OrderDetails() {
   // ... (rest of code)
 
   const paymentMethods = [
-    { id: 'cash' as PaymentMethod, label: 'Cash', icon: 'rupee' as const, color: '#C8A951' },
+    { id: 'cash' as PaymentMethod, label: 'Cash', icon: 'cash-outline' as const, color: '#C8A951' },
     { id: 'upi' as PaymentMethod, label: 'UPI', icon: 'phone-portrait-outline' as const, color: '#7B1F1F' },
   ];
 
@@ -98,12 +98,10 @@ export default function OrderDetails() {
 
   const calculateTipFromPercent = (percent: number) => ((orderInfo.total * percent) / 100).toFixed(0);
 
-  /** Billing: backend RBAC usually allows only SERVED→BILLED→PAID, not kitchen steps. */
   const billingCanProceedToPayment =
     role === 'billing_staff' &&
     !!currentOrder &&
-    !['PAID', 'CANCELLED'].includes(currentOrder.status) &&
-    (currentOrder.status === 'SERVED' || currentOrder.status === 'BILLED');
+    !['PAID', 'CANCELLED'].includes(currentOrder.status);
 
   const handleConfirmPayment = async () => {
     if (!selectedPaymentMethod) return;
@@ -111,21 +109,21 @@ export default function OrderDetails() {
     try {
       if (orderId && payOrder) {
         const s = currentOrder?.status;
-        if (role === 'billing_staff' && s && !['SERVED', 'BILLED'].includes(s)) {
-          alert(
-            'This order must be marked Served by serving staff before you can bill or take payment.',
-          );
-          return;
+        if (
+          s &&
+          s !== 'BILLED' &&
+          s !== 'PAID' &&
+          s !== 'CANCELLED' &&
+          (s === 'SERVED' ||
+            s === 'PLACED' ||
+            s === 'CONFIRMED' ||
+            s === 'PREPARING' ||
+            s === 'READY')
+        ) {
+          await generateBill(orderId);
         }
 
-        if (s === 'SERVED') {
-          await generateBill(orderId, s);
-        }
-
-        await payOrder(orderId, selectedPaymentMethod, finalTotal, {
-          orderTotal: Math.round(orderInfo.total),
-          tip,
-        });
+        await payOrder(orderId, selectedPaymentMethod, finalTotal);
       }
 
       setShowPaymentModal(false);
@@ -165,8 +163,7 @@ export default function OrderDetails() {
 
       router.push('/staff/bill');
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Payment failed. Please try again.';
-      alert(msg);
+      alert('Payment failed. Please try again.');
       console.error(error);
     }
   };
@@ -354,16 +351,6 @@ export default function OrderDetails() {
 
               {role === 'billing_staff' ? (
                 <div className="space-y-4">
-                  {currentOrder &&
-                    !['SERVED', 'BILLED', 'PAID', 'CANCELLED'].includes(currentOrder.status) && (
-                      <div className="rounded-2xl p-4 flex gap-3 text-amber-900 bg-amber-50 border border-amber-100 text-sm">
-                        <Icon name="information-circle" size={22} color="#b45309" />
-                        <p>
-                          Payment is available after serving staff finishes the kitchen flow and marks this order{" "}
-                          <strong>Served</strong>. Billing can then generate the bill and collect payment.
-                        </p>
-                      </div>
-                    )}
                   <button
                     className={`w-full rounded-2xl py-5 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative ${billingCanProceedToPayment
                         ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
