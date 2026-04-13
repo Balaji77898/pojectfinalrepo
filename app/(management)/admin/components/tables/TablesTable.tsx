@@ -12,7 +12,7 @@ interface TablesTableProps {
     onViewQR: (table: Table) => void;
 }
 
-const CUSTOMER_APP_URL = process.env.NEXT_PUBLIC_CUSTOMER_APP_URL || 'https://customer-app.com';
+const CUSTOMER_APP_URL = process.env.NEXT_PUBLIC_CUSTOMER_APP_URL || 'https://customerfinal1.vercel.app';
 
 export default function TablesTable({ tables, onDelete, onViewQR }: TablesTableProps) {
     const { toggleTableStatus } = useTables();
@@ -113,7 +113,7 @@ export default function TablesTable({ tables, onDelete, onViewQR }: TablesTableP
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                         {tables.map((table) => {
-                            const qrUrl = `${CUSTOMER_APP_URL}/order?table=${table.qr_token}`;
+                            const qrUrl = `${CUSTOMER_APP_URL}/customer/scan-qr?table=${table.qr_token}`;
 
                             return (
                                 <tr key={table.id} className="transition-colors hover:bg-gray-50">
