@@ -40,7 +40,7 @@ export default function TablesTable({ tables, onDelete, onViewQR }: TablesTableP
         tempDiv.style.left = '-9999px';
         document.body.appendChild(tempDiv);
 
-        const qrUrl = `${CUSTOMER_APP_URL}/customer/scan-qr?table=${table.qr_token}`;
+        const qrUrl = `${CUSTOMER_APP_URL}/customer/scan-qr?token=${table.qr_token}`;
 
         // Use React to render QRCodeCanvas
         import('react-dom/client').then(({ createRoot }) => {
@@ -113,7 +113,7 @@ export default function TablesTable({ tables, onDelete, onViewQR }: TablesTableP
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                         {tables.map((table) => {
-                            const qrUrl = `${CUSTOMER_APP_URL}/customer/scan-qr?table=${table.qr_token}`;
+                            const qrUrl = `${CUSTOMER_APP_URL}/customer/scan-qr?token=${table.qr_token}`;
 
                             return (
                                 <tr key={table.id} className="transition-colors hover:bg-gray-50">

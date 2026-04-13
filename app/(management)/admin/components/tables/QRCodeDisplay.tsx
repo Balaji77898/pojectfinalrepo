@@ -26,7 +26,7 @@ export default function QRCodeDisplay({
     const [copied, setCopied] = React.useState(false);
 
     // Generate QR URL - Point to the customer scan-qr page with the table token
-    const qrUrl = `${CUSTOMER_APP_URL}/customer/scan-qr?table=${qrToken}`;
+    const qrUrl = `${CUSTOMER_APP_URL}/customer/scan-qr?token=${qrToken}`;
 
     const downloadQRCode = (format: 'png' | 'svg' = 'png') => {
         const canvas = qrRef.current?.querySelector('canvas');
