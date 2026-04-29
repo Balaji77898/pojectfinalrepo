@@ -30,7 +30,7 @@ export default function RestaurantProfile() {
                     <div className="text-center">
                         <p className="text-ruby-red font-semibold">Failed to load restaurant profile</p>
                         <p className="text-text-muted mt-2">{error || 'Restaurant data not available'}</p>
-                        <Link href="/admin/dashboard" className="mt-4 inline-block text-ruby-red hover:underline">
+                        <Link href="/admin/dashboard" className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 bg-ruby-red text-white rounded-lg hover:bg-ruby-red/90 transition-colors font-semibold shadow-md">
                             ← Back to Dashboard
                         </Link>
                     </div>
@@ -45,7 +45,7 @@ export default function RestaurantProfile() {
                 {/* Header */}
                 <header className="bg-ruby-red py-8 px-8 shadow-lg border-b-4 border-gold-start">
                     <div className="max-w-6xl mx-auto">
-                        <Link href="/admin/dashboard" className="text-gold-start hover:text-white transition-colors mb-4 inline-block">
+                        <Link href="/admin/dashboard" className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-gold-start rounded-lg hover:bg-white/20 hover:text-white transition-colors mb-4 font-semibold text-sm border border-gold-start/30">
                             ← Back to Dashboard
                         </Link>
                         <h1 className="text-4xl font-serif font-bold text-white mb-2">

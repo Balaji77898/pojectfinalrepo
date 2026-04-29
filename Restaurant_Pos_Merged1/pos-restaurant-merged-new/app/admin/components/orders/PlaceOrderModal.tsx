@@ -134,7 +134,14 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
         };
         if (customerName.trim()) payload.customer_name = customerName.trim();
         if (customerPhone.trim()) payload.customer_phone = customerPhone.trim();
-        if (orderType === OrderType.DINE_IN && selectedTableId) payload.table_id = selectedTableId;
+        
+        // Pass a dummy table ID for Takeaway/Delivery if backend strictly requires it
+        let finalTableId = selectedTableId;
+        if (orderType !== OrderType.DINE_IN) {
+            finalTableId = tables.length > 0 ? tables[0].id : '';
+        }
+        
+        if (finalTableId) payload.table_id = finalTableId;
         if (notes.trim()) payload.notes = notes.trim();
 
         setIsSubmitting(true);

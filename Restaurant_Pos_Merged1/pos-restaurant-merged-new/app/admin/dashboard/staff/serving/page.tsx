@@ -76,7 +76,7 @@ function ServingStaffContent() {
                 {/* Header */}
                 <header className="bg-ruby-red py-8 px-8 shadow-lg border-b-4 border-gold-start">
                     <div className="max-w-7xl mx-auto">
-                        <Link href="/admin/dashboard/staff" className="text-gold-start hover:text-white transition-colors mb-4 inline-block">
+                        <Link href="/admin/dashboard/staff" className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-gold-start rounded-lg hover:bg-white/20 hover:text-white transition-colors mb-4 font-semibold text-sm border border-gold-start/30">
                             ← Back to Staff Management
                         </Link>
                         <div className="flex items-center justify-between">
