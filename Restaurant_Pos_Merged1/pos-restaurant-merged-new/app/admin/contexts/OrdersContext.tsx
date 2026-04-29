@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ordersService, Order, OrderDetails } from '../lib/orders.service';
+import { ordersService, Order, OrderDetails, OrderStatus } from '../lib/orders.service';
 
 interface OrdersContextType {
     orders: Order[];
@@ -9,6 +9,7 @@ interface OrdersContextType {
     error: string | null;
     refetchOrders: () => Promise<void>;
     getOrderDetails: (id: string) => Promise<OrderDetails>;
+    updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
 }
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
@@ -21,7 +22,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     const fetchOrders = async () => {
         try {
             const data = await ordersService.getOrdersList();
-            setOrders(data);
+            setOrders(Array.isArray(data) ? data : []);
             setError(null);
         } catch (err: any) {
             console.error('Error fetching orders:', err);
@@ -29,18 +30,25 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Fetch data on mount
     useEffect(() => {
-        const fetchData = async () => {
+        const load = async () => {
             setIsLoading(true);
             await fetchOrders();
             setIsLoading(false);
         };
-        fetchData();
+        load();
     }, []);
 
     const getOrderDetails = async (id: string): Promise<OrderDetails> => {
-        return await ordersService.getOrderDetails(id);
+        return ordersService.getOrderDetails(id);
+    };
+
+    const updateOrderStatus = async (id: string, status: OrderStatus): Promise<void> => {
+        await ordersService.updateOrderStatus(id, status);
+        // Optimistically update local list
+        setOrders(prev =>
+            prev.map(o => (o.id === id ? { ...o, status } : o))
+        );
     };
 
     const value: OrdersContextType = {
@@ -49,6 +57,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         error,
         refetchOrders: fetchOrders,
         getOrderDetails,
+        updateOrderStatus,
     };
 
     return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;

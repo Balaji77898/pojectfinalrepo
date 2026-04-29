@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Grid, List } from 'lucide-react';
+import { Plus, Search, Grid, List, ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { MenuProvider, useMenu } from '../../contexts/MenuContext';
@@ -48,8 +48,12 @@ function MenuManagementContent() {
                 {/* Header */}
                 <header className="bg-ruby-red py-8 px-8 shadow-lg border-b-4 border-gold-start">
                     <div className="max-w-7xl mx-auto">
-                        <Link href="/admin/dashboard" className="text-gold-start hover:text-white transition-colors mb-4 inline-block">
-                            ← Back to Dashboard
+                        <Link
+                            href="/admin/dashboard"
+                            className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-lg bg-white/10 hover:bg-white/20 text-gold-start hover:text-white border border-gold-start/30 hover:border-white/50 transition-all duration-200 font-medium text-sm backdrop-blur-sm"
+                        >
+                            <ArrowLeft size={16} />
+                            Back to Dashboard
                         </Link>
                         <div className="flex items-center justify-between">
                             <div>
@@ -58,14 +62,24 @@ function MenuManagementContent() {
                                 </h1>
                                 <p className="text-gold-start/80">Manage your restaurant menu items and categories</p>
                             </div>
-                            <button
-                                onClick={() => setShowAddModal(true)}
-                                className="flex items-center gap-2 px-6 py-3 bg-gold-start text-ruby-red rounded-lg hover:bg-gold-end transition-colors font-semibold shadow-lg"
-                            >
-                                <Plus size={20} />
-                                Add Menu Item
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <Link
+                                    href="/admin/dashboard/menu/specials"
+                                    className="flex items-center gap-2 px-5 py-3 bg-amber-400 hover:bg-amber-300 text-amber-900 font-bold rounded-lg shadow transition-all"
+                                >
+                                    <Star size={18} className="fill-amber-900" />
+                                    Today's Special
+                                </Link>
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="flex items-center gap-2 px-6 py-3 bg-gold-start text-ruby-red rounded-lg hover:bg-gold-end transition-colors font-semibold shadow-lg"
+                                >
+                                    <Plus size={20} />
+                                    Add Menu Item
+                                </button>
+                            </div>
                         </div>
+
                     </div>
                 </header>
 

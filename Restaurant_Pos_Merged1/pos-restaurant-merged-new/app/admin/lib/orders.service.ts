@@ -1,49 +1,49 @@
 /**
  * Orders Service
- * Handles read-only order viewing
+ * Direct backend calls (no Next.js proxy) using the three admin order endpoints.
  */
 
-import { apiService } from './api.service';
-import { API_CONFIG } from './api.config';
+import { TOKEN_KEY } from './api.config';
 
-// Order Type Enum
+const BACKEND_BASE = 'https://pos-backend-s380.onrender.com';
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
 export enum OrderType {
-    DINE_IN = 'DINE_IN',
+    DINE_IN  = 'DINE_IN',
     TAKEAWAY = 'TAKEAWAY',
-    DELIVERY = 'DELIVERY'
+    DELIVERY = 'DELIVERY',
 }
 
-// Order Status Enum
 export enum OrderStatus {
-    PENDING = 'PENDING',
-    PLACED = 'PLACED',
+    PENDING   = 'PENDING',
+    PLACED    = 'PLACED',
     CONFIRMED = 'CONFIRMED',
     PREPARING = 'PREPARING',
-    READY = 'READY',
+    READY     = 'READY',
     COMPLETED = 'COMPLETED',
-    SERVED = 'SERVED',
-    CANCELLED = 'CANCELLED'
+    SERVED    = 'SERVED',
+    CANCELLED = 'CANCELLED',
 }
 
-// Payment Status Enum
 export enum PaymentStatus {
     PENDING = 'PENDING',
-    PAID = 'PAID',
-    FAILED = 'FAILED'
+    PAID    = 'PAID',
+    FAILED  = 'FAILED',
 }
 
-// Order Item Interface
+// ─── Interfaces ───────────────────────────────────────────────────────────────
+
 export interface OrderItem {
     id: string;
     menu_item_id?: string;
     name?: string;
-    item_name?: string; // Backend uses item_name in details
+    item_name?: string;
     quantity: number;
     price: number | string;
     subtotal: number | string;
 }
 
-// Order Interface (List View)
 export interface Order {
     id: string;
     order_type?: OrderType;
@@ -59,7 +59,6 @@ export interface Order {
     items?: OrderItem[];
 }
 
-// Order Details Interface (Detail View)
 export interface OrderDetails extends Order {
     items: OrderItem[];
     subtotal: number | string;
@@ -68,39 +67,92 @@ export interface OrderDetails extends Order {
     table_id?: string;
 }
 
+export interface CreateOrderItemRequest {
+    menu_item_id: string;
+    quantity: number;
+}
+
+export interface CreateOrderRequest {
+    order_type: OrderType;
+    items: CreateOrderItemRequest[];
+    customer_name?: string;
+    customer_phone?: string;
+    table_id?: string;
+    payment_method?: string;
+    notes?: string;
+}
+
+// ─── Service ──────────────────────────────────────────────────────────────────
+
 class OrdersService {
-    /**
-     * Get all orders
-     */
-    async getOrdersList(): Promise<Order[]> {
-        try {
-            const orders = await apiService.get<Order[]>(
-                API_CONFIG.ENDPOINTS.ORDERS.LIST,
-                true
-            );
-            return orders;
-        } catch (error) {
-            console.error('Failed to fetch orders list:', error);
-            throw error;
-        }
+    private getToken(): string | null {
+        if (typeof window === 'undefined') return null;
+        return localStorage.getItem(TOKEN_KEY);
     }
 
-    /**
-     * Get order details by ID
-     */
-    async getOrderDetails(id: string): Promise<OrderDetails> {
-        try {
-            const order = await apiService.get<OrderDetails>(
-                API_CONFIG.ENDPOINTS.ORDERS.DETAILS(id),
-                true
-            );
-            return order;
-        } catch (error) {
-            console.error('Failed to fetch order details:', error);
-            throw error;
+    private buildHeaders(): Record<string, string> {
+        const token = this.getToken();
+        return {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+    }
+
+    /** Generic fetch that unwraps the { success, data } envelope */
+    private async call<T>(path: string, init: RequestInit = {}): Promise<T> {
+        const res = await fetch(`${BACKEND_BASE}${path}`, {
+            ...init,
+            headers: { ...this.buildHeaders(), ...(init.headers as Record<string, string> ?? {}) },
+        });
+
+        const contentType = res.headers.get('content-type') ?? '';
+        let data: any;
+        if (contentType.includes('application/json')) {
+            data = await res.json();
+        } else {
+            data = await res.text();
         }
+
+        if (!res.ok) {
+            const msg =
+                typeof data === 'object' && data?.message
+                    ? data.message
+                    : `HTTP ${res.status}`;
+            throw new Error(msg);
+        }
+
+        // Unwrap envelope { success: true, data: ... }
+        if (data && typeof data === 'object' && 'success' in data && 'data' in data) {
+            return data.data as T;
+        }
+        return data as T;
+    }
+
+    /** GET /api/admin/orders */
+    async getOrdersList(): Promise<Order[]> {
+        return this.call<Order[]>('/api/admin/orders');
+    }
+
+    /** GET /api/admin/orders/:id */
+    async getOrderDetails(id: string): Promise<OrderDetails> {
+        return this.call<OrderDetails>(`/api/admin/orders/${id}`);
+    }
+
+    /** PATCH /api/admin/orders/:id/status */
+    async updateOrderStatus(id: string, status: OrderStatus): Promise<Order> {
+        return this.call<Order>(`/api/admin/orders/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status }),
+        });
+    }
+
+    /** POST /api/admin/orders  (staff/admin manual order creation) */
+    async createOrder(data: CreateOrderRequest): Promise<Order> {
+        return this.call<Order>('/api/admin/orders', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
     }
 }
 
-// Export singleton instance
 export const ordersService = new OrdersService();

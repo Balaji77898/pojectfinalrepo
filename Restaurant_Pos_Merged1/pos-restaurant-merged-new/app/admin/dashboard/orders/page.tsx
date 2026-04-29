@@ -1,22 +1,24 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Calendar, ArrowLeft } from 'lucide-react';
+import { Search, Filter, Calendar, ArrowLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { OrdersProvider, useOrders } from '../../contexts/OrdersContext';
 import OrdersTable from '../../components/orders/OrdersTable';
 import OrderDetailsModal from '../../components/orders/OrderDetailsModal';
+import PlaceOrderModal from '../../components/orders/PlaceOrderModal';
 import { Order, OrderType, OrderStatus, PaymentStatus } from '../../lib/orders.service';
 
 function OrdersManagementContent() {
-    const { orders, isLoading, error } = useOrders();
+    const { orders, isLoading, error, refetchOrders } = useOrders();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL');
     const [typeFilter, setTypeFilter] = useState<OrderType | 'ALL'>('ALL');
     const [dateFilter, setDateFilter] = useState('');          // YYYY-MM-DD
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [showPlaceOrderModal, setShowPlaceOrderModal] = useState(false);
 
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
@@ -75,9 +77,15 @@ function OrdersManagementContent() {
                                 <h1 className="text-4xl font-serif font-bold text-white mb-2">
                                     Orders Management
                                 </h1>
-                                <p className="text-gold-start/80">View and track all customer orders</p>
+                                <p className="text-gold-start/80">View, track and place customer orders</p>
                             </div>
-                            <div className="w-48"></div>
+                            <button
+                                onClick={() => setShowPlaceOrderModal(true)}
+                                className="flex items-center gap-2 px-6 py-3 bg-gold-start text-ruby-red rounded-lg hover:bg-gold-end transition-colors font-semibold shadow-lg"
+                            >
+                                <Plus size={20} />
+                                Place Order
+                            </button>
                         </div>
                     </div>
                 </header>
@@ -207,6 +215,13 @@ function OrdersManagementContent() {
                     setSelectedOrderId(null);
                 }}
                 orderId={selectedOrderId}
+            />
+
+            {/* Place Order Modal */}
+            <PlaceOrderModal
+                isOpen={showPlaceOrderModal}
+                onClose={() => setShowPlaceOrderModal(false)}
+                onSuccess={() => refetchOrders()}
             />
         </ProtectedRoute>
     );

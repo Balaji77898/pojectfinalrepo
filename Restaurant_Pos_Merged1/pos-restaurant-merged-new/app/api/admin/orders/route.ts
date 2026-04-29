@@ -4,3 +4,7 @@ import { proxyToBackend } from '@/app/api/proxy';
 export async function GET(req: NextRequest) {
     return proxyToBackend(req, '/api/admin/orders');
 }
+
+export async function POST(req: NextRequest) {
+    return proxyToBackend(req, '/api/admin/orders');
+}

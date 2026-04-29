@@ -32,6 +32,7 @@ export const API_CONFIG = {
         },
         ORDERS: {
             LIST: '/api/admin/orders',
+            CREATE: '/api/admin/orders/create',
             DETAILS: (id: string) => `/api/admin/orders/${id}`,
         },
         TABLES: {
