@@ -64,10 +64,6 @@ export default function Bill() {
     }));
   }, [currentOrder]);
 
-  const table =
-    snapshot?.table ?? (navState?.table as string) ?? currentOrder?.table ?? '';
-  const orderNumber =
-    snapshot?.orderNumber ?? currentOrder?.orderNumber ?? orderId.slice(0, 8).toUpperCase();
   const tipAmount = snapshot?.tip ?? Math.round(parseFloat((navState?.tipAmount as string) ?? '0'));
   const grandTotal =
     snapshot?.grandTotal ??
@@ -75,11 +71,6 @@ export default function Bill() {
   const subtotal =
     snapshot?.subtotal ?? Math.round(currentOrder?.subtotal ?? 0);
   const tax = snapshot?.tax ?? Math.round(currentOrder?.tax ?? 0);
-  const orderTotalBeforeTip =
-    snapshot?.orderTotal ?? Math.round(parseFloat((navState?.orderTotal as string) ?? String(grandTotal - tipAmount)));
-  const taxRatePct =
-    snapshot?.taxRatePct ??
-    (subtotal > 0 ? Math.round((tax / subtotal) * 1000) / 10 : 0);
   const paymentMethod =
     snapshot?.paymentMethod ?? (navState?.paymentMethod as string) ?? '';
   const items = snapshot?.items?.length ? snapshot.items : fallbackItems;
@@ -99,9 +90,6 @@ export default function Bill() {
       new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
     );
   });
-
-  const taxLabel =
-    taxRatePct > 0 ? `GST / Tax (${taxRatePct}%)` : 'GST / Tax';
 
   const handleDownloadPDF = async () => {
     if (!receiptRef.current) return;
@@ -164,113 +152,101 @@ export default function Bill() {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6 relative z-10">
-        <div className="w-full max-w-lg">
+        <div className="w-full max-w-[420px]">
           <Animated type="fadeInUp" duration={0.4}>
             <div
               ref={receiptRef}
-              className="bill-print-area bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 relative"
+              className="bill-print-area bg-white overflow-hidden border border-slate-200 relative font-mono"
             >
-              <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
+              <div className="px-6 pt-6 pb-4 text-center">
+                <div className="text-[14px] font-bold tracking-widest text-slate-900">RESTAURANT</div>
+                <div className="text-[12px] font-semibold text-slate-800 mt-1">Payment Receipt</div>
+                <div className="mt-3 border-t border-slate-300" />
+              </div>
 
-              <div className="p-8 md:p-10">
-                <div className="flex flex-col items-center mb-6">
-                  <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-3">
-                    <div className="w-11 h-11 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-200">
-                      <Icon name="checkmark" size={24} color="white" />
-                    </div>
+              <div className="px-6 pb-4 text-[12px]">
+                <div className="space-y-2">
+                  <div className="flex justify-between gap-6">
+                    <span className="text-slate-600">Bill Number</span>
+                    <span className="font-bold text-slate-900 tabular-nums">{billNumber}</span>
                   </div>
-                  <h1 className="text-xl md:text-2xl font-serif font-black text-slate-900 text-center">
-                    Payment successful
-                  </h1>
-                  <p className="text-slate-500 text-sm mt-1">Tax invoice / Bill</p>
-                </div>
-
-                <div className="border border-dashed border-slate-200 rounded-2xl p-5 mb-6 bg-slate-50/80">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-slate-500 text-xs font-semibold uppercase tracking-wide">Bill no.</p>
-                      <p className="font-mono font-bold text-slate-900">{billNumber}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-slate-500 text-xs font-semibold uppercase tracking-wide">Order</p>
-                      <p className="font-mono font-bold text-slate-900">#{orderNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500 text-xs font-semibold uppercase tracking-wide">Table</p>
-                      <p className="font-bold text-slate-900">{table || '—'}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-slate-500 text-xs font-semibold uppercase tracking-wide">Date</p>
-                      <p className="font-bold text-slate-900 text-right">{date}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-slate-500 text-xs font-semibold uppercase tracking-wide">Payment</p>
-                      <p className="font-bold text-slate-900 capitalize">
-                        {paymentMethod === 'cash'
-                          ? 'Cash'
-                          : paymentMethod === 'upi'
-                            ? 'UPI'
-                            : paymentMethod || '—'}
-                      </p>
-                    </div>
+                  <div className="flex justify-between gap-6">
+                    <span className="text-slate-600">Date</span>
+                    <span className="font-bold text-slate-900 tabular-nums">{date}</span>
+                  </div>
+                  <div className="flex justify-between gap-6">
+                    <span className="text-slate-600">Payment Method</span>
+                    <span className="font-bold text-slate-900 capitalize tabular-nums">
+                      {paymentMethod === 'cash'
+                        ? 'Cash'
+                        : paymentMethod === 'upi'
+                          ? 'UPI'
+                          : paymentMethod || '—'}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                <div className="mb-6">
-                  <h3 className="text-slate-900 font-bold text-xs uppercase tracking-wider mb-3">
-                    Items
-                  </h3>
-                  <div className="rounded-xl border border-slate-200 overflow-hidden text-sm">
-                    <div className="grid grid-cols-12 gap-1 bg-slate-100 px-3 py-2 font-bold text-slate-600 text-xs uppercase">
-                      <span className="col-span-5">Item</span>
-                      <span className="col-span-2 text-center">Qty</span>
-                      <span className="col-span-2 text-right">Rate</span>
-                      <span className="col-span-3 text-right">Amount</span>
-                    </div>
-                    {items.length === 0 ? (
-                      <div className="px-3 py-6 text-center text-slate-500">No line items on this bill.</div>
-                    ) : (
-                      items.map((line, idx) => (
-                        <div
-                          key={`${line.name}-${idx}`}
-                          className="grid grid-cols-12 gap-1 px-3 py-2.5 border-t border-slate-100 items-start"
-                        >
-                          <span className="col-span-5 text-slate-800 font-medium leading-snug">{line.name}</span>
-                          <span className="col-span-2 text-center text-slate-700">{line.quantity}</span>
-                          <span className="col-span-2 text-right text-slate-700 tabular-nums">{fmt(line.unitPrice)}</span>
-                          <span className="col-span-3 text-right font-semibold text-slate-900 tabular-nums">
-                            {fmt(line.lineTotal)}
-                          </span>
-                        </div>
-                      ))
-                    )}
+              <div className="px-6 pb-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="text-[12px] font-bold uppercase tracking-wide text-slate-900">
+                    Order Items
                   </div>
+                  <div className="flex-1 border-t border-slate-200" />
                 </div>
 
-                <div className="space-y-2 text-sm border-t border-slate-200 pt-4">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Subtotal</span>
-                    <span className="font-semibold text-slate-900 tabular-nums">{fmt(subtotal)}</span>
+                <div className="border border-slate-200">
+                  <div className="grid grid-cols-[1fr_56px_96px] bg-slate-50 px-3 py-2 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                    <span className="text-left">Item</span>
+                    <span className="text-center">Qty</span>
+                    <span className="text-right">Amount</span>
                   </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>{taxLabel}</span>
-                    <span className="font-semibold text-slate-900 tabular-nums">{fmt(tax)}</span>
+
+                  {items.length === 0 ? (
+                    <div className="px-3 py-4 text-center text-slate-500 text-[11px]">
+                      No line items on this bill.
+                    </div>
+                  ) : (
+                    items.map((line, idx) => (
+                      <div
+                        key={`${line.name}-${idx}`}
+                        className={`grid grid-cols-[1fr_56px_96px] px-3 py-2 text-[12px] ${
+                          idx === items.length - 1 ? '' : 'border-b border-slate-100'
+                        }`}
+                      >
+                        <span className="text-slate-800 font-medium leading-snug pr-2">{line.name}</span>
+                        <span className="text-center text-slate-800 tabular-nums">{line.quantity}</span>
+                        <span className="text-right text-slate-900 font-semibold tabular-nums">
+                          {fmt(line.lineTotal)}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="px-6 pb-6">
+                <div className="border-t border-slate-200 pt-4 space-y-2 text-[12px]">
+                  <div className="flex justify-between gap-6">
+                    <span className="text-slate-600">Subtotal</span>
+                    <span className="font-bold text-slate-900 tabular-nums">{fmt(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-800 pt-1 border-t border-slate-100">
-                    <span className="font-bold">Order total</span>
-                    <span className="font-black text-slate-900 tabular-nums">{fmt(orderTotalBeforeTip)}</span>
+                  <div className="flex justify-between gap-6">
+                    <span className="text-slate-600">Tax</span>
+                    <span className="font-bold text-slate-900 tabular-nums">{fmt(tax)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Tip</span>
-                    <span className="font-semibold text-slate-900 tabular-nums">{fmt(tipAmount)}</span>
+                  <div className="flex justify-between gap-6">
+                    <span className="text-slate-600">Tip</span>
+                    <span className="font-bold text-slate-900 tabular-nums">{fmt(tipAmount)}</span>
                   </div>
-                  <div className="flex justify-between text-lg pt-2 border-t-2 border-slate-200">
-                    <span className="font-serif font-bold text-slate-900">Total paid</span>
-                    <span className="font-black text-primary tabular-nums">{fmt(grandTotal)}</span>
+
+                  <div className="pt-3 border-t-2 border-slate-200 flex items-baseline justify-between">
+                    <span className="text-[12px] font-black uppercase tracking-wide text-slate-900">TOTAL</span>
+                    <span className="text-[20px] font-black text-slate-900 tabular-nums">{fmt(grandTotal)}</span>
                   </div>
                 </div>
 
-                <p className="text-center text-xs text-slate-400 mt-8">Thank you for dining with us</p>
+                <p className="text-center text-[11px] text-slate-600 mt-4">Thank you for dining with us</p>
               </div>
             </div>
 
