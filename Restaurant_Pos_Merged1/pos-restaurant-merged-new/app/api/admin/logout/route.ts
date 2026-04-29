@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { proxyToBackend } from '@/app/api/proxy';
+import { proxyToBackend } from '../../proxy';
 
 export async function POST(req: NextRequest) {
     return proxyToBackend(req, '/api/admin/logout');

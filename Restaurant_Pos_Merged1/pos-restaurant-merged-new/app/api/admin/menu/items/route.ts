@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { proxyToBackend } from '@/app/api/proxy';
+import { proxyToBackend } from '../../proxy';
 
 export async function GET(req: NextRequest) {
     return proxyToBackend(req, '/api/admin/menu/items');
