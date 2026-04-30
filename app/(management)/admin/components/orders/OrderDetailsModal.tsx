@@ -39,11 +39,13 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
     };
 
     const getStatusBadge = (status: OrderStatus) => {
-        const styles = {
+        const styles: Record<OrderStatus, string> = {
             [OrderStatus.PENDING]: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+            [OrderStatus.PLACED]: 'bg-sky-100 text-sky-800 border-sky-300',
             [OrderStatus.CONFIRMED]: 'bg-blue-100 text-blue-800 border-blue-300',
             [OrderStatus.PREPARING]: 'bg-orange-100 text-orange-800 border-orange-300',
             [OrderStatus.READY]: 'bg-purple-100 text-purple-800 border-purple-300',
+            [OrderStatus.SERVED]: 'bg-teal-100 text-teal-800 border-teal-300',
             [OrderStatus.COMPLETED]: 'bg-green-100 text-green-800 border-green-300',
             [OrderStatus.CANCELLED]: 'bg-red-100 text-red-800 border-red-300',
         };
