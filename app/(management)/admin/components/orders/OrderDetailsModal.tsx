@@ -160,7 +160,15 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                                 return (
                                                     <tr key={item.id || index}>
                                                         <td className="px-4 py-3 text-text-primary">
-                                                            {item.name || (item as any).itemName || (item as any).title || (item as any).product_name || (item as any).menuItemName || (item as any).menuItem?.name || (item as any).menu_item?.name || (item as any).menu_item?.default_name || (item as any).product?.name || 'Unknown Item'}
+                                                            {item.name || 
+                                                             (item as any).item_name || 
+                                                             (item as any).itemName || 
+                                                             (item as any).product_name || 
+                                                             (item as any).menu_item?.name || 
+                                                             (item as any).menuItem?.name || 
+                                                             (item as any).title || 
+                                                             (item as any).menu_item?.default_name || 
+                                                             'Unknown Item'}
                                                         </td>
                                                         <td className="px-4 py-3 text-center text-text-primary">{itemQty}</td>
                                                         <td className="px-4 py-3 text-right text-text-primary">

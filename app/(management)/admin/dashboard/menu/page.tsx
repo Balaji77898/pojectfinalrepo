@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Grid, List, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Grid, List, ArrowLeft, Star } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { MenuProvider, useMenu } from '../../contexts/MenuContext';
@@ -28,10 +28,10 @@ function MenuManagementContent() {
         return menuItems.filter(item => {
             let matchesCategory = !selectedCategory || item.category_id === selectedCategory;
 
-            // Handle virtual "Today's Special" category selection
+            // Handle virtual "Today's Special" filter selection
             if (selectedCategory === 'SPECIALS') {
-                const specialsCat = categories.find(c => c.name.toLowerCase().includes('special'));
-                matchesCategory = !!specialsCat && item.category_id === specialsCat.id;
+                const isSpecialCategory = categories.find(c => c.id === item.category_id)?.name.toLowerCase().includes('special');
+                matchesCategory = !!item.is_today_special || !!isSpecialCategory;
             }
 
             const matchesSearch = !searchQuery ||
@@ -93,13 +93,26 @@ function MenuManagementContent() {
                                 </h1>
                                 <p className="text-gold-start/80">Manage your restaurant menu items and categories</p>
                             </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setSelectedCategory(selectedCategory === 'SPECIALS' ? null : 'SPECIALS')}
+                                className={`flex items-center gap-2 px-5 py-3 rounded-lg transition-all font-bold shadow-lg border-2 ${
+                                    selectedCategory === 'SPECIALS'
+                                        ? 'bg-gold-start text-ruby-red border-gold-start'
+                                        : 'bg-ruby-red/20 text-gold-start border-gold-start/50 hover:bg-gold-start hover:text-ruby-red'
+                                }`}
+                            >
+                                <Star size={20} fill={selectedCategory === 'SPECIALS' ? 'currentColor' : 'none'} />
+                                Today's Special
+                            </button>
                             <button
                                 onClick={() => setShowAddModal(true)}
-                                className="flex items-center gap-2 px-6 py-3 bg-gold-start text-ruby-red rounded-lg hover:bg-gold-end transition-colors font-semibold shadow-lg"
+                                className="flex items-center gap-2 px-6 py-3 bg-gold-start text-ruby-red rounded-lg hover:bg-gold-end transition-colors font-bold shadow-lg"
                             >
                                 <Plus size={20} />
                                 Add Menu Item
                             </button>
+                        </div>
                         </div>
                     </div>
                 </header>

@@ -128,10 +128,6 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
             setSubmitError('Please add at least one item to the order.');
             return;
         }
-        if (orderType === 'DINE_IN' && !selectedTableId) {
-            setSubmitError('Please select a table for Dine-In orders.');
-            return;
-        }
 
         const payload: any = {
             order_type: orderType,
@@ -231,13 +227,13 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                         {orderType === 'DINE_IN' && (
                             <div className="mb-6 p-4 bg-ruby-red/5 rounded-xl border border-ruby-red/10 animate-in fade-in slide-in-from-top-1">
                                 <label className="block text-sm font-bold text-ruby-red mb-2 uppercase tracking-wider">
-                                    <MapPin size={14} className="inline mr-1" /> Step 2: Assign Table *
+                                    <MapPin size={14} className="inline mr-1" /> Step 2: Assign Table (Optional)
                                 </label>
                                 <select
                                     value={selectedTableId}
                                     onChange={e => setSelectedTableId(e.target.value)}
                                     className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-ruby-red focus:border-transparent text-sm bg-white font-semibold">
-                                    <option value="">— Select an available table —</option>
+                                    <option value="">— Select an available table (Optional) —</option>
                                     {tables.map(t => (
                                         <option key={t.id} value={t.id}>
                                             Table {t.table_number}
@@ -245,7 +241,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                                     ))}
                                 </select>
                                 {tables.length === 0 && !loadingMeta && (
-                                    <p className="mt-2 text-xs text-red-500 font-medium italic">No available tables found. Please check Table Management.</p>
+                                    <p className="mt-2 text-xs text-red-500 font-medium italic">No available tables found. You can still place the order without a table.</p>
                                 )}
                             </div>
                         )}

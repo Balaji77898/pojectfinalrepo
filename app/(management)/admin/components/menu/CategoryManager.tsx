@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Plus, FolderOpen } from 'lucide-react';
+import { Plus, FolderOpen, Trash2, Star } from 'lucide-react';
 import { useMenu } from '../../contexts/MenuContext';
 
 interface CategoryManagerProps {
@@ -10,7 +10,7 @@ interface CategoryManagerProps {
 }
 
 export default function CategoryManager({ selectedCategory, onSelectCategory }: CategoryManagerProps) {
-    const { categories, addCategory, isLoading } = useMenu();
+    const { categories, addCategory, deleteCategory, isLoading } = useMenu();
     const [showAddForm, setShowAddForm] = useState(false);
     const [newCategory, setNewCategory] = useState({ name: '', description: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,61 +50,45 @@ export default function CategoryManager({ selectedCategory, onSelectCategory }: 
 
     return (
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-serif font-bold text-text-primary flex items-center gap-2">
-                    <FolderOpen className="text-ruby-red" size={24} />
-                    Categories
-                </h2>
-                <button
-                    onClick={() => setShowAddForm(!showAddForm)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 shadow-sm border-2 font-bold mb-2
-                        ${showAddForm 
-                            ? 'bg-ruby-red text-white border-ruby-red' 
-                            : 'bg-white text-ruby-red border-ruby-red hover:bg-ruby-red/5'}`}
-                >
-                    <div className="flex items-center gap-2">
-                        <Plus size={18} />
-                        Add Category
-                    </div>
-                </button>
+            <div className="flex items-center gap-2 mb-6">
+                <FolderOpen className="text-ruby-red" size={24} />
+                <h2 className="text-xl font-serif font-bold text-text-primary">Categories</h2>
             </div>
+
+            {/* Add Category Button - Premium Style */}
+            <button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 shadow-sm border-2 font-bold mb-6
+                    ${showAddForm 
+                        ? 'bg-ruby-red text-white border-ruby-red' 
+                        : 'bg-white text-ruby-red border-ruby-red hover:bg-ruby-red/5'}`}
+            >
+                <Plus size={18} />
+                Add Category
+            </button>
 
             {/* Add Category Form */}
             {showAddForm && (
-                <form onSubmit={handleSubmit} className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded-xl border border-ruby-red/20 animate-in fade-in slide-in-from-top-1">
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-sm font-semibold text-text-primary mb-1">
-                                Category Name *
-                            </label>
+                            <label className="block text-xs font-bold text-gray-500 mb-1 ml-1 uppercase">Category Name *</label>
                             <input
                                 type="text"
                                 value={newCategory.name}
                                 onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ruby-red focus:border-transparent"
-                                placeholder="e.g., Appetizers, Main Course"
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ruby-red focus:border-transparent text-sm"
+                                placeholder="e.g., Appetizers"
                                 required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-text-primary mb-1">
-                                Description (Optional)
-                            </label>
-                            <input
-                                type="text"
-                                value={newCategory.description}
-                                onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ruby-red focus:border-transparent"
-                                placeholder="Brief description"
                             />
                         </div>
                         <div className="flex gap-2">
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="px-4 py-2 bg-ruby-red text-white rounded-lg hover:bg-ruby-red/90 transition-colors disabled:opacity-50"
+                                className="flex-1 py-2.5 bg-ruby-red text-white rounded-xl text-sm font-bold shadow-md hover:bg-ruby-red/90 transition-all disabled:opacity-50"
                             >
-                                {isSubmitting ? 'Creating...' : 'Create Category'}
+                                {isSubmitting ? 'Saving...' : 'Save Category'}
                             </button>
                             <button
                                 type="button"
@@ -112,7 +96,7 @@ export default function CategoryManager({ selectedCategory, onSelectCategory }: 
                                     setShowAddForm(false);
                                     setNewCategory({ name: '', description: '' });
                                 }}
-                                className="px-4 py-2 bg-gray-200 text-text-primary rounded-lg hover:bg-gray-300 transition-colors"
+                                className="px-4 py-2.5 bg-gray-200 text-text-primary rounded-xl text-sm font-bold hover:bg-gray-300 transition-colors"
                             >
                                 Cancel
                             </button>
@@ -122,72 +106,65 @@ export default function CategoryManager({ selectedCategory, onSelectCategory }: 
             )}
 
             {/* Categories List */}
-            <div className="space-y-2">
+            <div className="space-y-3">
                 <button
                     onClick={() => onSelectCategory(null)}
-                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 border-2 font-bold shadow-sm mb-2
+                    className={`w-full flex items-center justify-between px-4 py-4 rounded-xl transition-all duration-200 border-2 font-bold shadow-sm
                         ${selectedCategory === null
-                            ? 'bg-ruby-red text-white border-ruby-red'
+                            ? 'bg-ruby-red text-white border-ruby-red shadow-ruby-red/20 scale-[1.02]'
                             : 'bg-white text-text-primary border-gray-100 hover:border-ruby-red/30 hover:bg-ruby-red/5'
                         }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <span className="font-bold">All Items</span>
-                        <span className={`text-xs px-2 py-1 rounded-full ${selectedCategory === null ? 'bg-white/20 text-white' : 'bg-gray-100 text-text-muted'}`}>
-                            View all
-                        </span>
-                    </div>
-                </button>
-
-                {/* Today's Special Category */}
-                <button
-                    onClick={() => onSelectCategory('SPECIALS')}
-                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 border-2 font-bold shadow-sm mb-2
-                        ${selectedCategory === 'SPECIALS'
-                            ? 'bg-amber-400 text-amber-900 border-amber-400'
-                            : 'bg-white text-amber-600 border-amber-100 hover:border-amber-400/50 hover:bg-amber-50'
-                        }`}
-                >
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="text-lg">⭐</span>
-                            <span className="font-bold">Today's Special</span>
-                        </div>
-                        <span className={`text-xs px-2 py-1 rounded-full ${selectedCategory === 'SPECIALS' ? 'bg-amber-900/10 text-amber-900' : 'bg-amber-50 text-amber-600'}`}>
-                            Featured
-                        </span>
-                    </div>
+                    <span className="font-bold">All Items</span>
+                    <span className={`text-xs px-2.5 py-1 rounded-full ${selectedCategory === null ? 'bg-white/20 text-white' : 'bg-gray-100 text-text-muted'}`}>
+                        View all
+                    </span>
                 </button>
 
                 {categories
                     .filter(c => !c.name.toLowerCase().includes('special'))
                     .map((category) => (
-                        <button
-                            key={category.id}
+                    <div key={category.id} className="group relative">
+                        <div
                             onClick={() => onSelectCategory(category.id)}
-                            className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 border-2 font-bold shadow-sm mb-2
+                            className={`w-full flex items-center justify-between px-4 py-4 rounded-xl transition-all duration-200 border-2 font-bold shadow-sm cursor-pointer
                                 ${selectedCategory === category.id
-                                    ? 'bg-ruby-red text-white border-ruby-red'
+                                    ? 'bg-ruby-red text-white border-ruby-red shadow-ruby-red/20 scale-[1.02]'
                                     : 'bg-white text-text-primary border-gray-100 hover:border-ruby-red/30 hover:bg-ruby-red/5'
                                 }`}
                         >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="font-bold">{category.name}</div>
-                                    {category.description && (
-                                        <div className={`text-xs ${selectedCategory === category.id ? 'text-white/70' : 'text-text-muted'}`}>
-                                            {category.description}
-                                        </div>
-                                    )}
-                                </div>
+                            <div className="flex flex-col items-start pr-8">
+                                <span className="font-bold">{category.name}</span>
+                                {category.description && (
+                                    <span className={`text-[10px] font-medium uppercase tracking-wider mt-0.5 ${selectedCategory === category.id ? 'text-white/70' : 'text-text-muted'}`}>
+                                        {category.description}
+                                    </span>
+                                )}
                             </div>
-                        </button>
-                    ))}
+                            
+                            {/* Delete Button - Correctly placed (not nested in a button) */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (confirm(`Are you sure you want to delete "${category.name}"?`)) {
+                                        deleteCategory(category.id);
+                                    }
+                                }}
+                                className={`p-2 rounded-lg transition-all z-10
+                                    ${selectedCategory === category.id 
+                                        ? 'text-white/60 hover:text-white hover:bg-white/20' 
+                                        : 'text-gray-300 hover:text-ruby-red hover:bg-ruby-red/10'}`}
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
 
                 {categories.length === 0 && !showAddForm && (
-                    <div className="text-center py-8 text-text-muted">
-                        <FolderOpen className="mx-auto mb-2 text-gray-300" size={48} />
-                        <p>No categories yet. Create one to get started!</p>
+                    <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100">
+                        <FolderOpen className="mx-auto mb-2 text-gray-300" size={40} />
+                        <p className="text-sm font-medium text-gray-400">No categories found</p>
                     </div>
                 )}
             </div>
