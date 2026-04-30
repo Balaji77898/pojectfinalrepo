@@ -553,6 +553,30 @@ export default function AdminLanding() {
               {resto.address && <div>{resto.address}</div>}
               {resto.city && <div>{resto.city}</div>}
             </div>
+            {/* Custom Spice Delight Contact Section */}
+            <div style={{
+              background: '#400d0d',
+              color: '#ffd700',
+              borderRadius: '12px',
+              marginTop: '2.5rem',
+              padding: '2rem 1.5rem',
+              maxWidth: 420,
+              fontFamily: 'inherit',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: '1.5rem', marginBottom: 8 }}>
+                <span style={{ fontSize: '1.6rem', marginRight: 8 }}>🔥</span> Spice Delight
+              </div>
+              <div style={{ color: '#e0b97f', fontWeight: 400, fontSize: '1rem', marginBottom: 18 }}>
+                North Indian cuisine crafted with tradition,<br />
+                served with love. MG Road's favourite café<br />
+                since 2009.
+              </div>
+              <div style={{ color: '#ffd700', fontWeight: 600, letterSpacing: 2, fontSize: '0.95rem', marginBottom: 8 }}>CONTACT <span style={{ color: '#e0b97f', marginLeft: 8, fontSize: '1.1rem' }}>•</span></div>
+              <div style={{ color: '#fff', fontWeight: 500, marginBottom: 4 }}>+91 88888 88888</div>
+              <div style={{ color: '#fff', marginBottom: 4 }}>contact@spicedelight.com</div>
+              <div style={{ color: '#fff', marginBottom: 4 }}>MG Road, Bangalore</div>
+              <div style={{ color: '#e0b97f', fontSize: '0.98rem', marginTop: 8 }}>Open 10AM – 11PM</div>
+            </div>
           </div>
         </div>
         <div className="ft-bottom">
