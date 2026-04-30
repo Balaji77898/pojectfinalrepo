@@ -69,15 +69,32 @@ export default function OrderDetails() {
   const markAllReady = () => handleUpdateStatus('READY');
   const markAllServed = () => handleUpdateStatus('SERVED');
 
-  const orderInfo = {
-    orderNumber: currentOrder?.orderNumber || (navState?.orderNumber as string) || '',
-    table: currentOrder?.table || tableFromNav || 'Unknown Table',
-    server: 'Staff', // TODO: Add server name from API when available
-    time: currentOrder?.time || 'Just now',
-    subtotal: detailedOrder?.subtotal ? parseFloat(detailedOrder.subtotal) : (currentOrder?.subtotal || 0),
-    tax: detailedOrder?.tax_amount ? parseFloat(detailedOrder.tax_amount) : (currentOrder?.tax || 0),
-    total: detailedOrder?.total_amount ? parseFloat(detailedOrder.total_amount) : (currentOrder?.total || 0),
-  };
+  const orderInfo = useMemo(() => {
+    const subtotalFromApi = detailedOrder?.subtotal ? parseFloat(detailedOrder.subtotal) : (currentOrder?.subtotal || 0);
+    const taxFromApi = detailedOrder?.tax_amount ? parseFloat(detailedOrder.tax_amount) : (currentOrder?.tax || 0);
+    const totalFromApi = detailedOrder?.total_amount ? parseFloat(detailedOrder.total_amount) : (currentOrder?.total || 0);
+
+    // If API returns 0 or missing, but we have items, calculate from items
+    let subtotal = subtotalFromApi;
+    let tax = taxFromApi;
+    let total = totalFromApi;
+
+    if ((!subtotal || subtotal === 0) && orderItems.length > 0) {
+      subtotal = orderItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+      tax = subtotal * 0.05; // Assuming 5% tax
+      total = subtotal + tax;
+    }
+
+    return {
+      orderNumber: currentOrder?.orderNumber || (navState?.orderNumber as string) || '',
+      table: currentOrder?.table || tableFromNav || 'Unknown Table',
+      server: 'Staff', // TODO: Add server name from API when available
+      time: currentOrder?.time || 'Just now',
+      subtotal,
+      tax,
+      total,
+    };
+  }, [detailedOrder, currentOrder, orderItems, navState, tableFromNav]);
 
   // ... (rest of code)
 

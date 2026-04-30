@@ -51,39 +51,50 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     try {
       const data = await staffOrdersService.getOrders();
       
-      const mappedOrders: Order[] = data.map((apiOrder: StaffOrder) => {
-        const formattedTime = formatTime(apiOrder.created_at);
-        const items = normalizeStaffOrderItems(apiOrder.items || []);
-        
-        const calculatedSubtotal = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
-        const calculatedTax = calculatedSubtotal * 0.05;
-        const calculatedTotal = calculatedSubtotal + calculatedTax;
+      setOrders(prevOrders => {
+        return data.map((apiOrder: StaffOrder) => {
+          const existingOrder = prevOrders.find(o => o.id === apiOrder.id);
+          const formattedTime = formatTime(apiOrder.created_at);
+          const items = normalizeStaffOrderItems(apiOrder.items || []);
+          
+          const calculatedSubtotal = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+          const calculatedTax = calculatedSubtotal * 0.05;
+          const calculatedTotal = calculatedSubtotal + calculatedTax;
 
-        const apiTotal = parseFloat(apiOrder.total_amount) || 0;
-        const apiSubtotal = parseFloat(apiOrder.subtotal || '0');
-        const apiTax = parseFloat(apiOrder.tax_amount || '0');
+          const apiTotal = parseFloat(apiOrder.total_amount) || 0;
+          const apiSubtotal = parseFloat(apiOrder.subtotal || '0');
+          const apiTax = parseFloat(apiOrder.tax_amount || '0');
 
-        return {
-          id: apiOrder.id,
-          orderNumber: apiOrder.id.substring(0, 8).toUpperCase(),
-          table: apiOrder.table_number
-            ? `Table ${apiOrder.table_number}`
-            : (apiOrder.table_id && apiOrder.table_id !== 'null' && apiOrder.table_id !== 'undefined'
-              ? `Table ${apiOrder.table_id}`
-              : (apiOrder.order_type === 'DINE_IN' ? 'Dine In' : (apiOrder.customer_name || 'Takeaway'))),
-          customerName: apiOrder.customer_name || '',
-          items: items.length || 0,
-          itemsDetails: items,
-          total: apiTotal > 0 ? apiTotal : calculatedTotal,
-          subtotal: Math.round(apiSubtotal > 0 ? apiSubtotal : calculatedSubtotal),
-          tax: Math.round(apiTax > 0 ? apiTax : calculatedTax),
-          status: mapApiStatusToOrderStatus(apiOrder.status),
-          time: formattedTime,
-          createdAt: apiOrder.created_at,
-          itemsPreview: apiOrder.items?.map((item: StaffOrderItem) => `${item.quantity}x ${item.name}`) || [],
-        };
+          let subtotal = Math.round(apiSubtotal > 0 ? apiSubtotal : calculatedSubtotal);
+          let tax = Math.round(apiTax > 0 ? apiTax : calculatedTax);
+          let total = apiTotal > 0 ? apiTotal : calculatedTotal;
+
+          // Preserve existing non-zero values if the latest API fetch returns 0 (which happens for unbilled orders without items included)
+          if (subtotal === 0 && existingOrder?.subtotal) subtotal = existingOrder.subtotal;
+          if (tax === 0 && existingOrder?.tax) tax = existingOrder.tax;
+          if (total === 0 && existingOrder?.total) total = existingOrder.total;
+
+          return {
+            id: apiOrder.id,
+            orderNumber: apiOrder.id.substring(0, 8).toUpperCase(),
+            table: apiOrder.table_number
+              ? `Table ${apiOrder.table_number}`
+              : (apiOrder.table_id && apiOrder.table_id !== 'null' && apiOrder.table_id !== 'undefined'
+                ? `Table ${apiOrder.table_id}`
+                : (apiOrder.order_type === 'DINE_IN' ? 'Dine In' : (apiOrder.customer_name || 'Takeaway'))),
+            customerName: apiOrder.customer_name || '',
+            items: items.length > 0 ? items.length : (existingOrder?.items || 0),
+            itemsDetails: items.length > 0 ? items : existingOrder?.itemsDetails,
+            total,
+            subtotal,
+            tax,
+            status: mapApiStatusToOrderStatus(apiOrder.status),
+            time: existingOrder ? existingOrder.time : formattedTime,
+            createdAt: apiOrder.created_at,
+            itemsPreview: apiOrder.items ? apiOrder.items.map((item: StaffOrderItem) => `${item.quantity}x ${item.name}`) : (existingOrder?.itemsPreview || []),
+          };
+        });
       });
-      setOrders(mappedOrders);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
     } finally {
