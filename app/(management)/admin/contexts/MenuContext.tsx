@@ -16,6 +16,7 @@ interface MenuContextType {
     updateMenuItem: (id: string, data: any) => Promise<void>;
     toggleItemAvailability: (id: string) => Promise<void>;
     deleteMenuItem: (id: string) => Promise<void>;
+    deleteCategory: (id: string) => Promise<void>;
 }
 
 const MenuContext = createContext<MenuContextType | undefined>(undefined);
@@ -103,6 +104,11 @@ export function MenuProvider({ children }: { children: ReactNode }) {
         setMenuItems(prev => prev.filter(item => item.id !== id));
     };
 
+    const deleteCategory = async (id: string) => {
+        await menuService.deleteCategory(id);
+        setCategories(prev => prev.filter(c => c.id !== id));
+    };
+
     const value: MenuContextType = {
         categories,
         menuItems,
@@ -115,6 +121,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
         updateMenuItem,
         toggleItemAvailability,
         deleteMenuItem,
+        deleteCategory,
     };
 
     return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;
