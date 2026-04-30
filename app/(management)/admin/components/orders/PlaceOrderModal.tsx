@@ -137,8 +137,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
             order_type: orderType,
             items: cart.map(c => ({ 
                 menu_item_id: c.id, 
-                quantity: c.quantity,
-                price: typeof c.price === 'string' ? parseFloat(c.price) : c.price
+                quantity: c.quantity
             })),
             payment_method: paymentMethod,
             total_amount: cartTotal // Include total_amount explicitly
@@ -146,13 +145,20 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
         if (customerName.trim()) payload.customer_name = customerName.trim();
         if (customerPhone.trim()) payload.customer_phone = customerPhone.trim();
         
-        // Ensure table_id is handled correctly for all types
+        // Ensure table_id is handled correctly: 
+        // Backend strictly requires a TABLE_UUID even for Takeaway/Delivery.
         if (orderType === 'DINE_IN') {
-            if (selectedTableId) payload.table_id = selectedTableId;
+            payload.table_id = selectedTableId;
         } else {
-            // For Takeaway/Delivery, we send an empty string to satisfy backend validation 
-            // without actually assigning a table.
-            payload.table_id = "";
+            // Find a "Virtual Table" for Takeaway/Delivery
+            // Look for a table named 'Takeaway', 'Delivery', or just use the first available one
+            const virtualTable = tables.find(t => 
+                t.table_number.toLowerCase().includes('takeaway') || 
+                t.table_number.toLowerCase().includes('delivery') ||
+                t.table_number.toLowerCase().includes('online')
+            ) || tables[0]; // Fallback to first table if no virtual table exists
+            
+            payload.table_id = virtualTable?.id || "";
         }
 
         if (notes.trim()) payload.notes = notes.trim();
@@ -163,13 +169,14 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
             onSuccess(); // refresh parent orders list
 
             // Find selected table number for success display
-            const selectedTable = tables.find(t => t.id === selectedTableId);
+            const selectedTable = tables.find(t => t.id === payload.table_id);
             const params = new URLSearchParams({
                 type: orderType,
                 ...(selectedTable ? { table: selectedTable.table_number } : {}),
                 ...(customerName.trim() ? { name: customerName.trim() } : {}),
                 ...(cartTotal ? { amount: cartTotal.toFixed(2) } : {}),
                 ...(order?.id ? { orderId: order.id } : {}),
+                successMessage: `Order successfully placed for ${orderType.toLowerCase()} by ${customerName.trim() || 'Walk-in Customer'}`
             });
             router.push(`/admin/dashboard/orders/success?${params.toString()}`);
         } catch (err: any) {

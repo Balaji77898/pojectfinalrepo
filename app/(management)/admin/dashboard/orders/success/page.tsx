@@ -15,6 +15,7 @@ function OrderSuccessContent() {
     const orderId = searchParams.get('orderId');
     const customerName = searchParams.get('name');
     const amount = searchParams.get('amount');
+    const customMessage = searchParams.get('successMessage');
 
     // Auto-redirect after 8 seconds
     const [countdown, setCountdown] = useState(8);
@@ -39,6 +40,7 @@ function OrderSuccessContent() {
     };
 
     const getSuccessMessage = () => {
+        if (customMessage) return customMessage;
         if (orderType === 'DINE_IN' && tableNumber) {
             return `Order placed for Table ${tableNumber} successfully!`;
         }
