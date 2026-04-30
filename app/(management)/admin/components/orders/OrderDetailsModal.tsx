@@ -117,7 +117,7 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                     <div>
                                         <div className="text-sm text-text-muted mb-1">Order Type</div>
                                         <div className="font-semibold text-text-primary">
-                                            {orderDetails.order_type.replace('_', ' ')}
+                                            {orderDetails.order_type ? orderDetails.order_type.replace('_', ' ') : 'N/A'}
                                         </div>
                                     </div>
                                     <div>
@@ -184,8 +184,8 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                     {(() => {
                                         // Improved amount calculation with fallback
                                         let subtotal = Number(orderDetails.subtotal || 0);
-                                        let total = Number(orderDetails.total_amount || orderDetails.totalAmount || orderDetails.total || 0);
-                                        const tax = Number(orderDetails.tax || 0);
+                                        let total = Number(orderDetails.total_amount || (orderDetails as any).totalAmount || (orderDetails as any).total || 0);
+                                        const tax = Number(orderDetails.tax_amount || (orderDetails as any).tax || 0);
 
                                         // Fallback calculation if everything is 0 but we have items
                                         if (total === 0 && orderDetails.items && orderDetails.items.length > 0) {
