@@ -100,7 +100,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
         }, 0),
         [cart]);
 
-    const taxAmount = useMemo(() => cartTotal * 0.05, [cartTotal]);
+    const taxAmount = useMemo(() => Math.round(cartTotal * 0.05), [cartTotal]);
     const finalTotal = useMemo(() => cartTotal + taxAmount, [cartTotal, taxAmount]);
 
     const addToCart = (item: MenuItem) => {
@@ -440,7 +440,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                                 </div>
                                 <div className="flex justify-between items-center text-sm font-bold text-gray-400">
                                     <span>Tax (5%)</span>
-                                    <span>₹{taxAmount.toFixed(2)}</span>
+                                    <span>₹{taxAmount.toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                                     <span className="text-base font-bold text-gray-800">Total</span>

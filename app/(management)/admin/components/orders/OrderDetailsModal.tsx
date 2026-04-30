@@ -209,7 +209,7 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                         }
 
                                         // If tax is missing but subtotal/total exist, show 5% tax
-                                        const displayTax = tax > 0 ? tax : (subtotal * 0.05);
+                                        const displayTax = tax > 0 ? Math.round(tax) : Math.round(subtotal * 0.05);
                                         const displayTotal = total > 0 ? total : (subtotal + displayTax);
 
                                         return (
@@ -220,7 +220,7 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                                 </div>
                                                 <div className="flex justify-between text-text-primary">
                                                     <span>Tax (5%)</span>
-                                                    <span className="font-semibold">{displayTax.toFixed(2)}</span>
+                                                    <span className="font-semibold">{displayTax.toFixed(0)}</span>
                                                 </div>
                                                 <div className="border-t border-gray-300 pt-2 mt-2">
                                                     <div className="flex justify-between text-lg font-bold text-ruby-red">

@@ -122,7 +122,7 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
                                     const qty = Number(item.quantity || 0);
                                     return sum + (price * qty);
                                 }, 0);
-                                amount = subtotal * 1.05; // Add 5% tax
+                                amount = subtotal + Math.round(subtotal * 0.05); // Add rounded 5% tax
                             }
 
                             return (
