@@ -113,7 +113,7 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
                             const paymentStatus = getPaymentStatusBadge(order.payment_status);
                             
                             // Improved amount calculation with fallback for manual orders
-                            let amount = Number(order.total_amount || order.totalAmount || order.total || 0);
+                            let amount = Number(order.total_amount || (order as any).totalAmount || (order as any).total || 0);
                             
                             // Fallback: If amount is 0 but we have items, calculate it manually
                             if (amount === 0 && order.items && order.items.length > 0) {
