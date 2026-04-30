@@ -146,11 +146,13 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
         if (customerName.trim()) payload.customer_name = customerName.trim();
         if (customerPhone.trim()) payload.customer_phone = customerPhone.trim();
         
-        // Pass the selected table ID or use the first available if not specified
-        if (selectedTableId) {
-            payload.table_id = selectedTableId;
-        } else if (orderType !== 'DINE_IN' && tables.length > 0) {
-            payload.table_id = tables[0].id; // Some backends require a table_id
+        // Ensure table_id is handled correctly for all types
+        if (orderType === 'DINE_IN') {
+            if (selectedTableId) payload.table_id = selectedTableId;
+        } else {
+            // For Takeaway/Delivery, we send an empty string to satisfy backend validation 
+            // without actually assigning a table.
+            payload.table_id = "";
         }
 
         if (notes.trim()) payload.notes = notes.trim();

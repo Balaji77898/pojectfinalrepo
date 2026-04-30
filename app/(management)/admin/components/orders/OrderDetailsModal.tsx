@@ -150,20 +150,26 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
-                                            {orderDetails.items?.map((item, index) => (
-                                                <tr key={item.id || index}>
-                                                    <td className="px-4 py-3 text-text-primary">
-                                                        {item.name || (item as any).itemName || (item as any).title || (item as any).product_name || (item as any).menuItemName || (item as any).menuItem?.name || (item as any).menu_item?.name || (item as any).menu_item?.default_name || (item as any).product?.name || 'Unknown Item'}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-center text-text-primary">{item.quantity}</td>
-                                                    <td className="px-4 py-3 text-right text-text-primary">
-                                                        {Number(item.price || 0).toFixed(2)}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right font-semibold text-text-primary">
-                                                        {Number(item.subtotal || 0).toFixed(2)}
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                            {orderDetails.items?.map((item, index) => {
+                                                const itemPrice = Number(item.price || 0);
+                                                const itemQty = Number(item.quantity || 0);
+                                                const itemSubtotal = Number(item.subtotal || 0) || (itemPrice * itemQty);
+                                                
+                                                return (
+                                                    <tr key={item.id || index}>
+                                                        <td className="px-4 py-3 text-text-primary">
+                                                            {item.name || (item as any).itemName || (item as any).title || (item as any).product_name || (item as any).menuItemName || (item as any).menuItem?.name || (item as any).menu_item?.name || (item as any).menu_item?.default_name || (item as any).product?.name || 'Unknown Item'}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-center text-text-primary">{itemQty}</td>
+                                                        <td className="px-4 py-3 text-right text-text-primary">
+                                                            {itemPrice.toFixed(2)}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right font-semibold text-text-primary">
+                                                            {itemSubtotal.toFixed(2)}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
@@ -173,20 +179,41 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                 <h3 className="text-lg font-semibold text-text-primary mb-4">Price Breakdown</h3>
                                 <div className="space-y-2">
-                                    <div className="flex justify-between text-text-primary">
-                                        <span>Subtotal</span>
-                                        <span className="font-semibold">{Number(orderDetails.subtotal || 0).toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-text-primary">
-                                        <span>Tax</span>
-                                        <span className="font-semibold">{Number(orderDetails.tax || 0).toFixed(2)}</span>
-                                    </div>
-                                    <div className="border-t border-gray-300 pt-2 mt-2">
-                                        <div className="flex justify-between text-lg font-bold text-ruby-red">
-                                            <span>Total</span>
-                                            <span>{Number(orderDetails.total_amount || 0).toFixed(2)}</span>
-                                        </div>
-                                    </div>
+                                    {(() => {
+                                        // Improved amount calculation with fallback
+                                        let subtotal = Number(orderDetails.subtotal || 0);
+                                        let total = Number(orderDetails.total_amount || orderDetails.totalAmount || orderDetails.total || 0);
+                                        const tax = Number(orderDetails.tax || 0);
+
+                                        // Fallback calculation if everything is 0 but we have items
+                                        if (total === 0 && orderDetails.items && orderDetails.items.length > 0) {
+                                            subtotal = orderDetails.items.reduce((sum, item) => {
+                                                const price = Number(item.price || 0);
+                                                const qty = Number(item.quantity || 0);
+                                                return sum + (price * qty);
+                                            }, 0);
+                                            total = subtotal + tax;
+                                        }
+
+                                        return (
+                                            <>
+                                                <div className="flex justify-between text-text-primary">
+                                                    <span>Subtotal</span>
+                                                    <span className="font-semibold">{subtotal.toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between text-text-primary">
+                                                    <span>Tax</span>
+                                                    <span className="font-semibold">{tax.toFixed(2)}</span>
+                                                </div>
+                                                <div className="border-t border-gray-300 pt-2 mt-2">
+                                                    <div className="flex justify-between text-lg font-bold text-ruby-red">
+                                                        <span>Total</span>
+                                                        <span>{total.toFixed(2)}</span>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 

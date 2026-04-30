@@ -112,8 +112,17 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
                             const status = getStatusBadge(order.status);
                             const paymentStatus = getPaymentStatusBadge(order.payment_status);
                             
-                            // Safety check for total_amount (sometimes backend returns it differently)
-                            const amount = Number(order.total_amount || 0);
+                            // Improved amount calculation with fallback for manual orders
+                            let amount = Number(order.total_amount || order.totalAmount || order.total || 0);
+                            
+                            // Fallback: If amount is 0 but we have items, calculate it manually
+                            if (amount === 0 && order.items && order.items.length > 0) {
+                                amount = order.items.reduce((sum, item) => {
+                                    const price = Number(item.price || 0);
+                                    const qty = Number(item.quantity || 0);
+                                    return sum + (price * qty);
+                                }, 0);
+                            }
 
                             return (
                                 <tr key={order.id} className="transition-colors hover:bg-gray-50/50">
@@ -149,10 +158,17 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
                                     {/* Table */}
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-2">
-                                            <MapPin size={14} className="text-ruby-red" />
-                                            <span className="text-sm font-semibold text-gray-700">
-                                                {order.table_number ? `Table ${order.table_number}` : 'N/A'}
-                                            </span>
+                                            {/* Show table number only for Dine-In, otherwise show a clean dash */}
+                                            {order.order_type === 'DINE_IN' ? (
+                                                <>
+                                                    <MapPin size={14} className="text-ruby-red" />
+                                                    <span className="text-sm font-semibold text-gray-700">
+                                                        {order.table_number ? `Table ${order.table_number}` : 'N/A'}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span className="text-sm font-semibold text-gray-400 ml-6">—</span>
+                                            )}
                                         </div>
                                     </td>
 
