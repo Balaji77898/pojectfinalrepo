@@ -78,7 +78,6 @@ export function normalizeStaffOrderItems(items: unknown): StaffOrderItem[] {
             (nested && pickStr(nested, 'name')) ||
             'Item';
         const quantity = Math.max(1, Math.round(Number(r.quantity ?? r.qty ?? 1) || 1));
-        // Check price from multiple sources: direct price, unit_price, or nested menu_item.price
         const p = r.price ?? r.unit_price ?? nested?.price ?? 0;
         const priceNum = typeof p === 'number' ? p : parseFloat(String(p)) || 0;
         const price = String(priceNum);
