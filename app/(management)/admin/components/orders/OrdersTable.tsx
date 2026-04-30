@@ -117,11 +117,12 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
                             
                             // Fallback: If amount is 0 but we have items, calculate it manually
                             if (amount === 0 && order.items && order.items.length > 0) {
-                                amount = order.items.reduce((sum, item) => {
+                                const subtotal = order.items.reduce((sum, item) => {
                                     const price = Number(item.price || 0);
                                     const qty = Number(item.quantity || 0);
                                     return sum + (price * qty);
                                 }, 0);
+                                amount = subtotal * 1.05; // Add 5% tax
                             }
 
                             return (

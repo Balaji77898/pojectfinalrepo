@@ -100,6 +100,9 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
         }, 0),
         [cart]);
 
+    const taxAmount = useMemo(() => cartTotal * 0.05, [cartTotal]);
+    const finalTotal = useMemo(() => cartTotal + taxAmount, [cartTotal, taxAmount]);
+
     const addToCart = (item: MenuItem) => {
         setCart(prev => {
             const existing = prev.find(c => c.id === item.id);
@@ -140,7 +143,8 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                 quantity: c.quantity
             })),
             payment_method: paymentMethod,
-            total_amount: cartTotal // Include total_amount explicitly
+            tax_amount: taxAmount,
+            total_amount: finalTotal
         };
         if (customerName.trim()) payload.customer_name = customerName.trim();
         if (customerPhone.trim()) payload.customer_phone = customerPhone.trim();
@@ -174,7 +178,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                 type: orderType,
                 ...(selectedTable ? { table: selectedTable.table_number } : {}),
                 ...(customerName.trim() ? { name: customerName.trim() } : {}),
-                ...(cartTotal ? { amount: cartTotal.toFixed(2) } : {}),
+                ...(finalTotal ? { amount: finalTotal.toFixed(2) } : {}),
                 ...(order?.id ? { orderId: order.id } : {}),
                 successMessage: `Order successfully placed for ${orderType.toLowerCase()} by ${customerName.trim() || 'Walk-in Customer'}`
             });
@@ -429,9 +433,19 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
 
                         {/* Footer - Checkout */}
                         <div className="px-6 py-5 border-t border-gray-200 bg-white rounded-br-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-                            <div className="flex justify-between items-center mb-5">
-                                <span className="text-sm font-bold text-gray-500">Subtotal</span>
-                                <span className="text-2xl font-black text-ruby-red tracking-tighter">₹{cartTotal.toFixed(2)}</span>
+                            <div className="space-y-2 mb-5">
+                                <div className="flex justify-between items-center text-sm font-bold text-gray-500">
+                                    <span>Subtotal</span>
+                                    <span>₹{cartTotal.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm font-bold text-gray-400">
+                                    <span>Tax (5%)</span>
+                                    <span>₹{taxAmount.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                    <span className="text-base font-bold text-gray-800">Total</span>
+                                    <span className="text-2xl font-black text-ruby-red tracking-tighter">₹{finalTotal.toFixed(2)}</span>
+                                </div>
                             </div>
 
                             {submitError && (
@@ -456,7 +470,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                                 ) : (
                                     <>
                                         <ShoppingCart size={20} />
-                                        Place Order · ₹{cartTotal.toFixed(2)}
+                                        Place Order · ₹{finalTotal.toFixed(2)}
                                     </>
                                 )}
                             </button>

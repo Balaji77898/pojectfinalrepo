@@ -202,8 +202,15 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                                 const qty = Number(item.quantity || 0);
                                                 return sum + (price * qty);
                                             }, 0);
-                                            total = subtotal + tax;
+                                            
+                                            // Ensure tax is 5% if missing
+                                            const calculatedTax = subtotal * 0.05;
+                                            total = subtotal + calculatedTax;
                                         }
+
+                                        // If tax is missing but subtotal/total exist, show 5% tax
+                                        const displayTax = tax > 0 ? tax : (subtotal * 0.05);
+                                        const displayTotal = total > 0 ? total : (subtotal + displayTax);
 
                                         return (
                                             <>
@@ -212,13 +219,13 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                                     <span className="font-semibold">{subtotal.toFixed(2)}</span>
                                                 </div>
                                                 <div className="flex justify-between text-text-primary">
-                                                    <span>Tax</span>
-                                                    <span className="font-semibold">{tax.toFixed(2)}</span>
+                                                    <span>Tax (5%)</span>
+                                                    <span className="font-semibold">{displayTax.toFixed(2)}</span>
                                                 </div>
                                                 <div className="border-t border-gray-300 pt-2 mt-2">
                                                     <div className="flex justify-between text-lg font-bold text-ruby-red">
                                                         <span>Total</span>
-                                                        <span>{total.toFixed(2)}</span>
+                                                        <span>{displayTotal.toFixed(2)}</span>
                                                     </div>
                                                 </div>
                                             </>
