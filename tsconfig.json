@@ -20,6 +20,7 @@
     ],
     "paths": {
       "@/*": ["./*"],
+      "@/restaurant-pos/*": ["./Restaurant_Pos_Merged1/pos-restaurant-merged-new/*"],
       "@/app/admin/*": ["./app/(management)/admin/*"],
       "@/app/staff/*": ["./app/(management)/staff/*"]
     }

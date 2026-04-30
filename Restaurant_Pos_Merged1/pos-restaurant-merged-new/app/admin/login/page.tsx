@@ -3,9 +3,9 @@ import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import { authService } from '../lib/auth.service';
+import { Input } from '@/restaurant-pos/app/admin/components/ui/Input';
+import { Button } from '@/restaurant-pos/app/admin/components/ui/Button';
+import { authService } from '@/restaurant-pos/app/admin/lib/auth.service';
 
 interface FormData {
     email: string;

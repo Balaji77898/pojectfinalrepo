@@ -5,9 +5,9 @@ import { useParams } from 'next/navigation';
 
 import { motion } from 'framer-motion';
 import { Trash2, Edit2, Save, X, Receipt } from 'lucide-react';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { DashboardHeader } from '../../../components/ui/DashboardHeader';
+import { Button } from '@/restaurant-pos/app/admin/components/ui/Button';
+import { Input } from '@/restaurant-pos/app/admin/components/ui/Input';
+import { DashboardHeader } from '@/restaurant-pos/app/admin/components/ui/DashboardHeader';
 
 interface Staff {
     id: number;
