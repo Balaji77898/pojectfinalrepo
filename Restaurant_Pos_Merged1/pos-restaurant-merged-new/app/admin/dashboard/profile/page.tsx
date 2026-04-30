@@ -45,8 +45,11 @@ export default function RestaurantProfile() {
                 {/* Header */}
                 <header className="bg-ruby-red py-8 px-8 shadow-lg border-b-4 border-gold-start">
                     <div className="max-w-6xl mx-auto">
-                        <Link href="/admin/dashboard" className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-gold-start rounded-lg hover:bg-white/20 hover:text-white transition-colors mb-4 font-semibold text-sm border border-gold-start/30">
-                            ← Back to Dashboard
+                        <Link 
+                            href="/admin/dashboard" 
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 text-gold-start rounded-xl hover:bg-white/20 hover:text-white transition-all duration-200 mb-6 font-bold text-sm border border-gold-start/30 backdrop-blur-sm shadow-lg group"
+                        >
+                            <span className="group-hover:-translate-x-1 transition-transform duration-200">←</span> Back to Dashboard
                         </Link>
                         <h1 className="text-4xl font-serif font-bold text-white mb-2">
                             Restaurant Profile

@@ -59,7 +59,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
             .then(([cats, items, tbls]) => {
                 setCategories(cats);
                 setMenuItems(items.filter(i => i.is_available));
-                setTables(tbls.filter(t => t.is_active));
+                setTables(tbls.filter(t => t.is_active && t.table_status === 'AVAILABLE'));
             })
             .catch(console.error)
             .finally(() => setLoadingMeta(false));

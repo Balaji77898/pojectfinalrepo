@@ -1,36 +1,51 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, ArrowLeft } from 'lucide-react';
+import { Search, Filter, Calendar, ArrowLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { OrdersProvider, useOrders } from '../../contexts/OrdersContext';
 import OrdersTable from '../../components/orders/OrdersTable';
 import OrderDetailsModal from '../../components/orders/OrderDetailsModal';
+import PlaceOrderModal from '../../components/orders/PlaceOrderModal';
 import { Order, OrderType, OrderStatus, PaymentStatus } from '../../lib/orders.service';
 
 function OrdersManagementContent() {
-    const { orders, isLoading, error } = useOrders();
+    const { orders, isLoading, error, refetchOrders } = useOrders();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL');
     const [paymentFilter, setPaymentFilter] = useState<PaymentStatus | 'ALL'>('ALL');
     const [typeFilter, setTypeFilter] = useState<OrderType | 'ALL'>('ALL');
+    const [dateFilter, setDateFilter] = useState('');          // YYYY-MM-DD
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [showPlaceOrderModal, setShowPlaceOrderModal] = useState(false);
 
-    // Filter orders
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
             const matchesSearch = !searchQuery ||
                 order.id.toLowerCase().includes(searchQuery.toLowerCase());
 
-            const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
-            const matchesPayment = paymentFilter === 'ALL' || order.payment_status === paymentFilter;
-            const matchesType = typeFilter === 'ALL' || order.order_type === typeFilter;
+            // Normalize status for comparison
+            const matchesStatus = statusFilter === 'ALL' ||
+                (order.status && order.status.toString().toUpperCase() === statusFilter.toString().toUpperCase());
 
-            return matchesSearch && matchesStatus && matchesPayment && matchesType;
+            // Normalize order_type for comparison
+            const matchesType = typeFilter === 'ALL' ||
+                (order.order_type && order.order_type.toString().toUpperCase() === typeFilter.toString().toUpperCase());
+
+            const matchesPayment = paymentFilter === 'ALL' || order.payment_status === paymentFilter;
+
+            // Date filter
+            const matchesDate = !dateFilter || (() => {
+                const orderDate = new Date(order.created_at);
+                const ymd = orderDate.toLocaleDateString('en-CA'); // "YYYY-MM-DD"
+                return ymd === dateFilter;
+            })();
+
+            return matchesSearch && matchesStatus && matchesType && matchesDate && matchesPayment;
         });
-    }, [orders, searchQuery, statusFilter, paymentFilter, typeFilter]);
+    }, [orders, searchQuery, statusFilter, typeFilter, dateFilter, paymentFilter]);
 
     const handleViewDetails = (order: Order) => {
         setSelectedOrderId(order.id);
@@ -40,8 +55,8 @@ function OrdersManagementContent() {
     // Stats
     const stats = {
         total: orders.length,
-        pending: orders.filter(o => o.status === OrderStatus.PENDING).length,
-        completed: orders.filter(o => o.status === OrderStatus.COMPLETED).length,
+        placed: orders.filter(o => o.status === OrderStatus.PLACED).length,
+        served: orders.filter(o => o.status === OrderStatus.SERVED).length,
         revenue: orders
             .filter(o => o.payment_status === PaymentStatus.PAID)
             .reduce((sum, o) => sum + Number(o.total_amount), 0),
@@ -56,18 +71,24 @@ function OrdersManagementContent() {
                         <div className="flex items-center justify-between">
                             <Link
                                 href="/admin/dashboard"
-                                className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors font-semibold border border-white/30"
+                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-gold-start hover:text-white border border-gold-start/30 hover:border-white/50 transition-all duration-200 font-bold text-sm backdrop-blur-sm shadow-lg group"
                             >
-                                <ArrowLeft size={20} />
+                                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-200" />
                                 Back to Dashboard
                             </Link>
                             <div className="text-center">
                                 <h1 className="text-4xl font-serif font-bold text-white mb-2">
                                     Orders Management
                                 </h1>
-                                <p className="text-gold-start/80">View and track all customer orders</p>
+                                <p className="text-gold-start/80">View, track and place customer orders</p>
                             </div>
-                            <div className="w-48"></div> {/* Spacer for alignment */}
+                            <button
+                                onClick={() => setShowPlaceOrderModal(true)}
+                                className="flex items-center gap-2 px-6 py-3 bg-gold-start text-ruby-red rounded-lg hover:bg-gold-end transition-colors font-semibold shadow-lg"
+                            >
+                                <Plus size={20} />
+                                Place Order
+                            </button>
                         </div>
                     </div>
                 </header>
@@ -87,12 +108,12 @@ function OrdersManagementContent() {
                             <div className="text-2xl font-bold text-text-primary">{stats.total}</div>
                         </div>
                         <div className="bg-white rounded-lg shadow p-4 border border-gray-100">
-                            <div className="text-text-muted text-sm mb-1">Pending</div>
-                            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+                            <div className="text-text-muted text-sm mb-1">Placed</div>
+                            <div className="text-2xl font-bold text-sky-600">{stats.placed}</div>
                         </div>
                         <div className="bg-white rounded-lg shadow p-4 border border-gray-100">
-                            <div className="text-text-muted text-sm mb-1">Completed</div>
-                            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+                            <div className="text-text-muted text-sm mb-1">Served</div>
+                            <div className="text-2xl font-bold text-teal-600">{stats.served}</div>
                         </div>
                         <div className="bg-white rounded-lg shadow p-4 border border-gray-100">
                             <div className="text-text-muted text-sm mb-1">Total Revenue</div>
@@ -146,17 +167,28 @@ function OrdersManagementContent() {
                                 <option value={PaymentStatus.FAILED}>Failed</option>
                             </select>
 
-                            {/* Type Filter */}
-                            <select
-                                value={typeFilter}
-                                onChange={(e) => setTypeFilter(e.target.value as OrderType | 'ALL')}
-                                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ruby-red focus:border-transparent"
-                            >
-                                <option value="ALL">All Types</option>
-                                <option value={OrderType.DINE_IN}>Dine-In</option>
-                                <option value={OrderType.TAKEAWAY}>Takeaway</option>
-                                <option value={OrderType.DELIVERY}>Delivery</option>
-                            </select>
+                             {/* Date Filter */}
+                             <div className="relative">
+                                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted" size={18} />
+                                 <input
+                                     type="date"
+                                     value={dateFilter}
+                                     onChange={(e) => setDateFilter(e.target.value)}
+                                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ruby-red focus:border-transparent text-sm"
+                                 />
+                             </div>
+
+                             {/* Type Filter */}
+                             <select
+                                 value={typeFilter}
+                                 onChange={(e) => setTypeFilter(e.target.value as OrderType | 'ALL')}
+                                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ruby-red focus:border-transparent text-sm"
+                             >
+                                 <option value="ALL">All Types</option>
+                                 <option value={OrderType.DINE_IN}>Dine-In</option>
+                                 <option value={OrderType.TAKEAWAY}>Takeaway</option>
+                                 <option value={OrderType.DELIVERY}>Delivery</option>
+                             </select>
                         </div>
                     </div>
 
@@ -176,10 +208,7 @@ function OrdersManagementContent() {
                             </div>
                         </div>
                     ) : (
-                        <OrdersTable
-                            orders={filteredOrders}
-                            onViewDetails={handleViewDetails}
-                        />
+                        <OrdersTable orders={filteredOrders} onViewDetails={handleViewDetails} />
                     )}
                 </div>
             </div>
@@ -192,6 +221,13 @@ function OrdersManagementContent() {
                     setSelectedOrderId(null);
                 }}
                 orderId={selectedOrderId}
+            />
+
+            {/* Place Order Modal */}
+            <PlaceOrderModal
+                isOpen={showPlaceOrderModal}
+                onClose={() => setShowPlaceOrderModal(false)}
+                onSuccess={() => refetchOrders()}
             />
         </ProtectedRoute>
     );

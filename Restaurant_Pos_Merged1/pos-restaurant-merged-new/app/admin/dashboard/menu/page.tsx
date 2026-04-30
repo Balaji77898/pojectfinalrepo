@@ -23,7 +23,13 @@ function MenuManagementContent() {
     // Filter menu items
     const filteredItems = useMemo(() => {
         return menuItems.filter(item => {
-            const matchesCategory = !selectedCategory || item.category_id === selectedCategory;
+            let matchesCategory = !selectedCategory || item.category_id === selectedCategory;
+
+            // Handle virtual "Today's Special" category selection
+            if (selectedCategory === 'SPECIALS') {
+                const specialsCat = categories.find(c => c.name.toLowerCase().includes('special'));
+                matchesCategory = !!specialsCat && item.category_id === specialsCat.id;
+            }
             const matchesSearch = !searchQuery ||
                 item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -50,9 +56,9 @@ function MenuManagementContent() {
                     <div className="max-w-7xl mx-auto">
                         <Link
                             href="/admin/dashboard"
-                            className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-lg bg-white/10 hover:bg-white/20 text-gold-start hover:text-white border border-gold-start/30 hover:border-white/50 transition-all duration-200 font-medium text-sm backdrop-blur-sm"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 mb-6 rounded-xl bg-white/10 hover:bg-white/20 text-gold-start hover:text-white border border-gold-start/30 hover:border-white/50 transition-all duration-200 font-bold text-sm backdrop-blur-sm shadow-lg group"
                         >
-                            <ArrowLeft size={16} />
+                            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-200" />
                             Back to Dashboard
                         </Link>
                         <div className="flex items-center justify-between">

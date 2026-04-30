@@ -4,7 +4,7 @@ import React from 'react';
 import { useRestaurant } from '../../contexts/RestaurantContext';
 import StatusBadge from '../../components/StatusBadge';
 import ProtectedRoute from '../../components/ProtectedRoute';
-import { Building2, Phone, Mail, MapPin, FileText } from 'lucide-react';
+import { Building2, Phone, Mail, MapPin, FileText, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RestaurantProfile() {
@@ -30,8 +30,12 @@ export default function RestaurantProfile() {
                     <div className="text-center">
                         <p className="text-ruby-red font-semibold">Failed to load restaurant profile</p>
                         <p className="text-text-muted mt-2">{error || 'Restaurant data not available'}</p>
-                        <Link href="/admin/dashboard" className="mt-4 inline-block text-ruby-red hover:underline">
-                            ← Back to Dashboard
+                        <Link
+                            href="/admin/dashboard"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ruby-red text-white hover:bg-ruby-red/90 transition-all duration-200 font-bold text-sm shadow-lg group mt-4"
+                        >
+                            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-200" />
+                            Back to Dashboard
                         </Link>
                     </div>
                 </div>
@@ -45,9 +49,15 @@ export default function RestaurantProfile() {
                 {/* Header */}
                 <header className="bg-ruby-red py-8 px-8 shadow-lg border-b-4 border-gold-start">
                     <div className="max-w-6xl mx-auto">
-                        <Link href="/admin/dashboard" className="text-gold-start hover:text-white transition-colors mb-4 inline-block">
-                            ← Back to Dashboard
-                        </Link>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Link
+                                href="/admin/dashboard"
+                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-gold-start hover:text-white border border-gold-start/30 hover:border-white/50 transition-all duration-200 font-bold text-sm backdrop-blur-sm shadow-lg group"
+                            >
+                                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-200" />
+                                Back to Dashboard
+                            </Link>
+                        </div>
                         <h1 className="text-4xl font-serif font-bold text-white mb-2">
                             Restaurant Profile
                         </h1>

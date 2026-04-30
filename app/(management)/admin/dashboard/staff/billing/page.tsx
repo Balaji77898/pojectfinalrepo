@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search, UserPlus } from 'lucide-react';
+import { Search, UserPlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '../../../components/ProtectedRoute';
 import { StaffProvider, useStaff } from '../../../contexts/StaffContext';
@@ -76,9 +76,15 @@ function BillingStaffContent() {
                 {/* Header */}
                 <header className="bg-ruby-red py-8 px-8 shadow-lg border-b-4 border-gold-start">
                     <div className="max-w-7xl mx-auto">
-                        <Link href="/admin/dashboard/staff" className="text-gold-start hover:text-white transition-colors mb-4 inline-block">
-                            ← Back to Staff Management
-                        </Link>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Link
+                                href="/admin/dashboard/staff"
+                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-gold-start hover:text-white border border-gold-start/30 hover:border-white/50 transition-all duration-200 font-bold text-sm backdrop-blur-sm shadow-lg group"
+                            >
+                                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-200" />
+                                Back to Staff Management
+                            </Link>
+                        </div>
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-4xl font-serif font-bold text-white mb-2">

@@ -95,10 +95,15 @@ export default function CategoryManager({ selectedCategory, onSelectCategory }: 
                 </h2>
                 <button
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="flex items-center gap-2 px-4 py-2 bg-ruby-red text-white rounded-lg hover:bg-ruby-red/90 transition-colors"
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 shadow-sm border-2 font-bold mb-2
+                        ${showAddForm 
+                            ? 'bg-ruby-red text-white border-ruby-red' 
+                            : 'bg-white text-ruby-red border-ruby-red hover:bg-ruby-red/5'}`}
                 >
-                    <Plus size={18} />
-                    Add Category
+                    <div className="flex items-center gap-2">
+                        <Plus size={18} />
+                        Add Category
+                    </div>
                 </button>
             </div>
 
@@ -158,58 +163,82 @@ export default function CategoryManager({ selectedCategory, onSelectCategory }: 
             <div className="space-y-2">
                 <button
                     onClick={() => onSelectCategory(null)}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${selectedCategory === null
-                        ? 'bg-ruby-red text-white'
-                        : 'bg-gray-50 text-text-primary hover:bg-gray-100'
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 border-2 font-bold shadow-sm mb-2
+                        ${selectedCategory === null
+                            ? 'bg-ruby-red text-white border-ruby-red'
+                            : 'bg-white text-text-primary border-gray-100 hover:border-ruby-red/30 hover:bg-ruby-red/5'
                         }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="font-semibold">All Items</span>
-                        <span className={`text-sm ${selectedCategory === null ? 'text-white/80' : 'text-text-muted'}`}>
+                        <span className="font-bold">All Items</span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${selectedCategory === null ? 'bg-white/20 text-white' : 'bg-gray-100 text-text-muted'}`}>
                             View all
                         </span>
                     </div>
                 </button>
 
-                {categories.map((category) => (
-                    <div
-                        key={category.id}
-                        className={`flex items-center gap-2 rounded-lg transition-colors ${selectedCategory === category.id
-                            ? 'bg-ruby-red text-white'
-                            : 'bg-gray-50 text-text-primary hover:bg-gray-100'
-                            }`}
-                    >
-                        <button
-                            onClick={() => onSelectCategory(category.id)}
-                            className="flex-1 text-left px-4 py-3"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="font-semibold">{category.name}</div>
-                                    {category.description && (
-                                        <div className={`text-sm ${selectedCategory === category.id ? 'text-white/80' : 'text-text-muted'}`}>
-                                            {category.description}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(category.id, category.name);
-                            }}
-                            disabled={deletingId === category.id}
-                            className={`px-3 py-3 mr-2 rounded-lg transition-colors ${selectedCategory === category.id
-                                ? 'hover:bg-white/20 text-white'
-                                : 'hover:bg-red-100 text-red-600'
-                                } disabled:opacity-50`}
-                            title="Delete category"
-                        >
-                            <Trash2 size={18} />
-                        </button>
+                {/* Today's Special Category */}
+                <button
+                    onClick={() => onSelectCategory('SPECIALS')}
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 border-2 font-bold shadow-sm mb-2
+                        ${selectedCategory === 'SPECIALS'
+                            ? 'bg-amber-400 text-amber-900 border-amber-400'
+                            : 'bg-white text-amber-600 border-amber-100 hover:border-amber-400/50 hover:bg-amber-50'
+                        }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg">⭐</span>
+                            <span className="font-bold">Today's Special</span>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full ${selectedCategory === 'SPECIALS' ? 'bg-amber-900/10 text-amber-900' : 'bg-amber-50 text-amber-600'}`}>
+                            Featured
+                        </span>
                     </div>
-                ))}
+                </button>
+
+                {categories
+                    .filter(c => !c.name.toLowerCase().includes('special'))
+                    .map((category) => (
+                        <div
+                            key={category.id}
+                            className={`flex items-center gap-2 rounded-xl transition-all duration-200 border-2 font-bold shadow-sm mb-2
+                                ${selectedCategory === category.id
+                                    ? 'bg-ruby-red text-white border-ruby-red'
+                                    : 'bg-white text-text-primary border-gray-100 hover:border-ruby-red/30 hover:bg-ruby-red/5'
+                                }`}
+                        >
+                            <button
+                                onClick={() => onSelectCategory(category.id)}
+                                className="flex-1 text-left px-4 py-3"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-bold">{category.name}</div>
+                                        {category.description && (
+                                            <div className={`text-xs ${selectedCategory === category.id ? 'text-white/70' : 'text-text-muted'}`}>
+                                                {category.description}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(category.id, category.name);
+                                }}
+                                disabled={deletingId === category.id}
+                                className={`px-3 py-3 mr-2 rounded-lg transition-colors ${selectedCategory === category.id
+                                    ? 'hover:bg-white/20 text-white'
+                                    : 'hover:bg-red-50 text-red-600'
+                                    } disabled:opacity-50`}
+                                title="Delete category"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    ))}
 
                 {categories.length === 0 && !showAddForm && (
                     <div className="text-center py-8 text-text-muted">

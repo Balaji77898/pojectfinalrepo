@@ -68,9 +68,9 @@ function OrdersManagementContent() {
                         <div className="flex items-center justify-between">
                             <Link
                                 href="/admin/dashboard"
-                                className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors font-semibold border border-white/30"
+                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-gold-start hover:text-white border border-gold-start/30 hover:border-white/50 transition-all duration-200 font-bold text-sm backdrop-blur-sm shadow-lg group"
                             >
-                                <ArrowLeft size={20} />
+                                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-200" />
                                 Back to Dashboard
                             </Link>
                             <div className="text-center">
