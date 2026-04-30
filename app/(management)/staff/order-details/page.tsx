@@ -33,17 +33,14 @@ export default function OrderDetails() {
   }, [orders, orderId]);
 
   const [detailedOrder, setDetailedOrder] = useState<StaffOrder | null>(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   useEffect(() => {
     if (orderId) {
-      setIsLoadingDetails(true);
       staffOrdersService.getOrderDetails(orderId).then((data) => {
         setDetailedOrder(data);
       }).catch(err => {
         console.error('Failed to fetch order details', err);
-      }).finally(() => {
-        setIsLoadingDetails(false);
       });
     }
   }, [orderId]);
@@ -56,10 +53,15 @@ export default function OrderDetails() {
 
   const handleUpdateStatus = async (status: OrderStatus) => {
     if (orderId && setOrderStatus) {
+      if (isUpdatingStatus) return;
+      setIsUpdatingStatus(true);
       try {
         await setOrderStatus(orderId, status);
       } catch (e) {
-        console.error(e);
+        console.warn('Failed to update status in component:', e instanceof Error ? e.message : e);
+        // Alert can be useful but for now we just log, as context reverts it
+      } finally {
+        setIsUpdatingStatus(false);
       }
     } else {
       console.warn('No orderId found in navigation state');
@@ -237,67 +239,67 @@ export default function OrderDetails() {
             {role === 'serving_staff' && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button
-                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'PLACED'
+                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'PLACED' && !isUpdatingStatus
                     ? 'bg-white hover:bg-orange-50 border-orange-200 hover:shadow-md cursor-pointer'
                     : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
                     }`}
-                  onClick={() => currentOrder?.status === 'PLACED' && handleUpdateStatus('CONFIRMED')}
-                  disabled={currentOrder?.status !== 'PLACED'}
+                  onClick={() => !isUpdatingStatus && currentOrder?.status === 'PLACED' && handleUpdateStatus('CONFIRMED')}
+                  disabled={currentOrder?.status !== 'PLACED' || isUpdatingStatus}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'PLACED' ? 'bg-orange-100 group-hover:scale-110' : 'bg-slate-200'
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'PLACED' && !isUpdatingStatus ? 'bg-orange-100 group-hover:scale-110' : 'bg-slate-200'
                     }`}>
-                    <Icon name="time" size={20} color={currentOrder?.status === 'PLACED' ? "#f97316" : "#94a3b8"} />
+                    <Icon name="time" size={20} color={currentOrder?.status === 'PLACED' && !isUpdatingStatus ? "#f97316" : "#94a3b8"} />
                   </div>
-                  <p className={`font-bold text-sm ${currentOrder?.status === 'PLACED' ? 'text-orange-900' : 'text-slate-500'}`}>Confirm</p>
-                  <p className={`text-[10px] ${currentOrder?.status === 'PLACED' ? 'text-orange-500' : 'text-slate-400'}`}>Kitchen receives</p>
+                  <p className={`font-bold text-sm ${currentOrder?.status === 'PLACED' && !isUpdatingStatus ? 'text-orange-900' : 'text-slate-500'}`}>Confirm</p>
+                  <p className={`text-[10px] ${currentOrder?.status === 'PLACED' && !isUpdatingStatus ? 'text-orange-500' : 'text-slate-400'}`}>Kitchen receives</p>
                 </button>
 
                 <button
-                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'CONFIRMED'
+                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'CONFIRMED' && !isUpdatingStatus
                     ? 'bg-white hover:bg-blue-50 border-blue-200 hover:shadow-md cursor-pointer'
                     : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
                     }`}
-                  onClick={() => currentOrder?.status === 'CONFIRMED' && handleUpdateStatus('PREPARING')}
-                  disabled={currentOrder?.status !== 'CONFIRMED'}
+                  onClick={() => !isUpdatingStatus && currentOrder?.status === 'CONFIRMED' && handleUpdateStatus('PREPARING')}
+                  disabled={currentOrder?.status !== 'CONFIRMED' || isUpdatingStatus}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'CONFIRMED' ? 'bg-blue-100 group-hover:scale-110' : 'bg-slate-200'
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'CONFIRMED' && !isUpdatingStatus ? 'bg-blue-100 group-hover:scale-110' : 'bg-slate-200'
                     }`}>
-                    <Icon name="flame" size={20} color={currentOrder?.status === 'CONFIRMED' ? "#3b82f6" : "#94a3b8"} />
+                    <Icon name="flame" size={20} color={currentOrder?.status === 'CONFIRMED' && !isUpdatingStatus ? "#3b82f6" : "#94a3b8"} />
                   </div>
-                  <p className={`font-bold text-sm ${currentOrder?.status === 'CONFIRMED' ? 'text-blue-900' : 'text-slate-500'}`}>Prepare</p>
-                  <p className={`text-[10px] ${currentOrder?.status === 'CONFIRMED' ? 'text-blue-500' : 'text-slate-400'}`}>Start cooking</p>
+                  <p className={`font-bold text-sm ${currentOrder?.status === 'CONFIRMED' && !isUpdatingStatus ? 'text-blue-900' : 'text-slate-500'}`}>Prepare</p>
+                  <p className={`text-[10px] ${currentOrder?.status === 'CONFIRMED' && !isUpdatingStatus ? 'text-blue-500' : 'text-slate-400'}`}>Start cooking</p>
                 </button>
 
                 <button
-                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'PREPARING'
+                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'PREPARING' && !isUpdatingStatus
                     ? 'bg-white hover:bg-indigo-50 border-indigo-200 hover:shadow-md cursor-pointer'
                     : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
                     }`}
-                  onClick={() => currentOrder?.status === 'PREPARING' && markAllReady()}
-                  disabled={currentOrder?.status !== 'PREPARING'}
+                  onClick={() => !isUpdatingStatus && currentOrder?.status === 'PREPARING' && markAllReady()}
+                  disabled={currentOrder?.status !== 'PREPARING' || isUpdatingStatus}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'PREPARING' ? 'bg-indigo-100 group-hover:scale-110' : 'bg-slate-200'
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'PREPARING' && !isUpdatingStatus ? 'bg-indigo-100 group-hover:scale-110' : 'bg-slate-200'
                     }`}>
-                    <Icon name="checkmark-circle" size={20} color={currentOrder?.status === 'PREPARING' ? "#6366f1" : "#94a3b8"} />
+                    <Icon name="checkmark-circle" size={20} color={currentOrder?.status === 'PREPARING' && !isUpdatingStatus ? "#6366f1" : "#94a3b8"} />
                   </div>
-                  <p className={`font-bold text-sm ${currentOrder?.status === 'PREPARING' ? 'text-indigo-900' : 'text-slate-500'}`}>Ready</p>
-                  <p className={`text-[10px] ${currentOrder?.status === 'PREPARING' ? 'text-indigo-500' : 'text-slate-400'}`}>Notify servers</p>
+                  <p className={`font-bold text-sm ${currentOrder?.status === 'PREPARING' && !isUpdatingStatus ? 'text-indigo-900' : 'text-slate-500'}`}>Ready</p>
+                  <p className={`text-[10px] ${currentOrder?.status === 'PREPARING' && !isUpdatingStatus ? 'text-indigo-500' : 'text-slate-400'}`}>Notify servers</p>
                 </button>
 
                 <button
-                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'READY'
+                  className={`border shadow-sm rounded-2xl py-4 flex flex-col items-center justify-center transition-all group ${currentOrder?.status === 'READY' && !isUpdatingStatus
                     ? 'bg-white hover:bg-emerald-50 border-emerald-200 hover:shadow-md cursor-pointer'
                     : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
                     }`}
-                  onClick={() => currentOrder?.status === 'READY' && markAllServed()}
-                  disabled={currentOrder?.status !== 'READY'}
+                  onClick={() => !isUpdatingStatus && currentOrder?.status === 'READY' && markAllServed()}
+                  disabled={currentOrder?.status !== 'READY' || isUpdatingStatus}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'READY' ? 'bg-emerald-100 group-hover:scale-110' : 'bg-slate-200'
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-transform ${currentOrder?.status === 'READY' && !isUpdatingStatus ? 'bg-emerald-100 group-hover:scale-110' : 'bg-slate-200'
                     }`}>
-                    <Icon name="checkmark-done" size={20} color={currentOrder?.status === 'READY' ? "#059669" : "#94a3b8"} />
+                    <Icon name="checkmark-done" size={20} color={currentOrder?.status === 'READY' && !isUpdatingStatus ? "#059669" : "#94a3b8"} />
                   </div>
-                  <p className={`font-bold text-sm ${currentOrder?.status === 'READY' ? 'text-emerald-900' : 'text-slate-500'}`}>Served</p>
-                  <p className={`text-[10px] ${currentOrder?.status === 'READY' ? 'text-emerald-500' : 'text-slate-400'}`}>Complete order</p>
+                  <p className={`font-bold text-sm ${currentOrder?.status === 'READY' && !isUpdatingStatus ? 'text-emerald-900' : 'text-slate-500'}`}>Served</p>
+                  <p className={`text-[10px] ${currentOrder?.status === 'READY' && !isUpdatingStatus ? 'text-emerald-500' : 'text-slate-400'}`}>Complete order</p>
                 </button>
               </div>
             )}
