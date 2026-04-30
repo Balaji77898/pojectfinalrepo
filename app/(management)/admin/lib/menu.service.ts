@@ -25,6 +25,7 @@ export interface MenuItem {
     price: number;
     category_id: string;
     is_available: boolean;
+    is_today_special?: boolean;
     image_url?: string;
     preparation_time?: number;
     created_at?: string;
