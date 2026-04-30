@@ -120,9 +120,11 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
 
     try {
       await staffOrdersService.updateStatus(id, status);
+      return true;
     } catch (error) {
-      console.error('Failed to update status:', error);
-      fetchOrders();
+      console.warn('Failed to update status:', error instanceof Error ? error.message : error);
+      await fetchOrders();
+      return false;
     }
   }, [fetchOrders]);
 

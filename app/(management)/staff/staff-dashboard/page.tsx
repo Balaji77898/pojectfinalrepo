@@ -6,11 +6,13 @@ import { Icon } from '../components/Icon';
 import { Animated } from '../components/Animated';
 import { useAuth } from '../contexts/AuthContext';
 import { OrderStatus, useOrders } from '../contexts/OrdersContext';
+import { useNavigationState } from '../contexts/NavigationContext';
 
 export default function StaffDashboard() {
   const { role, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { orders: allOrders, isLoading: ordersLoading } = useOrders();
+  const { setNavState } = useNavigationState();
 
   const isCashier = role === 'billing_staff';
 
@@ -36,7 +38,8 @@ export default function StaffDashboard() {
         status: o.status,
         items: o.items,
         time: o.time,
-        amount: o.total
+        amount: o.total,
+        orderNumber: o.orderNumber
       }));
   }, [allOrders]);
 
@@ -156,7 +159,14 @@ export default function StaffDashboard() {
                   <Animated key={item.id} type="fadeInUp" delay={index * 0.1} duration={0.5} className="h-full">
                     <button
                       className="w-full h-full bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all p-5 text-left group flex flex-col justify-between"
-                      onClick={() => router.push('/staff/order-details')}
+                      onClick={() => {
+                        setNavState({
+                          table: item.table,
+                          orderId: item.id,
+                          orderNumber: item.orderNumber
+                        });
+                        router.push('/staff/order-details');
+                      }}
                     >
                       <div className="flex justify-between items-start mb-4">
                          <div className="flex items-center">

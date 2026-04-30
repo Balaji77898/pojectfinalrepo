@@ -153,7 +153,7 @@ class StaffOrdersService {
             
             return [];
         } catch (error) {
-            console.error('Error fetching staff orders:', error);
+            console.warn('Error fetching staff orders:', error);
             throw error;
         }
     }
@@ -194,7 +194,7 @@ class StaffOrdersService {
             else order = data;
             return normalizeStaffOrder(order as StaffOrder);
         } catch (error) {
-            console.error('Error fetching order details:', error);
+            console.warn('Error fetching order details:', error);
             throw error;
         }
     }
@@ -234,7 +234,7 @@ class StaffOrdersService {
                 throw new Error(errorData.message || 'Failed to update order status');
             }
         } catch (error) {
-            console.error('Error updating order status:', error);
+            console.warn('Error updating order status:', error);
             throw error;
         }
     }
@@ -274,7 +274,7 @@ class StaffOrdersService {
                 throw new Error(errorData.message || 'Failed to generate bill');
             }
         } catch (error) {
-            console.error('Error generating bill:', error);
+            console.warn('Error generating bill:', error);
             throw error;
         }
     }
@@ -318,7 +318,7 @@ class StaffOrdersService {
                 throw new Error(errorData.message || 'Failed to process payment');
             }
         } catch (error) {
-            console.error('Error processing payment:', error);
+            console.warn('Error processing payment:', error);
             throw error;
         }
     }
