@@ -183,7 +183,7 @@ export default function OrdersTable({ orders, onViewDetails }: OrdersTableProps)
                                     {/* Total Amount */}
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-base font-black text-ruby-red tracking-tight">
-                                            ₹{amount.toFixed(2)}
+                                            ₹{Math.round(amount).toFixed(0)}
                                         </div>
                                     </td>
 

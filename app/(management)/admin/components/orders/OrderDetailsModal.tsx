@@ -175,7 +175,7 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                                             {itemPrice.toFixed(2)}
                                                         </td>
                                                         <td className="px-4 py-3 text-right font-semibold text-text-primary">
-                                                            {itemSubtotal.toFixed(2)}
+                                                            {Math.round(itemSubtotal).toFixed(0)}
                                                         </td>
                                                     </tr>
                                                 );
@@ -216,7 +216,7 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                             <>
                                                 <div className="flex justify-between text-text-primary">
                                                     <span>Subtotal</span>
-                                                    <span className="font-semibold">{subtotal.toFixed(2)}</span>
+                                                    <span className="font-semibold">{Math.round(subtotal).toFixed(0)}</span>
                                                 </div>
                                                 <div className="flex justify-between text-text-primary">
                                                     <span>Tax (5%)</span>
@@ -225,7 +225,7 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                                 <div className="border-t border-gray-300 pt-2 mt-2">
                                                     <div className="flex justify-between text-lg font-bold text-ruby-red">
                                                         <span>Total</span>
-                                                        <span>{displayTotal.toFixed(2)}</span>
+                                                        <span>{Math.round(displayTotal).toFixed(0)}</span>
                                                     </div>
                                                 </div>
                                             </>
