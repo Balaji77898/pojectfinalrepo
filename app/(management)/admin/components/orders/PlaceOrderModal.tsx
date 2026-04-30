@@ -128,6 +128,10 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
             setSubmitError('Please add at least one item to the order.');
             return;
         }
+        if (orderType === 'DINE_IN' && !selectedTableId) {
+            setSubmitError('Please select a table for Dine-In orders.');
+            return;
+        }
 
         const payload: any = {
             order_type: orderType,
@@ -204,7 +208,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
 
                         {/* 1. Order Type Selection */}
                         <div className="mb-6">
-                            <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Step 1: Select Order Type</label>
+                            <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Select Order Type</label>
                             <div className="grid grid-cols-3 gap-3">
                                 {[
                                     { id: 'DINE_IN', label: '🍽 Dine-In' },
@@ -227,13 +231,13 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                         {orderType === 'DINE_IN' && (
                             <div className="mb-6 p-4 bg-ruby-red/5 rounded-xl border border-ruby-red/10 animate-in fade-in slide-in-from-top-1">
                                 <label className="block text-sm font-bold text-ruby-red mb-2 uppercase tracking-wider">
-                                    <MapPin size={14} className="inline mr-1" /> Step 2: Assign Table (Optional)
+                                    <MapPin size={14} className="inline mr-1" /> Assign Table *
                                 </label>
                                 <select
                                     value={selectedTableId}
                                     onChange={e => setSelectedTableId(e.target.value)}
                                     className="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-ruby-red focus:border-transparent text-sm bg-white font-semibold">
-                                    <option value="">— Select an available table (Optional) —</option>
+                                    <option value="">— Select an available table —</option>
                                     {tables.map(t => (
                                         <option key={t.id} value={t.id}>
                                             Table {t.table_number}
@@ -241,14 +245,14 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                                     ))}
                                 </select>
                                 {tables.length === 0 && !loadingMeta && (
-                                    <p className="mt-2 text-xs text-red-500 font-medium italic">No available tables found. You can still place the order without a table.</p>
+                                    <p className="mt-2 text-xs text-red-500 font-medium italic">No available tables found. Please check Table Management.</p>
                                 )}
                             </div>
                         )}
 
                         {/* 3. Customer & Payment Details */}
                         <div className="mb-8">
-                            <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Step 3: Customer Information</label>
+                            <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Customer Information</label>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">Name</label>
@@ -287,7 +291,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                         <div className="border-t-2 border-dashed border-gray-100 pt-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
-                                    <UtensilsCrossed size={16} className="text-ruby-red" /> Step 4: Select Menu Items
+                                    <UtensilsCrossed size={16} className="text-ruby-red" /> Select Menu Items
                                 </h3>
                             </div>
 
