@@ -282,7 +282,7 @@ a {
 }
 .splash-name {
   font-family: "Playfair Display SC", serif;
-  font-size: clamp(54px, 15vw, 160px);
+  font-size: clamp(32px, 10vw, 90px);
   font-weight: 900;
   color: #fff;
   letter-spacing: 0.14em;
@@ -633,7 +633,7 @@ a {
 }
 .h-name {
   font-family: "Playfair Display SC", serif;
-  font-size: clamp(48px, 8vw, 120px);
+  font-size: clamp(28px, 6vw, 72px);
   font-weight: 900;
   line-height: 0.88;
   color: var(--wine);
