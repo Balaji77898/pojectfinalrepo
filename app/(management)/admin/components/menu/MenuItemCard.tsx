@@ -9,10 +9,9 @@ interface MenuItemCardProps {
     item: MenuItem;
     categoryName?: string;
     onEdit: (item: MenuItem) => void;
-    onDelete: (item: MenuItem) => void;
 }
 
-export default function MenuItemCard({ item, categoryName, onEdit, onDelete }: MenuItemCardProps) {
+export default function MenuItemCard({ item, categoryName, onEdit }: MenuItemCardProps) {
     const { toggleItemAvailability } = useMenu();
     const [isToggling, setIsToggling] = React.useState(false);
 
@@ -122,13 +121,6 @@ export default function MenuItemCard({ item, categoryName, onEdit, onDelete }: M
                     >
                         <Edit2 size={16} />
                         Edit
-                    </button>
-                    <button
-                        onClick={() => onDelete(item)}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                    >
-                        <Trash2 size={16} />
-                        Delete
                     </button>
                 </div>
             </div>

@@ -9,7 +9,6 @@ import CategoryManager from '../../components/menu/CategoryManager';
 import MenuItemCard from '../../components/menu/MenuItemCard';
 import AddItemModal from '../../components/menu/AddItemModal';
 import EditItemModal from '../../components/menu/EditItemModal';
-import DeleteConfirmation from '../../components/menu/DeleteConfirmation';
 import { MenuItem } from '../../lib/menu.service';
 
 function MenuManagementContent() {
@@ -19,9 +18,7 @@ function MenuManagementContent() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
 
     // Filter menu items
     const filteredItems = useMemo(() => {
@@ -44,27 +41,6 @@ function MenuManagementContent() {
     const handleEdit = (item: MenuItem) => {
         setSelectedItem(item);
         setShowEditModal(true);
-    };
-
-    const handleDelete = (item: MenuItem) => {
-        setSelectedItem(item);
-        setShowDeleteModal(true);
-    };
-
-    const confirmDelete = async () => {
-        if (!selectedItem) return;
-
-        setIsDeleting(true);
-        try {
-            const { deleteMenuItem } = useMenu();
-            await deleteMenuItem(selectedItem.id);
-            setShowDeleteModal(false);
-            setSelectedItem(null);
-        } catch (error: any) {
-            alert(error.message || 'Failed to delete item');
-        } finally {
-            setIsDeleting(false);
-        }
     };
 
     const getCategoryName = (categoryId: string) => {
@@ -218,7 +194,6 @@ function MenuManagementContent() {
                                             item={item}
                                             categoryName={getCategoryName(item.category_id)}
                                             onEdit={handleEdit}
-                                            onDelete={handleDelete}
                                         />
                                     ))}
                                 </div>
@@ -231,16 +206,6 @@ function MenuManagementContent() {
             {/* Modals */}
             <AddItemModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} />
             <EditItemModal isOpen={showEditModal} onClose={() => setShowEditModal(false)} item={selectedItem} />
-            <DeleteConfirmation
-                isOpen={showDeleteModal}
-                onClose={() => {
-                    setShowDeleteModal(false);
-                    setSelectedItem(null);
-                }}
-                onConfirm={confirmDelete}
-                item={selectedItem}
-                isDeleting={isDeleting}
-            />
         </ProtectedRoute>
     );
 }
