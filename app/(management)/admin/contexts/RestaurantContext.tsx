@@ -27,6 +27,28 @@ export function RestaurantProvider({ children }: { children: ReactNode }) {
             setRestaurant(data);
         } catch (err: any) {
             console.error('Error fetching restaurant:', err);
+            
+            // Fallback: Try to get restaurant info from the user data stored during login
+            const userDataStr = localStorage.getItem('admin_user_data');
+            if (userDataStr) {
+                try {
+                    const userData = JSON.parse(userDataStr);
+                    // Check if user data contains restaurant info (some backends nest it)
+                    const fallbackData = userData.restaurant || userData;
+                    if (fallbackData && (fallbackData.name || fallbackData.restaurant_name)) {
+                        console.log('[RESTAURANT CONTEXT] Using fallback data from localStorage');
+                        setRestaurant({
+                            ...fallbackData,
+                            name: fallbackData.name || fallbackData.restaurant_name || 'Restaurant',
+                            restaurant_type: fallbackData.restaurant_type || 'Dining',
+                        });
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Failed to parse fallback user data:', e);
+                }
+            }
+
             setError(err.message || 'Failed to load restaurant data');
             setRestaurant(null);
         } finally {
