@@ -146,23 +146,13 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
             tax_amount: taxAmount,
             total_amount: finalTotal
         };
+
         if (customerName.trim()) payload.customer_name = customerName.trim();
         if (customerPhone.trim()) payload.customer_phone = customerPhone.trim();
         
-        // Ensure table_id is handled correctly: 
-        // Backend strictly requires a TABLE_UUID even for Takeaway/Delivery.
+        // table_id is REQUIRED for DINE_IN, but MUST NOT be sent for TAKEAWAY/DELIVERY
         if (orderType === 'DINE_IN') {
             payload.table_id = selectedTableId;
-        } else {
-            // Find a "Virtual Table" for Takeaway/Delivery
-            // Look for a table named 'Takeaway', 'Delivery', or just use the first available one
-            const virtualTable = tables.find(t => 
-                t.table_number.toLowerCase().includes('takeaway') || 
-                t.table_number.toLowerCase().includes('delivery') ||
-                t.table_number.toLowerCase().includes('online')
-            ) || tables[0]; // Fallback to first table if no virtual table exists
-            
-            payload.table_id = virtualTable?.id || "";
         }
 
         if (notes.trim()) payload.notes = notes.trim();
