@@ -7,6 +7,7 @@ import { Input } from '@/app/admin/components/ui/Input';
 import { Button } from '@/app/admin/components/ui/Button';
 import { authService } from '@/app/admin/lib/auth.service';
 import { staffAuthService } from '@/app/staff/lib/staff-auth.service';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface FormData {
     email: string;
@@ -30,6 +31,7 @@ export default function AdminLogin() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -134,13 +136,22 @@ export default function AdminLogin() {
 
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-text-dark">Password</label>
-                                <Input
-                                    type="password"
-                                    placeholder="Enter password"
-                                    className="bg-paper-white border-gold-start/30 focus:border-ruby-red text-text-dark placeholder:text-text-muted/50"
-                                    value={formData.password}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, password: e.target.value })}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="Enter password"
+                                        className="bg-paper-white border-gold-start/30 focus:border-ruby-red text-text-dark placeholder:text-text-muted/50 pr-10"
+                                        value={formData.password}
+                                        onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, password: e.target.value })}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-ruby-red transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
                         </>
                     ) : (
@@ -179,13 +190,22 @@ export default function AdminLogin() {
 
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-text-dark">Password</label>
-                                <Input
-                                    type="password"
-                                    placeholder="Enter password"
-                                    className="bg-paper-white border-gold-start/30 focus:border-ruby-red text-text-dark placeholder:text-text-muted/50"
-                                    value={staffPassword}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setStaffPassword(e.target.value)}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="Enter password"
+                                        className="bg-paper-white border-gold-start/30 focus:border-ruby-red text-text-dark placeholder:text-text-muted/50 pr-10"
+                                        value={staffPassword}
+                                        onChange={(e: ChangeEvent<HTMLInputElement>) => setStaffPassword(e.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-ruby-red transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
                         </>
                     )}
