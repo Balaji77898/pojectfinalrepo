@@ -13,6 +13,10 @@ export const API_CONFIG = {
             ME: '/api/admin/me',
             RESTAURANT: '/api/admin/restaurant',
         },
+        AUTH: {
+            FORGOT_PASSWORD: '/api/auth/forgot-password',
+            RESET_PASSWORD: '/api/auth/reset-password',
+        },
         MENU: {
             CATEGORIES: '/api/admin/menu/categories',
             CATEGORY_BY_ID: (id: string) => `/api/admin/menu/categories/${id}`,

@@ -23,10 +23,9 @@ export function normalizeResponse<T>(data: any, fallback: T): T {
 
 
 interface RequestOptions {
-    method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-    headers?: Record<string, string>;
     body?: any;
     requiresAuth?: boolean;
+    suppressLogs?: boolean;
 }
 
 class ApiService {
@@ -84,6 +83,7 @@ class ApiService {
             headers: customHeaders,
             body,
             requiresAuth = true,
+            suppressLogs = false,
         } = options;
 
         const url = `${this.baseUrl}${endpoint}`;
@@ -121,7 +121,9 @@ class ApiService {
 
             return data as T;
         } catch (error) {
-            console.error(`[API ERROR] ${method} ${url}`, error);
+            if (!suppressLogs) {
+                console.error(`[API ERROR] ${method} ${url}`, error);
+            }
             throw error;
         }
     }
@@ -129,36 +131,36 @@ class ApiService {
     /**
      * GET request
      */
-    async get<T>(endpoint: string, requiresAuth = true): Promise<T> {
-        return this.request<T>(endpoint, { method: 'GET', requiresAuth });
+    async get<T>(endpoint: string, requiresAuth = true, suppressLogs = false): Promise<T> {
+        return this.request<T>(endpoint, { method: 'GET', requiresAuth, suppressLogs });
     }
 
     /**
      * POST request
      */
-    async post<T>(endpoint: string, body?: any, requiresAuth = true): Promise<T> {
-        return this.request<T>(endpoint, { method: 'POST', body, requiresAuth });
+    async post<T>(endpoint: string, body?: any, requiresAuth = true, suppressLogs = false): Promise<T> {
+        return this.request<T>(endpoint, { method: 'POST', body, requiresAuth, suppressLogs });
     }
 
     /**
      * PUT request
      */
-    async put<T>(endpoint: string, body?: any, requiresAuth = true): Promise<T> {
-        return this.request<T>(endpoint, { method: 'PUT', body, requiresAuth });
+    async put<T>(endpoint: string, body?: any, requiresAuth = true, suppressLogs = false): Promise<T> {
+        return this.request<T>(endpoint, { method: 'PUT', body, requiresAuth, suppressLogs });
     }
 
     /**
      * DELETE request
      */
-    async delete<T>(endpoint: string, requiresAuth = true): Promise<T> {
-        return this.request<T>(endpoint, { method: 'DELETE', requiresAuth });
+    async delete<T>(endpoint: string, requiresAuth = true, suppressLogs = false): Promise<T> {
+        return this.request<T>(endpoint, { method: 'DELETE', requiresAuth, suppressLogs });
     }
 
     /**
      * PATCH request
      */
-    async patch<T>(endpoint: string, body?: any, requiresAuth = true): Promise<T> {
-        return this.request<T>(endpoint, { method: 'PATCH', body, requiresAuth });
+    async patch<T>(endpoint: string, body?: any, requiresAuth = true, suppressLogs = false): Promise<T> {
+        return this.request<T>(endpoint, { method: 'PATCH', body, requiresAuth, suppressLogs });
     }
 }
 

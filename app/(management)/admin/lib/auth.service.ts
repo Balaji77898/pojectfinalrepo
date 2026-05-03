@@ -153,7 +153,8 @@ class AuthService {
             // Call /api/admin/me to validate session and get user data
             const response = await apiService.get<any>(
                 API_CONFIG.ENDPOINTS.ADMIN.ME,
-                true // Requires authentication
+                true, // Requires authentication
+                true  // Suppress logs for expected session expiry
             );
 
             const user = normalizeResponse(response, null);
@@ -164,8 +165,11 @@ class AuthService {
             }
 
             return user;
-        } catch (error) {
-            console.error('Session validation error:', error);
+        } catch (error: any) {
+            // Only log if it's NOT a 401/Unauthorized error (which is expected if token expired)
+            if (!error.message?.includes('Unauthorized') && !error.message?.includes('token')) {
+                console.error('Session validation error:', error);
+            }
             // Clear invalid token
             this.clearToken();
             this.clearUser();
@@ -179,6 +183,37 @@ class AuthService {
     getUserEmail(): string | null {
         const user = this.getUser();
         return user?.email || null;
+    }
+    
+    /**
+     * Send forgot password email
+     */
+    async forgotPassword(email: string): Promise<any> {
+        try {
+            return await apiService.post(
+                API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD,
+                { email },
+                false, // No auth required
+                true  // Suppress logs for expected "User not found" errors
+            );
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Reset password using token
+     */
+    async resetPassword(token: string, password: string): Promise<any> {
+        try {
+            return await apiService.post(
+                API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD,
+                { token, password },
+                false // No auth required
+            );
+        } catch (error) {
+            throw error;
+        }
     }
 }
 

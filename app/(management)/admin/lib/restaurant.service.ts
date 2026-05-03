@@ -41,8 +41,10 @@ class RestaurantService {
                 true
             );
             data = normalizeResponse(response, null);
-        } catch (error) {
-            console.log('[RESTAURANT SERVICE] RESTAURANT endpoint failed, trying PROFILE...');
+        } catch (error: any) {
+            if (!error.message?.includes('Unauthorized')) {
+                console.log('[RESTAURANT SERVICE] RESTAURANT endpoint failed:', error.message);
+            }
         }
 
         // 2. Try PROFILE endpoint as fallback if RESTAURANT failed

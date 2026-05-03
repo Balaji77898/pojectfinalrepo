@@ -32,6 +32,9 @@ export default function AdminLogin() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isForgotPassword, setIsForgotPassword] = useState(false);
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [forgotSuccess, setForgotSuccess] = useState(false);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -82,6 +85,27 @@ export default function AdminLogin() {
             setLoading(false);
         }
     };
+    
+    const handleForgotPassword = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!forgotEmail) {
+            setError('Please enter your email');
+            return;
+        }
+        
+        setLoading(true);
+        setError('');
+        setForgotSuccess(false);
+        
+        try {
+            await authService.forgotPassword(forgotEmail);
+            setForgotSuccess(true);
+        } catch (err: any) {
+            setError(err.message || 'Failed to send reset link. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-paper-white flex items-center justify-center p-6 relative overflow-hidden">
@@ -95,32 +119,81 @@ export default function AdminLogin() {
                 className="bg-card-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gold-start/20 relative z-10"
             >
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-serif font-bold text-ruby-red mb-2">Portal Access</h1>
-                    <div className="flex justify-center gap-4 mt-4">
-                        <button
-                            onClick={() => { setLoginType('admin'); setError(''); }}
-                            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${loginType === 'admin'
-                                ? 'bg-ruby-red text-white shadow-md'
-                                : 'bg-paper-white text-text-muted border border-gold-start/30 hover:bg-gold-start/10'
-                                }`}
-                        >
-                            Admin Login
-                        </button>
-                        <button
-                            onClick={() => { setLoginType('staff'); setError(''); }}
-                            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${loginType === 'staff'
-                                ? 'bg-ruby-red text-white shadow-md'
-                                : 'bg-paper-white text-text-muted border border-gold-start/30 hover:bg-gold-start/10'
-                                }`}
-                        >
-                            Staff Login
-                        </button>
-                    </div>
+                    <h1 className="text-3xl font-serif font-bold text-ruby-red mb-2">
+                        {isForgotPassword ? 'Reset Access' : 'Portal Access'}
+                    </h1>
+                    {!isForgotPassword && (
+                        <div className="flex justify-center gap-4 mt-4">
+                            <button
+                                onClick={() => { setLoginType('admin'); setError(''); }}
+                                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${loginType === 'admin'
+                                    ? 'bg-ruby-red text-white shadow-md'
+                                    : 'bg-paper-white text-text-muted border border-gold-start/30 hover:bg-gold-start/10'
+                                    }`}
+                            >
+                                Admin Login
+                            </button>
+                            <button
+                                onClick={() => { setLoginType('staff'); setError(''); }}
+                                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${loginType === 'staff'
+                                    ? 'bg-ruby-red text-white shadow-md'
+                                    : 'bg-paper-white text-text-muted border border-gold-start/30 hover:bg-gold-start/10'
+                                    }`}
+                            >
+                                Staff Login
+                            </button>
+                        </div>
+                    )}
+                    {isForgotPassword && (
+                        <p className="text-text-muted text-sm mt-2">
+                            Enter your email to receive a password reset link
+                        </p>
+                    )}
                 </div>
 
-                {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+                {error && <p className="text-red-500 text-sm text-center mb-4 bg-red-50 p-2 rounded-lg border border-red-100">{error}</p>}
+                {forgotSuccess && <p className="text-green-600 text-sm text-center mb-4 bg-green-50 p-2 rounded-lg border border-green-100">Reset link sent to your email!</p>}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                {isForgotPassword ? (
+                    <form onSubmit={handleForgotPassword} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-text-dark">Email Address</label>
+                            <Input
+                                type="email"
+                                placeholder="Enter your registered email"
+                                className="bg-paper-white border-gold-start/30 focus:border-ruby-red text-text-dark placeholder:text-text-muted/50"
+                                value={forgotEmail}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                    setForgotEmail(e.target.value);
+                                    setError('');
+                                    setForgotSuccess(false);
+                                }}
+                                required
+                            />
+                        </div>
+
+                        <Button
+                            type="submit"
+                            className="w-full bg-linear-to-r from-gold-start to-gold-end text-ruby-red font-bold hover:shadow-lg transition-all"
+                            disabled={loading}
+                        >
+                            {loading ? 'Sending...' : 'Send Reset Link'}
+                        </Button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsForgotPassword(false);
+                                setError('');
+                                setForgotSuccess(false);
+                            }}
+                            className="w-full text-sm text-ruby-red hover:underline font-medium"
+                        >
+                            Back to Login
+                        </button>
+                    </form>
+                ) : (
+                    <form onSubmit={handleSubmit} className="space-y-6">
                     {loginType === 'admin' ? (
                         <>
                             <div className="space-y-2">
@@ -217,7 +290,22 @@ export default function AdminLogin() {
                     >
                         {loading ? 'Verifying...' : `Login as ${loginType === 'admin' ? 'Admin' : 'Staff'}`}
                     </Button>
+
+                    <div className="text-right">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsForgotPassword(true);
+                                setError('');
+                                setForgotSuccess(false);
+                            }}
+                            className="text-xs text-ruby-red hover:underline font-medium"
+                        >
+                            Forgot Password?
+                        </button>
+                    </div>
                 </form>
+                )}
 
                 <div className="mt-6 text-center">
                     <Link href="/" className="text-sm text-text-muted hover:text-ruby-red underline decoration-gold-start/50">
