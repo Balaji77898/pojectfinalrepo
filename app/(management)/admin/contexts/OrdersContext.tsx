@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ordersService, Order, OrderDetails } from '../lib/orders.service';
+import { ordersService, Order, OrderDetails, OrderStatus } from '../lib/orders.service';
 import { useAuth } from './AuthContext';
 
 interface OrdersContextType {
