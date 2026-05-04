@@ -108,14 +108,14 @@ export default function EditItemModal({ isOpen, onClose, item }: EditItemModalPr
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-semibold text-text-primary mb-2">
-                                Price ($) *
+                                Price (₹) *
                             </label>
                             <input
                                 type="number"
-                                step="0.01"
+                                step="1"
                                 min="0"
                                 value={formData.price || ''}
-                                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                                onChange={(e) => setFormData({ ...formData, price: Math.round(parseFloat(e.target.value)) || 0 })}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ruby-red focus:border-transparent"
                                 placeholder="0.00"
                                 required

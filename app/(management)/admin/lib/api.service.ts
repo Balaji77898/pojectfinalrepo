@@ -23,6 +23,8 @@ export function normalizeResponse<T>(data: any, fallback: T): T {
 
 
 interface RequestOptions {
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    headers?: Record<string, string>;
     body?: any;
     requiresAuth?: boolean;
     suppressLogs?: boolean;
@@ -57,10 +59,6 @@ class ApiService {
             if (token) {
                 // Send standard Authorization header
                 headers['Authorization'] = `Bearer ${token}`;
-                
-                // EXTRA: Send fallback headers for backend compatibility (matching staff app patterns)
-                headers['x-access-token'] = token;
-                headers['x-auth-token'] = token;
                 
                 console.log('[AUTH] Token injected into request headers');
             } else {

@@ -20,6 +20,7 @@ function OrdersManagementContent() {
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [showPlaceOrderModal, setShowPlaceOrderModal] = useState(false);
+    const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
 
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
@@ -44,8 +45,12 @@ function OrdersManagementContent() {
             })();
 
             return matchesSearch && matchesStatus && matchesType && matchesDate && matchesPayment;
+        }).sort((a, b) => {
+            const dateA = new Date(a.created_at).getTime();
+            const dateB = new Date(b.created_at).getTime();
+            return sortOrder === 'ASC' ? dateA - dateB : dateB - dateA;
         });
-    }, [orders, searchQuery, statusFilter, typeFilter, dateFilter, paymentFilter]);
+    }, [orders, searchQuery, statusFilter, typeFilter, dateFilter, paymentFilter, sortOrder]);
 
     const handleViewDetails = (order: Order) => {
         setSelectedOrderId(order.id);
@@ -188,6 +193,16 @@ function OrdersManagementContent() {
                                  <option value={OrderType.DINE_IN}>Dine-In</option>
                                  <option value={OrderType.TAKEAWAY}>Takeaway</option>
                                  <option value={OrderType.DELIVERY}>Delivery</option>
+                             </select>
+
+                             {/* Sort Filter */}
+                             <select
+                                 value={sortOrder}
+                                 onChange={(e) => setSortOrder(e.target.value as 'ASC' | 'DESC')}
+                                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ruby-red focus:border-transparent text-sm font-bold"
+                             >
+                                 <option value="DESC">Newest First</option>
+                                 <option value="ASC">Oldest First</option>
                              </select>
                         </div>
                     </div>

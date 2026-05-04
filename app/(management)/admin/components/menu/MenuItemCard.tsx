@@ -59,7 +59,7 @@ export default function MenuItemCard({ item, categoryName, onEdit }: MenuItemCar
                     </div>
                     <div className="text-right">
                         <div className="text-xl font-bold text-ruby-red">
-                            ₹{Number(item.price).toFixed(2)}
+                            ₹{Math.round(Number(item.price))}
                         </div>
                     </div>
                 </div>

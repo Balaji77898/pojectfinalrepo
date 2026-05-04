@@ -92,7 +92,7 @@ function OrderSuccessContent() {
                         )}
                         {amount && (
                             <div className="flex items-center gap-1.5 px-4 py-2 bg-green-50 rounded-full text-green-700 text-sm font-semibold border border-green-100">
-                                <span>💰</span> ₹{Number(amount).toFixed(2)}
+                                <span>💰</span> ₹{Math.round(Number(amount))}
                             </div>
                         )}
                         {orderId && (
