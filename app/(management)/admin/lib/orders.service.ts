@@ -96,13 +96,13 @@ class OrdersService {
     }
 
     /** GET /api/admin/orders/:id */
-    async getOrderDetails(id: string): Promise<OrderDetails> {
+    async getOrderDetails(id: string): Promise<OrderDetails | null> {
         const response = await apiService.get<any>(API_CONFIG.ENDPOINTS.ORDERS.DETAILS(id));
         return normalizeResponse(response, null);
     }
 
     /** PATCH /api/admin/orders/:id/status */
-    async updateOrderStatus(id: string, status: OrderStatus | string): Promise<Order> {
+    async updateOrderStatus(id: string, status: OrderStatus | string): Promise<Order | null> {
         const response = await apiService.patch<any>(
             API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(id),
             { status }

@@ -9,7 +9,7 @@ interface OrdersContextType {
     isLoading: boolean;
     error: string | null;
     refetchOrders: () => Promise<void>;
-    getOrderDetails: (id: string) => Promise<OrderDetails>;
+    getOrderDetails: (id: string) => Promise<OrderDetails | null>;
     updateOrderStatus: (id: string, status: OrderStatus | string) => Promise<void>;
 }
 
@@ -49,7 +49,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         fetchData();
     }, [isAuthenticated, authLoading]);
 
-    const getOrderDetails = async (id: string): Promise<OrderDetails> => {
+    const getOrderDetails = async (id: string): Promise<OrderDetails | null> => {
         return await ordersService.getOrderDetails(id);
     };
 
