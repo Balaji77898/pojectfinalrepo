@@ -111,7 +111,7 @@ class OrdersService {
     }
 
     /** POST /api/admin/orders (staff/admin manual order creation) */
-    async createOrder(data: CreateOrderRequest): Promise<Order> {
+    async createOrder(data: CreateOrderRequest): Promise<Order | null> {
         const response = await apiService.post<any>(API_CONFIG.ENDPOINTS.ORDERS.LIST, data);
         return normalizeResponse(response, null);
     }
