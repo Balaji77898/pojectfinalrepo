@@ -92,7 +92,7 @@ class RestaurantService {
     /**
      * Update restaurant details
      */
-    async updateRestaurantDetails(details: Partial<RestaurantProfile>): Promise<RestaurantProfile> {
+    async updateRestaurantDetails(details: Partial<RestaurantProfile>): Promise<RestaurantProfile | null> {
         const response = await apiService.put<any>(
             API_CONFIG.ENDPOINTS.ADMIN.RESTAURANT_DETAILS,
             details,
@@ -115,7 +115,7 @@ class RestaurantService {
     /**
      * Add a new additional contact
      */
-    async addContact(type: 'PHONE' | 'EMAIL', value: string): Promise<Contact> {
+    async addContact(type: 'PHONE' | 'EMAIL', value: string): Promise<Contact | null> {
         const response = await apiService.post<any>(
             API_CONFIG.ENDPOINTS.ADMIN.CONTACTS,
             { type, value },
