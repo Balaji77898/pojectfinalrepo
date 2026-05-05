@@ -12,6 +12,9 @@ export const API_CONFIG = {
             PROFILE: '/api/admin/profile',
             ME: '/api/admin/me',
             RESTAURANT: '/api/admin/restaurant',
+            RESTAURANT_DETAILS: '/api/admin/restaurant',
+            CONTACTS: '/api/admin/restaurant/contacts',
+            CONTACT_BY_ID: (id: string) => `/api/admin/restaurant/contacts/${id}`,
         },
         AUTH: {
             FORGOT_PASSWORD: '/api/auth/forgot-password',

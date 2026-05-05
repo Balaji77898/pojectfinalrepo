@@ -27,6 +27,13 @@ export interface RestaurantProfile {
     pincode: string;
 }
 
+export interface Contact {
+    id: string;
+    type: 'PHONE' | 'EMAIL';
+    value: string;
+    created_at: string;
+}
+
 class RestaurantService {
     /**
      * Get restaurant profile data
@@ -80,6 +87,51 @@ class RestaurantService {
         }
 
         return data as RestaurantProfile;
+    }
+
+    /**
+     * Update restaurant details
+     */
+    async updateRestaurantDetails(details: Partial<RestaurantProfile>): Promise<RestaurantProfile> {
+        const response = await apiService.put<any>(
+            API_CONFIG.ENDPOINTS.ADMIN.RESTAURANT_DETAILS,
+            details,
+            true
+        );
+        return normalizeResponse(response, null);
+    }
+
+    /**
+     * Get all additional contacts
+     */
+    async getContacts(): Promise<Contact[]> {
+        const response = await apiService.get<any>(
+            API_CONFIG.ENDPOINTS.ADMIN.CONTACTS,
+            true
+        );
+        return normalizeResponse(response, []);
+    }
+
+    /**
+     * Add a new additional contact
+     */
+    async addContact(type: 'PHONE' | 'EMAIL', value: string): Promise<Contact> {
+        const response = await apiService.post<any>(
+            API_CONFIG.ENDPOINTS.ADMIN.CONTACTS,
+            { type, value },
+            true
+        );
+        return normalizeResponse(response, null);
+    }
+
+    /**
+     * Delete an additional contact
+     */
+    async deleteContact(id: string): Promise<void> {
+        await apiService.delete(
+            API_CONFIG.ENDPOINTS.ADMIN.CONTACT_BY_ID(id),
+            true
+        );
     }
 }
 

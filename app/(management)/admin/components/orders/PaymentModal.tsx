@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { X, DollarSign, Smartphone, CheckCircle2 } from 'lucide-react';
+import { X, IndianRupee, Smartphone, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PaymentModalProps {
@@ -69,7 +69,7 @@ export default function PaymentModal({ isOpen, onClose, onConfirm, tableNumber, 
                                         : 'border-gray-100 text-gray-400 hover:border-ruby-red/20'
                                     }`}
                                 >
-                                    <DollarSign size={32} className="mb-2" />
+                                    <IndianRupee size={32} className="mb-2" />
                                     <span className="font-bold text-lg">Cash</span>
                                 </button>
                                 <button
