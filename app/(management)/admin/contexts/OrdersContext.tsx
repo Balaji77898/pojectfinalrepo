@@ -10,7 +10,7 @@ interface OrdersContextType {
     error: string | null;
     refetchOrders: () => Promise<void>;
     getOrderDetails: (id: string) => Promise<OrderDetails | null>;
-    updateOrderStatus: (id: string, status: OrderStatus | string) => Promise<void>;
+    updateOrderStatus: (id: string, status: OrderStatus | string, extraData?: any) => Promise<void>;
 }
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
@@ -53,8 +53,8 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         return await ordersService.getOrderDetails(id);
     };
 
-    const updateOrderStatus = async (id: string, status: OrderStatus | string) => {
-        await ordersService.updateOrderStatus(id, status);
+    const updateOrderStatus = async (id: string, status: OrderStatus | string, extraData?: any) => {
+        await ordersService.updateOrderStatus(id, status, extraData);
         await fetchOrders(); // Refresh the list after update
     };
 

@@ -102,10 +102,10 @@ class OrdersService {
     }
 
     /** PATCH /api/admin/orders/:id/status */
-    async updateOrderStatus(id: string, status: OrderStatus | string): Promise<Order | null> {
+    async updateOrderStatus(id: string, status: OrderStatus | string, extraData?: any): Promise<Order | null> {
         const response = await apiService.patch<any>(
             API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(id),
-            { status }
+            { status, ...extraData }
         );
         return normalizeResponse(response, null);
     }

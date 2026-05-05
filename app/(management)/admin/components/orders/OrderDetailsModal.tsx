@@ -97,8 +97,8 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
         if (!orderId || !orderDetails) return;
         setIsUpdating(true);
         try {
-            // Update order status to PAID
-            await updateOrderStatus(orderId, OrderStatus.PAID);
+            // Update order status to PAID and save payment method
+            await updateOrderStatus(orderId, OrderStatus.PAID, { payment_method: method });
             await fetchOrderDetails();
             setShowPaymentModal(false);
         } catch (err: any) {
@@ -279,7 +279,11 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                     <div className="text-gray-500">Date</div>
                                     <div className="text-right font-medium text-gray-900">{formatDate(orderDetails.created_at)}</div>
                                     <div className="text-gray-500">Payment Method</div>
-                                    <div className="text-right font-bold text-gray-900">{orderDetails.payment_method || 'Cash'}</div>
+                                    <div className="text-right font-bold text-gray-900 uppercase">
+                                        {orderDetails.payment_status === PaymentStatus.PAID 
+                                            ? (orderDetails.payment_method || 'Cash') 
+                                            : 'Pending'}
+                                    </div>
                                     {orderDetails.table_number && (
                                         <>
                                             <div className="text-gray-500">Table</div>
@@ -344,27 +348,6 @@ export default function OrderDetailsModal({ isOpen, onClose, orderId }: OrderDet
                                 </div>
                             </div>
 
-                            {/* Payment & Timestamps */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                                    <h4 className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                                        <CreditCard size={16} /> Payment Information
-                                    </h4>
-                                    <div className="space-y-1">
-                                        <div className="text-sm text-blue-800"><span className="font-semibold">Method:</span> {orderDetails.payment_method || 'N/A'}</div>
-                                        <div className="text-sm text-blue-800"><span className="font-semibold">Status:</span> {orderDetails.payment_status}</div>
-                                    </div>
-                                </div>
-                                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                                    <h4 className="text-sm font-semibold text-purple-900 mb-2 flex items-center gap-2">
-                                        <Clock size={16} /> Timestamps
-                                    </h4>
-                                    <div className="space-y-1">
-                                        <div className="text-sm text-purple-800"><span className="font-semibold">Created:</span> {formatDate(orderDetails.created_at)}</div>
-                                        {orderDetails.updated_at && <div className="text-sm text-purple-800"><span className="font-semibold">Updated:</span> {formatDate(orderDetails.updated_at)}</div>}
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     ) : null}
                 </div>
