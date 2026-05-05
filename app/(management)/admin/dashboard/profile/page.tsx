@@ -12,7 +12,6 @@ export default function RestaurantProfile() {
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({
         phone: '',
-        email: '',
         address: '',
         description: '',
         state: '',
@@ -25,7 +24,6 @@ export default function RestaurantProfile() {
         if (restaurant) {
             setEditForm({
                 phone: restaurant.phone || '',
-                email: restaurant.email || '',
                 address: restaurant.address || '',
                 description: restaurant.description || '',
                 state: restaurant.state || '',
@@ -115,30 +113,6 @@ export default function RestaurantProfile() {
                                 <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-200" />
                                 Back to Dashboard
                             </Link>
-                            {!isEditing ? (
-                                <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold-start text-ruby-red hover:bg-white transition-all font-bold text-sm shadow-lg"
-                                >
-                                    <Edit2 size={16} /> Edit Profile
-                                </button>
-                            ) : (
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setIsEditing(false)}
-                                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-all font-bold text-sm"
-                                    >
-                                        <X size={16} /> Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleUpdateDetails}
-                                        disabled={isSubmitting}
-                                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-ruby-red hover:bg-gold-start transition-all font-bold text-sm shadow-lg disabled:opacity-50"
-                                    >
-                                        <Check size={16} /> Save Changes
-                                    </button>
-                                </div>
-                            )}
                         </div>
                         <h1 className="text-4xl font-serif font-bold text-white mb-2">
                             Restaurant Profile
@@ -169,16 +143,7 @@ export default function RestaurantProfile() {
                                         <FileText className="text-ruby-red mt-1 flex-shrink-0" size={20} />
                                         <div className="flex-1">
                                             <h3 className="font-semibold text-text-primary mb-1 text-sm uppercase tracking-wider">Description</h3>
-                                            {isEditing ? (
-                                                <textarea
-                                                    value={editForm.description}
-                                                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ruby-red outline-none min-h-[100px]"
-                                                    placeholder="Tell us about your restaurant..."
-                                                />
-                                            ) : (
-                                                <p className="text-text-muted">{restaurant.description || 'No description provided'}</p>
-                                            )}
+                                            <p className="text-text-muted">{restaurant.description || 'No description provided'}</p>
                                         </div>
                                     </div>
 
@@ -186,38 +151,11 @@ export default function RestaurantProfile() {
                                         <MapPin className="text-ruby-red mt-1 flex-shrink-0" size={20} />
                                         <div className="flex-1">
                                             <h3 className="font-semibold text-text-primary mb-1 text-sm uppercase tracking-wider">Address</h3>
-                                            {isEditing ? (
-                                                <div className="space-y-3">
-                                                    <textarea
-                                                        value={editForm.address}
-                                                        onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ruby-red outline-none"
-                                                        placeholder="Full Address"
-                                                    />
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        <input
-                                                            type="text"
-                                                            value={editForm.state}
-                                                            onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
-                                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ruby-red outline-none"
-                                                            placeholder="State"
-                                                        />
-                                                        <input
-                                                            type="text"
-                                                            value={editForm.pincode}
-                                                            onChange={(e) => setEditForm({ ...editForm, pincode: e.target.value })}
-                                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ruby-red outline-none"
-                                                            placeholder="Pincode"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="text-text-muted">
-                                                    <p>{restaurant.address}</p>
-                                                    <p>{restaurant.city}, {restaurant.state}</p>
-                                                    <p>{restaurant.country} - {restaurant.pincode}</p>
-                                                </div>
-                                            )}
+                                            <div className="text-text-muted">
+                                                <p>{restaurant.address}</p>
+                                                <p>{restaurant.city}, {restaurant.state}</p>
+                                                <p>{restaurant.country} - {restaurant.pincode}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -292,7 +230,7 @@ export default function RestaurantProfile() {
                             </div>
                         </div>
 
-                        {/* Right Column: Primary Contact Info */}
+                        {/* Right Column: Information Sidebar */}
                         <div className="space-y-6">
                             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 sticky top-8">
                                 <div className="flex items-center gap-3 mb-6">
@@ -300,58 +238,16 @@ export default function RestaurantProfile() {
                                         <Building2 className="text-ruby-red" size={24} />
                                     </div>
                                     <h2 className="text-2xl font-serif font-bold text-text-primary">
-                                        Primary Contact
+                                        Restaurant ID
                                     </h2>
                                 </div>
-
-                                <div className="space-y-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-gray-50 p-3 rounded-xl">
-                                            <Phone className="text-ruby-red" size={20} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="font-semibold text-text-primary mb-1 text-sm uppercase tracking-wider">Primary Phone</h3>
-                                            {isEditing ? (
-                                                <input
-                                                    type="text"
-                                                    value={editForm.phone}
-                                                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ruby-red outline-none"
-                                                />
-                                            ) : (
-                                                <a href={`tel:${restaurant.phone}`} className="text-text-muted hover:text-ruby-red transition-colors font-medium">
-                                                    {restaurant.phone}
-                                                </a>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-gray-50 p-3 rounded-xl">
-                                            <Mail className="text-ruby-red" size={20} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="font-semibold text-text-primary mb-1 text-sm uppercase tracking-wider">Primary Email</h3>
-                                            {isEditing ? (
-                                                <input
-                                                    type="email"
-                                                    value={editForm.email}
-                                                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ruby-red outline-none"
-                                                />
-                                            ) : (
-                                                <a href={`mailto:${restaurant.email}`} className="text-text-muted hover:text-ruby-red transition-colors font-medium">
-                                                    {restaurant.email}
-                                                </a>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Restaurant ID</div>
+                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">ID</div>
                                     <div className="font-mono text-sm text-text-muted break-all">{restaurant.id}</div>
                                 </div>
+                                <p className="mt-4 text-xs text-text-muted italic text-center">
+                                    Primary contact details are managed during onboarding.
+                                </p>
                             </div>
                         </div>
                     </div>
