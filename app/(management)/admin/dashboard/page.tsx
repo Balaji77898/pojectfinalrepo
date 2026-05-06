@@ -74,7 +74,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Header Section */}
-                <header className="relative z-10 bg-ruby-red py-12 px-8 shadow-2xl border-b-4 border-gold-start">
+                <header className="relative z-20 bg-ruby-red py-12 px-8 shadow-2xl border-b-4 border-gold-start">
                     <div className="max-w-4xl mx-auto text-center">
                         <h1 className="text-5xl font-serif font-bold text-transparent bg-clip-text bg-linear-to-r from-gold-start via-white to-gold-end mb-4 drop-shadow-sm">
                             {restaurant?.name || 'Admin Dashboard'}

@@ -56,7 +56,7 @@ export default function NotificationDropdown() {
                                 )}
                             </div>
 
-                            <div className="max-h-[400px] overflow-y-auto">
+                            <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
                                 {notifications.length === 0 ? (
                                     <div className="p-8 text-center">
                                         <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
