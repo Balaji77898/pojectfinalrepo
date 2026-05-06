@@ -90,8 +90,8 @@ export interface CreateOrderRequest {
 
 class OrdersService {
     /** GET /api/admin/orders */
-    async getOrdersList(): Promise<Order[]> {
-        const response = await apiService.get<any>(API_CONFIG.ENDPOINTS.ORDERS.LIST);
+    async getOrdersList(suppressLogs = false): Promise<Order[]> {
+        const response = await apiService.get<any>(API_CONFIG.ENDPOINTS.ORDERS.LIST, true, suppressLogs);
         return normalizeResponse(response, []);
     }
 

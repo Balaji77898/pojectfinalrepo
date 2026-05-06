@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useRestaurant } from '../contexts/RestaurantContext';
 import StatusBadge from '../components/StatusBadge';
 import WarningBanner from '../components/WarningBanner';
+import NotificationDropdown from '../components/NotificationDropdown';
 
 interface MenuItem {
     title: string;
@@ -89,24 +90,29 @@ export default function Dashboard() {
                     </div>
 
                     {/* Admin Profile & Logout - Top Right */}
-                    <div className="absolute top-6 right-8 flex flex-col gap-2">
-                        <button
-                            onClick={() => setShowProfileMenu(!showProfileMenu)}
-                            className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/10 border border-white/20 hover:bg-white/20 transition-all backdrop-blur-sm"
-                        >
-                            <div className="w-8 h-8 rounded-full bg-gold-start flex items-center justify-center text-ruby-red">
-                                <User size={18} />
-                            </div>
-                            <span className="font-semibold text-white">{user?.email || 'Admin'}</span>
-                        </button>
+                    <div className="absolute top-6 right-8 flex items-start gap-4">
+                        {/* Notification Feature */}
+                        <NotificationDropdown />
 
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 hover:bg-red-500/20 hover:border-red-400/40 transition-all backdrop-blur-sm text-white hover:text-red-100"
-                        >
-                            <LogOut size={16} />
-                            <span className="font-semibold">Logout</span>
-                        </button>
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/10 border border-white/20 hover:bg-white/20 transition-all backdrop-blur-sm"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-gold-start flex items-center justify-center text-ruby-red">
+                                    <User size={18} />
+                                </div>
+                                <span className="font-semibold text-white">{user?.email || 'Admin'}</span>
+                            </button>
+
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 hover:bg-red-500/20 hover:border-red-400/40 transition-all backdrop-blur-sm text-white hover:text-red-100"
+                            >
+                                <LogOut size={16} />
+                                <span className="font-semibold">Logout</span>
+                            </button>
+                        </div>
 
                         <AnimatePresence>
                             {showProfileMenu && (
