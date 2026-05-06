@@ -25,7 +25,7 @@ export function normalizeResponse<T>(data: unknown, fallback: T): T {
 
 
 interface RequestOptions {
-    method?: string;
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | string;
     headers?: Record<string, string>;
     body?: unknown;
     requiresAuth?: boolean;
@@ -99,6 +99,7 @@ class ApiService {
         }
 
         try {
+            console.log(`[API DEBUG] Final URL: "${url}"`);
             console.log(`[API REQUEST] ${method} ${url}`, body ? { body } : '');
             const response = await fetch(url, config);
 

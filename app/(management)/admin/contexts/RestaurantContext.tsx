@@ -1,14 +1,18 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { restaurantService, RestaurantProfile } from '../lib/restaurant.service';
+import { restaurantService, RestaurantProfile, Contact } from '../lib/restaurant.service';
 import { useAuth } from './AuthContext';
 
 interface RestaurantContextType {
     restaurant: RestaurantProfile | null;
+    contacts: Contact[];
     isLoading: boolean;
     error: string | null;
     refetch: () => Promise<void>;
+    updateDetails: (details: Partial<RestaurantProfile>) => Promise<void>;
+    addContact: (type: 'PHONE' | 'EMAIL', value: string) => Promise<void>;
+    deleteContact: (id: string) => Promise<void>;
 }
 
 const RestaurantContext = createContext<RestaurantContextType | undefined>(undefined);
@@ -16,6 +20,7 @@ const RestaurantContext = createContext<RestaurantContextType | undefined>(undef
 export function RestaurantProvider({ children }: { children: ReactNode }) {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
     const [restaurant, setRestaurant] = useState<RestaurantProfile | null>(null);
+    const [contacts, setContacts] = useState<Contact[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -23,17 +28,20 @@ export function RestaurantProvider({ children }: { children: ReactNode }) {
         try {
             setIsLoading(true);
             setError(null);
-            const data = await restaurantService.getRestaurantProfile();
-            setRestaurant(data);
+            const [profile, contactsList] = await Promise.all([
+                restaurantService.getRestaurantProfile(),
+                restaurantService.getContacts()
+            ]);
+            setRestaurant(profile);
+            setContacts(contactsList);
         } catch (err: any) {
-            console.error('Error fetching restaurant:', err);
+            console.error('Error fetching restaurant data:', err);
             
             // Fallback: Try to get restaurant info from the user data stored during login
             const userDataStr = localStorage.getItem('admin_user_data');
             if (userDataStr) {
                 try {
                     const userData = JSON.parse(userDataStr);
-                    // Check if user data contains restaurant info (some backends nest it)
                     const fallbackData = userData.restaurant || userData;
                     if (fallbackData && (fallbackData.name || fallbackData.restaurant_name)) {
                         console.log('[RESTAURANT CONTEXT] Using fallback data from localStorage');
@@ -59,18 +67,14 @@ export function RestaurantProvider({ children }: { children: ReactNode }) {
     // Fetch restaurant data when authenticated
     useEffect(() => {
         const checkAndFetch = async () => {
-            // Check for token directly from service
             const token = localStorage.getItem('admin_auth_token');
-            
-            // Wait for auth context to stabilize if it's currently loading
-            if (authLoading && !token) {
-                return;
-            }
+            if (authLoading && !token) return;
 
             if (token || isAuthenticated) {
                 await fetchRestaurant();
             } else if (!authLoading && !isAuthenticated) {
                 setRestaurant(null);
+                setContacts([]);
                 setError(null);
                 setIsLoading(false);
             }
@@ -79,11 +83,34 @@ export function RestaurantProvider({ children }: { children: ReactNode }) {
         checkAndFetch();
     }, [isAuthenticated, authLoading]);
 
+    const updateDetails = async (details: Partial<RestaurantProfile>) => {
+        const updated = await restaurantService.updateRestaurantDetails(details);
+        if (updated) {
+            setRestaurant(prev => prev ? { ...prev, ...updated } : updated);
+        }
+    };
+
+    const addContact = async (type: 'PHONE' | 'EMAIL', value: string) => {
+        const newContact = await restaurantService.addContact(type, value);
+        if (newContact) {
+            setContacts(prev => [...prev, newContact]);
+        }
+    };
+
+    const deleteContact = async (id: string) => {
+        await restaurantService.deleteContact(id);
+        setContacts(prev => prev.filter(c => c.id !== id));
+    };
+
     const value: RestaurantContextType = {
         restaurant,
+        contacts,
         isLoading,
         error,
         refetch: fetchRestaurant,
+        updateDetails,
+        addContact,
+        deleteContact,
     };
 
     return <RestaurantContext.Provider value={value}>{children}</RestaurantContext.Provider>;

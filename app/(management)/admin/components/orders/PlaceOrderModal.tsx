@@ -168,7 +168,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                 type: orderType,
                 ...(selectedTable ? { table: selectedTable.table_number } : {}),
                 ...(customerName.trim() ? { name: customerName.trim() } : {}),
-                ...(finalTotal ? { amount: finalTotal.toFixed(2) } : {}),
+                ...(finalTotal ? { amount: Math.round(finalTotal).toString() } : {}),
                 ...(order?.id ? { orderId: order.id } : {}),
                 successMessage: `Order successfully placed for ${orderType.toLowerCase()} by ${customerName.trim() || 'Walk-in Customer'}`
             });
@@ -341,7 +341,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                                                 <div className="flex-1 min-w-0 pr-2">
                                                     <p className="text-sm font-bold text-gray-800 truncate">{item.name}</p>
                                                     <p className="text-[10px] text-gray-500 uppercase tracking-tighter font-bold">{getCategoryName(item.category_id)}</p>
-                                                    <p className="text-sm font-black text-ruby-red mt-1">₹{price.toFixed(2)}</p>
+                                                    <p className="text-sm font-black text-ruby-red mt-1">₹{Math.round(price)}</p>
                                                 </div>
                                                 {qty === 0 ? (
                                                     <button onClick={() => addToCart(item)}
@@ -398,10 +398,10 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                                             <div key={item.id} className="bg-white border border-gray-100 rounded-2xl p-3 shadow-sm">
                                                 <div className="flex justify-between items-start mb-2">
                                                     <p className="text-sm font-bold text-gray-800 truncate pr-2">{item.name}</p>
-                                                    <p className="text-sm font-black text-ruby-red">₹{(price * item.quantity).toFixed(2)}</p>
+                                                    <p className="text-sm font-black text-ruby-red">₹{Math.round(price * item.quantity)}</p>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-500 font-medium">₹{price.toFixed(2)} each</span>
+                                                    <span className="text-xs text-gray-500 font-medium">₹{Math.round(price)} each</span>
                                                     <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-0.5">
                                                         <button onClick={() => changeQty(item.id, -1)}
                                                             className="w-6 h-6 flex items-center justify-center rounded-md bg-white border border-gray-100 text-gray-400 hover:text-ruby-red transition-colors">
@@ -426,7 +426,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                             <div className="space-y-2 mb-5">
                                 <div className="flex justify-between items-center text-sm font-bold text-gray-500">
                                     <span>Subtotal</span>
-                                    <span>₹{cartTotal.toFixed(2)}</span>
+                                    <span>₹{Math.round(cartTotal)}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm font-bold text-gray-400">
                                     <span>Tax (5%)</span>
@@ -434,7 +434,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                                     <span className="text-base font-bold text-gray-800">Total</span>
-                                    <span className="text-2xl font-black text-ruby-red tracking-tighter">₹{finalTotal.toFixed(2)}</span>
+                                    <span className="text-2xl font-black text-ruby-red tracking-tighter">₹{Math.round(finalTotal)}</span>
                                 </div>
                             </div>
 
@@ -460,7 +460,7 @@ export default function PlaceOrderModal({ isOpen, onClose, onSuccess }: PlaceOrd
                                 ) : (
                                     <>
                                         <ShoppingCart size={20} />
-                                        Place Order · ₹{finalTotal.toFixed(2)}
+                                        Place Order · ₹{Math.round(finalTotal)}
                                     </>
                                 )}
                             </button>

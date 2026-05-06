@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ordersService, Order, OrderDetails } from '../lib/orders.service';
+import { ordersService, Order, OrderDetails, OrderStatus } from '../lib/orders.service';
 import { useAuth } from './AuthContext';
 
 interface OrdersContextType {
@@ -9,7 +9,8 @@ interface OrdersContextType {
     isLoading: boolean;
     error: string | null;
     refetchOrders: () => Promise<void>;
-    getOrderDetails: (id: string) => Promise<OrderDetails>;
+    getOrderDetails: (id: string) => Promise<OrderDetails | null>;
+    updateOrderStatus: (id: string, status: OrderStatus | string, extraData?: any) => Promise<void>;
 }
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
@@ -48,8 +49,13 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         fetchData();
     }, [isAuthenticated, authLoading]);
 
-    const getOrderDetails = async (id: string): Promise<OrderDetails> => {
+    const getOrderDetails = async (id: string): Promise<OrderDetails | null> => {
         return await ordersService.getOrderDetails(id);
+    };
+
+    const updateOrderStatus = async (id: string, status: OrderStatus | string, extraData?: any) => {
+        await ordersService.updateOrderStatus(id, status, extraData);
+        await fetchOrders(); // Refresh the list after update
     };
 
     const value: OrdersContextType = {
@@ -58,6 +64,7 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
         error,
         refetchOrders: fetchOrders,
         getOrderDetails,
+        updateOrderStatus,
     };
 
     return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;

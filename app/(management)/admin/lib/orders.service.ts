@@ -23,8 +23,10 @@ export enum OrderStatus {
     CONFIRMED = 'CONFIRMED',
     PREPARING = 'PREPARING',
     READY = 'READY',
-    COMPLETED = 'COMPLETED',
     SERVED = 'SERVED',
+    BILLED = 'BILLED',
+    PAID = 'PAID',
+    COMPLETED = 'COMPLETED',
     CANCELLED = 'CANCELLED'
 }
 
@@ -87,70 +89,31 @@ export interface CreateOrderRequest {
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 class OrdersService {
-    private getToken(): string | null {
-        if (typeof window === 'undefined') return null;
-        return localStorage.getItem(TOKEN_KEY);
-    }
-
-    private buildHeaders(): Record<string, string> {
-        const token = this.getToken();
-        return {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        };
-    }
-
-    /** Generic fetch that handles the backend's response structure */
-    private async call<T>(path: string, init: RequestInit = {}): Promise<T> {
-        const res = await fetch(`${BACKEND_BASE}${path}`, {
-            ...init,
-            headers: { ...this.buildHeaders(), ...(init.headers as Record<string, string> ?? {}) },
-        });
-
-        const contentType = res.headers.get('content-type') ?? '';
-        let data: any;
-        if (contentType.includes('application/json')) {
-            data = await res.json();
-        } else {
-            data = await res.text();
-        }
-
-        if (!res.ok) {
-            const msg = typeof data === 'object' && data?.message ? data.message : `HTTP ${res.status}`;
-            throw new Error(msg);
-        }
-
-        // Unwrap { success: true, data: ... }
-        if (data && typeof data === 'object' && 'success' in data && 'data' in data) {
-            return data.data as T;
-        }
-        return data as T;
-    }
-
     /** GET /api/admin/orders */
-    async getOrdersList(): Promise<Order[]> {
-        return this.call<Order[]>('/api/admin/orders');
+    async getOrdersList(suppressLogs = false): Promise<Order[]> {
+        const response = await apiService.get<any>(API_CONFIG.ENDPOINTS.ORDERS.LIST, true, suppressLogs);
+        return normalizeResponse(response, []);
     }
 
     /** GET /api/admin/orders/:id */
-    async getOrderDetails(id: string): Promise<OrderDetails> {
-        return this.call<OrderDetails>(`/api/admin/orders/${id}`);
+    async getOrderDetails(id: string): Promise<OrderDetails | null> {
+        const response = await apiService.get<any>(API_CONFIG.ENDPOINTS.ORDERS.DETAILS(id));
+        return normalizeResponse(response, null);
     }
 
     /** PATCH /api/admin/orders/:id/status */
-    async updateOrderStatus(id: string, status: OrderStatus): Promise<Order> {
-        return this.call<Order>(`/api/admin/orders/${id}/status`, {
-            method: 'PATCH',
-            body: JSON.stringify({ status }),
-        });
+    async updateOrderStatus(id: string, status: OrderStatus | string, extraData?: any): Promise<Order | null> {
+        const response = await apiService.patch<any>(
+            API_CONFIG.ENDPOINTS.STAFF_APP.UPDATE_STATUS(id),
+            { status, ...extraData }
+        );
+        return normalizeResponse(response, null);
     }
 
     /** POST /api/admin/orders (staff/admin manual order creation) */
-    async createOrder(data: CreateOrderRequest): Promise<Order> {
-        return this.call<Order>('/api/admin/orders', {
-            method: 'POST',
-            body: JSON.stringify(data),
-        });
+    async createOrder(data: CreateOrderRequest): Promise<Order | null> {
+        const response = await apiService.post<any>(API_CONFIG.ENDPOINTS.ORDERS.LIST, data);
+        return normalizeResponse(response, null);
     }
 }
 
