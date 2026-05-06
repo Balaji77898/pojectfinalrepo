@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '../components/Icon';
 import { Gradient } from '../components/Gradient';
@@ -7,12 +7,14 @@ import { Animated } from '../components/Animated';
 import { useAuth } from '../contexts/AuthContext';
 import { useOrders } from '../contexts/OrdersContext';
 import { useNavigationState } from '../contexts/NavigationContext';
+import StaffPlaceOrderModal from '../components/StaffPlaceOrderModal';
 
 export default function NewOrder() {
   const { role } = useAuth();
   const { orders, setOrderStatus } = useOrders();
   const router = useRouter();
   const { setNavState } = useNavigationState();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (role === 'billing_staff') {
@@ -55,7 +57,7 @@ export default function NewOrder() {
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-white rounded-full mr-3 animate-pulse" />
                   <div>
-                    <p className="text-white font-black text-xl tracking-wide">NEW ORDER</p>
+                    <p className="text-white font-black text-xl tracking-wide">NEW ORDERS</p>
                     <p className="text-white/70 text-sm mt-0.5">{item.time}</p>
                   </div>
                 </div>
@@ -193,6 +195,13 @@ export default function NewOrder() {
                 </p>
             </div>
             <div className="flex gap-4">
+                  <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="px-6 py-3 bg-gold text-white rounded-xl font-bold transition-all hover:bg-goldLight hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2"
+                  >
+                    <Icon name="add-circle" size={20} color="white" />
+                    <span>Place Order</span>
+                  </button>
 
                    <button
                     className="w-10 h-10 md:w-12 md:h-12 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md border border-white/10"
@@ -247,6 +256,16 @@ export default function NewOrder() {
             </div>
          </div>
       </div>
+
+      {/* Manual Order Modal */}
+      <StaffPlaceOrderModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          // Success handled by page refresh or internal state update if needed
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

@@ -27,6 +27,16 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
             return;
         }
 
+        // Add more robust validation
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecial = /[!@#$%^&*]/.test(password);
+
+        if (!hasUpperCase || !hasNumber || !hasSpecial) {
+            setError('Password must contain at least one uppercase letter, one number, and one special character (!@#$%^&*)');
+            return;
+        }
+
         if (password !== confirmPassword) {
             setError('Passwords do not match');
             return;
@@ -121,12 +131,35 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
                             />
                             <button
                                 type="button"
-                                onClick={() => setShowPassword(!showPassword)}
+                                onClick={() => {
+                                    setShowPassword(!showPassword);
+                                    // Feedback: Vibration or subtle click sound could be added here if needed
+                                }}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-ruby-red transition-colors"
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
+                        {password && (
+                            <div className="flex gap-1 mt-2">
+                                {[1, 2, 3, 4].map((i) => {
+                                    const strength = (password.length > 5 ? 1 : 0) + 
+                                                     (/[A-Z]/.test(password) ? 1 : 0) + 
+                                                     (/[0-9]/.test(password) ? 1 : 0) + 
+                                                     (/[!@#$%^&*]/.test(password) ? 1 : 0);
+                                    return (
+                                        <div 
+                                            key={i} 
+                                            className={`h-1 flex-1 rounded-full transition-all duration-500 ${
+                                                i <= strength 
+                                                    ? strength <= 2 ? 'bg-red-400' : strength === 3 ? 'bg-yellow-400' : 'bg-green-500'
+                                                    : 'bg-gray-200'
+                                            }`}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     <div className="space-y-2">

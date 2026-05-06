@@ -24,8 +24,6 @@ class StaffTablesService {
         try {
             const authHeaders = {
                 'Authorization': `Bearer ${token}`,
-                'x-access-token': token,
-                'x-auth-token': token,
             };
 
             const response = await fetch(

@@ -30,7 +30,7 @@ export function StaffNavigation() {
   return (
     <>
       {/* Desktop Sidebar (visible on lg screens) */}
-      <div className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-white border-r border-ivory-300 flex-col z-50">
+      <div className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-white border-r border-ivory-300 flex-col z-50 no-print">
         <div className="p-6 border-b border-ivory-200">
            <h1 className="text-2xl font-serif text-primary font-bold tracking-tight">RestaurantOS</h1>
         </div>
@@ -77,7 +77,7 @@ export function StaffNavigation() {
       </div>
 
       {/* Mobile Bottom Navigation (visible on smaller screens) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-ivory-300 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-ivory-300 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] no-print">
         <nav className="flex items-center justify-around p-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href;

@@ -17,14 +17,15 @@ interface TableBilling {
   total: number;
   status: BillingStatus;
   time: string;
+  customerName: string;
   orderItems?: { name: string; qty: number; price: number }[];
 }
 
 function mapOrderStatusToBillingStatus(orderStatus: string): BillingStatus | null {
   const status = orderStatus.toUpperCase();
   if (status === 'PAID') return 'paid';
-  // Include all orders that are active and not yet paid entirely under 'billed' tab
-  if (status !== 'CANCELLED') return 'billed';
+  // Only orders that are served or have already been billed are eligible for payment processing
+  if (status === 'SERVED' || status === 'BILLED') return 'billed';
   return null;
 }
 
@@ -56,6 +57,7 @@ export default function BillingPayment() {
         total: Math.round(order.total),
         status: mapOrderStatusToBillingStatus(order.status) as BillingStatus,
         time: order.time,
+        customerName: order.customerName || '—',
       }));
   }, [orders]);
 
@@ -143,7 +145,11 @@ export default function BillingPayment() {
                   <Icon name="restaurant" size={28} color="#8B1D1D" />
                 </div>
                 <div>
-                  <p className="text-slate-900 font-bold text-xl">{item.table}</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-slate-900 font-bold text-xl">{item.table}</p>
+                    <span className="text-slate-400 text-xs font-medium">|</span>
+                    <p className="text-slate-600 font-semibold text-sm">{item.customerName}</p>
+                  </div>
                   <p className="text-slate-500 text-sm mt-1">{item.items} items</p>
                 </div>
               </div>

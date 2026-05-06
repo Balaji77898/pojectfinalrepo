@@ -65,7 +65,7 @@ class StaffAuthService {
 
             // Handle non-JSON responses
             const contentType = response.headers.get('content-type');
-            let data;
+            let data: unknown;
             if (contentType && contentType.includes('application/json')) {
                 data = await response.json();
             } else {
@@ -75,8 +75,9 @@ class StaffAuthService {
             }
             console.log('Staff login response:', { status: response.status, data });
 
+            const d_login = data as Record<string, unknown>;
             if (!response.ok) {
-                throw new Error(data.message || 'Login failed. Please check your credentials.');
+                throw new Error((d_login.message as string) || 'Login failed. Please check your credentials.');
             }
 
             // Handle various response structures:
@@ -85,8 +86,8 @@ class StaffAuthService {
             // 3. Staff specific: { staff: { ... } }
             // 4. Flat: { role: "...", name: "..." }
             
-            const userData = data.data || data.user || data.staff || data;
-            const rawRole = (userData.role || '').toLowerCase().trim();
+            const userData = (d_login.data || d_login.user || d_login.staff || d_login) as Record<string, unknown>;
+            const rawRole = ((userData.role as string) || '').toLowerCase().trim();
             console.log('Role detection:', { rawRole, userData });
 
             let determinedRole: StaffRole | null = null;
@@ -111,15 +112,18 @@ class StaffAuthService {
             }
 
             const normalizedUser: StaffUser = {
-                id: userData.id || 'unknown',
-                name: userData.name || 'Staff Member',
-                email: userData.email || payload.email,
+                id: (userData.id as string) || 'unknown',
+                name: (userData.name as string) || 'Staff Member',
+                email: (userData.email as string) || payload.email,
                 role: determinedRole
             };
 
             // Store token and user data
             // Robust token extraction checking multiple possible locations
-            const token = data.token || data.data?.token || data.user?.token || (data as any).accessToken;
+            const token = (d_login.token as string) || 
+                          (d_login.data as Record<string, unknown>)?.token as string || 
+                          (d_login.user as Record<string, unknown>)?.token as string || 
+                          (d_login.accessToken as string);
             if (token) {
                 this.setToken(token);
             }
@@ -131,7 +135,7 @@ class StaffAuthService {
             return {
                 token: token,
                 user: normalizedUser,
-                message: data.message
+                message: d_login.message as string
             };
         } catch (error: unknown) {
             console.error('Staff login error:', error);
@@ -237,8 +241,6 @@ class StaffAuthService {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
-                        'x-access-token': token,
-                        'x-auth-token': token,
                         'ngrok-skip-browser-warning': 'true',
                     },
                 }
@@ -253,6 +255,60 @@ class StaffAuthService {
             return data.data || data.staff || data;
         } catch (error) {
             console.error('Error fetching staff profile:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Send forgot password email
+     */
+    async forgotPassword(email: string): Promise<Record<string, unknown>> {
+        try {
+            const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'ngrok-skip-browser-warning': 'true',
+                },
+                body: JSON.stringify({ email: email.trim() }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to send reset link');
+            }
+            return data;
+        } catch (error) {
+            console.error('Staff forgot password error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Reset password using token
+     */
+    async resetPassword(token: string, password: string): Promise<Record<string, unknown>> {
+        try {
+            const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'ngrok-skip-browser-warning': 'true',
+                },
+                body: JSON.stringify({ token, password }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to reset password');
+            }
+            return data;
+        } catch (error) {
+            console.error('Staff reset password error:', error);
             throw error;
         }
     }

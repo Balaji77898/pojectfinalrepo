@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '../components/Icon';
 
@@ -7,12 +7,14 @@ import { Animated } from '../components/Animated';
 import { useAuth } from '../contexts/AuthContext';
 import { OrderStatus, useOrders } from '../contexts/OrdersContext';
 import { useNavigationState } from '../contexts/NavigationContext';
+import StaffPlaceOrderModal from '../components/StaffPlaceOrderModal';
 
 export default function StaffDashboard() {
   const { role, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { orders: allOrders, isLoading: ordersLoading } = useOrders();
   const { setNavState } = useNavigationState();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isCashier = role === 'billing_staff';
 
@@ -99,7 +101,7 @@ export default function StaffDashboard() {
               <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Icon name="restaurant" size={40} color="#7B1F1F" />
               </div>
-              <h3 className="text-2xl font-serif text-slate-900 mb-3 group-hover:text-primary transition-colors">New Order</h3>
+              <h3 className="text-2xl font-serif text-slate-900 mb-3 group-hover:text-primary transition-colors">New Orders</h3>
               
            </button>
 
@@ -124,15 +126,15 @@ export default function StaffDashboard() {
               <h3 className="text-2xl font-serif text-slate-900 mb-3 group-hover:text-primary transition-colors">Orders</h3>
            </button>
 
-           {/* Profile / Staff */}
+           {/* Manual Order */}
            <button 
-              onClick={() => router.push('/staff/profile')}
+              onClick={() => setIsModalOpen(true)}
               className="group bg-white rounded-[32px] p-8 shadow-card hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col items-center text-center border border-slate-100"
            >
-              <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Icon name="people" size={40} color="#475569" />
+              <div className="w-24 h-24 bg-gold/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Icon name="add-circle" size={40} color="#C8A951" />
               </div>
-              <h3 className="text-2xl font-serif text-slate-900 mb-3 group-hover:text-primary transition-colors">My Profile</h3>
+              <h3 className="text-2xl font-serif text-slate-900 mb-3 group-hover:text-primary transition-colors">Place Order</h3>
            </button>
         </div>
 
@@ -201,6 +203,15 @@ export default function StaffDashboard() {
         </div>
 
       </div>
+
+      {/* Manual Order Modal */}
+      <StaffPlaceOrderModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

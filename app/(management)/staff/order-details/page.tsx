@@ -23,7 +23,6 @@ export default function OrderDetails() {
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
-  const [tipAmount, setTipAmount] = useState('');
 
   const tableFromNav = (navState?.table as string) || '';
   const orderId = (navState?.orderId as string);
@@ -105,22 +104,19 @@ export default function OrderDetails() {
     { id: 'upi' as PaymentMethod, label: 'UPI', icon: 'phone-portrait-outline' as const, color: '#7B1F1F' },
   ];
 
-  const tipPresets = [0, 10, 15, 20];
-  const tip = Math.round(parseFloat(tipAmount) || 0);
-  const finalTotal = Math.round(orderInfo.total + tip);
+  const finalTotal = Math.round(orderInfo.total);
 
   const handleProceedToPayment = () => {
     setSelectedPaymentMethod(null);
-    setTipAmount('');
     setShowPaymentModal(true);
   };
 
-  const calculateTipFromPercent = (percent: number) => ((orderInfo.total * percent) / 100).toFixed(0);
+
 
   const billingCanProceedToPayment =
     role === 'billing_staff' &&
     !!currentOrder &&
-    !['PAID', 'CANCELLED'].includes(currentOrder.status);
+    ['SERVED', 'BILLED'].includes(currentOrder.status);
 
   const handleConfirmPayment = async () => {
     if (!selectedPaymentMethod) return;
@@ -161,12 +157,13 @@ export default function OrderDetails() {
             ? Math.round((orderInfo.tax / orderInfo.subtotal) * 1000) / 10
             : 0,
         orderTotal: Math.round(orderInfo.total),
-        tip,
+        tip: 0,
         grandTotal: finalTotal,
         orderNumber: orderInfo.orderNumber,
         table: orderInfo.table,
         paymentMethod: selectedPaymentMethod,
         orderId,
+        customerName: currentOrder?.customerName || '',
       };
 
       setNavState({
@@ -174,7 +171,7 @@ export default function OrderDetails() {
         orderNumber: orderInfo.orderNumber,
         table: orderInfo.table,
         orderTotal: Math.round(orderInfo.total).toString(),
-        tipAmount: tip.toString(),
+        tipAmount: '0',
         finalTotal: finalTotal.toString(),
         paymentMethod: selectedPaymentMethod,
         billSnapshot: JSON.stringify(billSnapshot),
@@ -185,6 +182,47 @@ export default function OrderDetails() {
       alert('Payment failed. Please try again.');
       console.error(error);
     }
+  };
+
+
+  const handleViewBill = () => {
+    if (!currentOrder) return;
+    
+    const billSnapshot = {
+        items: orderItems.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: Math.round(parseFloat(item.price) || 0),
+          lineTotal: Math.round(item.quantity * (parseFloat(item.price) || 0)),
+        })),
+        subtotal: Math.round(orderInfo.subtotal),
+        tax: Math.round(orderInfo.tax),
+        taxRatePct:
+          orderInfo.subtotal > 0
+            ? Math.round((orderInfo.tax / orderInfo.subtotal) * 1000) / 10
+            : 0,
+        orderTotal: Math.round(orderInfo.total),
+        tip: 0,
+        grandTotal: Math.round(orderInfo.total),
+        orderNumber: orderInfo.orderNumber,
+        table: orderInfo.table,
+        paymentMethod: currentOrder.status === 'PAID' ? 'Processed' : '',
+        orderId,
+        customerName: currentOrder.customerName || '',
+      };
+
+      setNavState({
+        ...navState,
+        orderId: orderId,
+        orderNumber: orderInfo.orderNumber,
+        table: orderInfo.table,
+        orderTotal: Math.round(orderInfo.total).toString(),
+        tipAmount: '0',
+        finalTotal: Math.round(orderInfo.total).toString(),
+        billSnapshot: JSON.stringify(billSnapshot),
+      });
+
+      router.push('/staff/bill');
   };
 
 
@@ -368,8 +406,18 @@ export default function OrderDetails() {
                 </div>
               </div>
 
-              {role === 'billing_staff' ? (
-                <div className="space-y-4">
+              <div className="space-y-4">
+                {(role !== 'billing_staff' || currentOrder?.status === 'PAID') && (currentOrder?.status === 'SERVED' || currentOrder?.status === 'BILLED' || currentOrder?.status === 'PAID') && (
+                  <button
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-2xl py-4 shadow-lg transition-all flex items-center justify-center gap-2 group"
+                    onClick={handleViewBill}
+                  >
+                    <Icon name="print-outline" size={22} color="white" />
+                    <span className="font-bold">Print / Download Bill</span>
+                  </button>
+                )}
+
+                {role === 'billing_staff' && (
                   <button
                     className={`w-full rounded-2xl py-5 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative ${billingCanProceedToPayment
                         ? 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer'
@@ -384,15 +432,15 @@ export default function OrderDetails() {
                       <span className="font-bold text-lg">Proceed to Payment</span>
                     </div>
                   </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
+                )}
+
+                {role === 'serving_staff' && !['SERVED', 'BILLED', 'PAID'].includes(currentOrder?.status || '') && (
                   <div className="bg-blue-50 rounded-2xl p-4 flex items-center gap-3 text-blue-800 border border-blue-100">
                     <Icon name="information-circle" size={24} color="#1e40af" />
-                    <p className="text-sm font-medium">Billing and payment are handled by the billing staff.</p>
+                    <p className="text-sm font-medium">Billing is available once the order is served.</p>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -440,33 +488,7 @@ export default function OrderDetails() {
                     </div>
                   </div>
 
-                  <div className="mb-8">
-                    <div className="flex justify-between items-center mb-3">
-                      <p className="text-text/60 text-xs font-bold uppercase tracking-wider">Add Tip</p>
-                      {tipAmount && <span className="text-primary font-bold">₹{tipAmount}</span>}
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 mb-4">
-                      {tipPresets.map((percent) => (
-                        <button
-                          key={percent}
-                          className={`rounded-xl py-2 font-bold transition-colors ${calculateTipFromPercent(percent) === tipAmount
-                            ? 'bg-primary text-white'
-                            : 'bg-ivory text-text/70 hover:bg-ivory/80'
-                            }`}
-                          onClick={() => setTipAmount(calculateTipFromPercent(percent))}
-                        >
-                          {percent}%
-                        </button>
-                      ))}
-                    </div>
-                    <input
-                      type="number"
-                      className="w-full rounded-xl border border-ivory-200 px-4 py-3 outline-none focus:border-primary font-bold text-text placeholder:font-normal placeholder:text-text/40"
-                      placeholder="Custom amount (₹)"
-                      value={tipAmount}
-                      onChange={(e) => setTipAmount(e.target.value)}
-                    />
-                  </div>
+
 
                   <button
                     className={`w-full rounded-xl py-4 flex items-center justify-center transition-all ${!selectedPaymentMethod

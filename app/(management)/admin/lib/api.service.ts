@@ -8,22 +8,26 @@ import { API_CONFIG, TOKEN_KEY } from './api.config';
 /**
  * Normalizes API response to handle various response structures (data, items, user, etc.)
  */
-export function normalizeResponse<T>(data: any, fallback: T): T {
-    if (!data) return fallback;
+export function normalizeResponse<T>(data: unknown, fallback: T): T {
+    if (!data || typeof data !== 'object') return fallback;
+    
+    const responseData = data as Record<string, unknown>;
     
     // Check for common wrapper fields
-    if (data.data !== undefined) return data.data;
-    if (data.items !== undefined && Array.isArray(data.items)) return data.items;
-    if (data.restaurant !== undefined) return data.restaurant;
-    if (data.user !== undefined) return data.user;
-    if (data.staff !== undefined) return data.staff;
+    if (responseData.data !== undefined) return responseData.data as T;
+    if (responseData.items !== undefined && Array.isArray(responseData.items)) return responseData.items as unknown as T;
+    if (responseData.restaurant !== undefined) return responseData.restaurant as T;
+    if (responseData.user !== undefined) return responseData.user as T;
+    if (responseData.staff !== undefined) return responseData.staff as T;
     
-    return data;
+    return data as T;
 }
 
 
 interface RequestOptions {
-    body?: any;
+    method?: string;
+    headers?: Record<string, string>;
+    body?: unknown;
     requiresAuth?: boolean;
     suppressLogs?: boolean;
 }
@@ -57,10 +61,6 @@ class ApiService {
             if (token) {
                 // Send standard Authorization header
                 headers['Authorization'] = `Bearer ${token}`;
-                
-                // EXTRA: Send fallback headers for backend compatibility (matching staff app patterns)
-                headers['x-access-token'] = token;
-                headers['x-auth-token'] = token;
                 
                 console.log('[AUTH] Token injected into request headers');
             } else {
@@ -138,14 +138,14 @@ class ApiService {
     /**
      * POST request
      */
-    async post<T>(endpoint: string, body?: any, requiresAuth = true, suppressLogs = false): Promise<T> {
+    async post<T>(endpoint: string, body?: unknown, requiresAuth = true, suppressLogs = false): Promise<T> {
         return this.request<T>(endpoint, { method: 'POST', body, requiresAuth, suppressLogs });
     }
 
     /**
      * PUT request
      */
-    async put<T>(endpoint: string, body?: any, requiresAuth = true, suppressLogs = false): Promise<T> {
+    async put<T>(endpoint: string, body?: unknown, requiresAuth = true, suppressLogs = false): Promise<T> {
         return this.request<T>(endpoint, { method: 'PUT', body, requiresAuth, suppressLogs });
     }
 
@@ -159,7 +159,7 @@ class ApiService {
     /**
      * PATCH request
      */
-    async patch<T>(endpoint: string, body?: any, requiresAuth = true, suppressLogs = false): Promise<T> {
+    async patch<T>(endpoint: string, body?: unknown, requiresAuth = true, suppressLogs = false): Promise<T> {
         return this.request<T>(endpoint, { method: 'PATCH', body, requiresAuth, suppressLogs });
     }
 }

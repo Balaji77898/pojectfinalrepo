@@ -156,3 +156,9 @@ body {
 code {
   font-family: "SpaceMono", monospace;
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '../components/Icon';
 import { Animated } from '../components/Animated';
@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigationState } from '../contexts/NavigationContext';
 import { useOrders } from '../contexts/OrdersContext';
 import { normalizeStaffOrderItems } from '../lib/staff-orders.service';
+import { staffAuthService, StaffProfile } from '../lib/staff-auth.service';
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 
@@ -29,6 +30,7 @@ type BillSnapshot = {
   table: string;
   paymentMethod: string;
   orderId: string;
+  customerName?: string;
 };
 
 function parseBillSnapshot(nav: Record<string, unknown>): BillSnapshot | null {
@@ -49,6 +51,13 @@ export default function Bill() {
   const { navState } = useNavigationState();
   const { orders } = useOrders();
   const receiptRef = useRef<HTMLDivElement>(null);
+  const [profile, setProfile] = useState<StaffProfile | null>(null);
+
+  useEffect(() => {
+    staffAuthService.getProfile().then(setProfile).catch(err => {
+      console.warn('Could not fetch restaurant name for bill:', err);
+    });
+  }, []);
 
   const orderId = (navState?.orderId as string) ?? '';
   const currentOrder = orders.find((o) => o.id === orderId);
@@ -132,14 +141,49 @@ export default function Bill() {
       <style
         dangerouslySetInnerHTML={{
           __html: `
+            .print-only { display: none !important; }
             @media print {
-              body { background: white !important; }
-              .no-print { display: none !important; }
-              .bill-screen-bg { display: none !important; }
-              .bill-print-area {
-                box-shadow: none !important;
-                border: none !important;
+              html, body { 
+                height: auto !important; 
+                min-height: 0 !important;
+                margin: 0 !important; 
+                padding: 0 !important; 
+                background: white !important;
+                -webkit-print-color-adjust: exact;
+                overflow: visible !important;
+              }
+              /* Hide ALL screen-only containers */
+              main, div[class*="min-h-screen"], .min-h-screen {
+                height: auto !important;
+                min-height: 0 !important;
+                background: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+              }
+              .no-print, [data-html2canvas-ignore], .bill-screen-bg, button, .no-print * { 
+                display: none !important; 
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+              }
+              .print-only { 
+                display: block !important; 
+                width: 100% !important;
                 max-width: 100% !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                position: relative !important;
+                top: 0 !important;
+                left: 0 !important;
+                visibility: visible !important;
+              }
+              @page { 
+                margin: 0 !important; 
+                size: auto;
               }
             }
           `,
@@ -154,12 +198,15 @@ export default function Bill() {
       <div className="flex-1 flex items-center justify-center p-6 relative z-10">
         <div className="w-full max-w-[420px]">
           <Animated type="fadeInUp" duration={0.4}>
+            {/* Screen Version (Unchanged) */}
             <div
               ref={receiptRef}
-              className="bill-print-area bg-white overflow-hidden border border-slate-200 relative font-mono"
+              className="bill-print-area bg-white overflow-hidden border border-slate-200 relative font-mono no-print"
             >
               <div className="px-6 pt-6 pb-4 text-center">
-                <div className="text-[14px] font-bold tracking-widest text-slate-900">RESTAURANT</div>
+                <div className="text-[14px] font-bold tracking-widest text-slate-900 uppercase">
+                  {profile?.restaurant_name || 'FINE DINING RESTAURANT'}
+                </div>
                 <div className="text-[12px] font-semibold text-slate-800 mt-1">Payment Receipt</div>
                 <div className="mt-3 border-t border-slate-300" />
               </div>
@@ -169,6 +216,18 @@ export default function Bill() {
                   <div className="flex justify-between gap-6">
                     <span className="text-slate-600">Bill Number</span>
                     <span className="font-bold text-slate-900 tabular-nums">{billNumber}</span>
+                  </div>
+                  <div className="flex justify-between gap-6">
+                    <span className="text-slate-600">Table</span>
+                    <span className="font-bold text-slate-900 tabular-nums">
+                      {snapshot?.table || currentOrder?.table || '—'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-6">
+                    <span className="text-slate-600">Customer</span>
+                    <span className="font-bold text-slate-900 tabular-nums">
+                      {snapshot?.customerName || currentOrder?.customerName || '—'}
+                    </span>
                   </div>
                   <div className="flex justify-between gap-6">
                     <span className="text-slate-600">Date</span>
@@ -235,10 +294,12 @@ export default function Bill() {
                     <span className="text-slate-600">Tax</span>
                     <span className="font-bold text-slate-900 tabular-nums">{fmt(tax)}</span>
                   </div>
-                  <div className="flex justify-between gap-6">
-                    <span className="text-slate-600">Tip</span>
-                    <span className="font-bold text-slate-900 tabular-nums">{fmt(tipAmount)}</span>
-                  </div>
+                  {tipAmount > 0 && (
+                    <div className="flex justify-between gap-6">
+                      <span className="text-slate-600">Tip</span>
+                      <span className="font-bold text-slate-900 tabular-nums">{fmt(tipAmount)}</span>
+                    </div>
+                  )}
 
                   <div className="pt-3 border-t-2 border-slate-200 flex items-baseline justify-between">
                     <span className="text-[12px] font-black uppercase tracking-wide text-slate-900">TOTAL</span>
@@ -250,32 +311,128 @@ export default function Bill() {
               </div>
             </div>
 
-            <div className="no-print flex flex-col gap-3 mt-6" data-html2canvas-ignore>
-              <button
-                type="button"
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold flex items-center justify-center transition-colors shadow-lg"
-                onClick={handlePrint}
-              >
-                <Icon name="print-outline" size={20} color="white" className="mr-2" />
-                Print bill
-              </button>
-              <button
-                type="button"
-                className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-xl font-bold flex items-center justify-center transition-colors shadow-lg"
-                onClick={handleDownloadPDF}
-              >
-                <Icon name="share-outline" size={20} color="white" className="mr-2" />
-                Download PDF
-              </button>
-              <button
-                type="button"
-                className="w-full bg-white border-2 border-slate-100 text-slate-700 hover:bg-slate-50 py-4 rounded-xl font-bold transition-colors"
-                onClick={() =>
-                  router.replace(role === 'billing_staff' ? '/staff/billing-payment' : '/staff/staff-dashboard')
-                }
-              >
-                Back to {role === 'billing_staff' ? 'Billing' : 'Dashboard'}
-              </button>
+            {/* Printable Version (Hidden on Screen) */}
+            <div className="bg-white p-10 font-sans text-slate-900 print-only w-full max-w-2xl mx-auto">
+              <div className="text-center mb-6">
+                <h1 className="text-4xl font-black mb-1 tracking-tight">
+                  {profile?.restaurant_name?.toUpperCase() || 'RESTAURANT'}
+                </h1>
+                <p className="text-lg font-medium">Payment Receipt</p>
+              </div>
+
+              <div className="border-t-[3px] border-black mb-6"></div>
+
+              <div className="mb-6 space-y-2 text-[15px]">
+                <div className="flex justify-between">
+                  <span className="font-semibold text-slate-700">Bill Number</span>
+                  <span className="font-bold">{billNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-semibold text-slate-700">Table</span>
+                  <span className="font-bold">{snapshot?.table || currentOrder?.table || '—'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-semibold text-slate-700">Customer</span>
+                  <span className="font-bold">
+                    {snapshot?.customerName || currentOrder?.customerName || '—'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-semibold text-slate-700">Date</span>
+                  <span className="font-bold">{date}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-semibold text-slate-700">Payment Method</span>
+                  <span className="font-bold uppercase">{paymentMethod || '—'}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-400 mb-6"></div>
+
+              <h2 className="text-xl font-bold mb-4">Order Items</h2>
+
+              <table className="w-full mb-6 border-collapse border border-slate-300">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-slate-300">
+                    <th className="border border-slate-300 py-2 px-3 text-left font-bold text-sm">Item</th>
+                    <th className="border border-slate-300 py-2 px-3 text-center font-bold text-sm">Qty</th>
+                    <th className="border border-slate-300 py-2 px-3 text-right font-bold text-sm">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((line, idx) => (
+                    <tr key={idx} className="border-b border-slate-200">
+                      <td className="border border-slate-300 py-2 px-3 text-[15px]">{line.name}</td>
+                      <td className="border border-slate-300 py-2 px-3 text-center text-[15px]">{line.quantity}</td>
+                      <td className="border border-slate-300 py-2 px-3 text-right text-[15px] font-medium">{fmt(line.lineTotal)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="border-t border-slate-400 mb-6"></div>
+
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between text-[15px]">
+                  <span className="font-semibold text-slate-700">Subtotal</span>
+                  <span className="font-bold">{fmt(subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-[15px]">
+                  <span className="font-semibold text-slate-700">Tax</span>
+                  <span className="font-bold">{fmt(tax)}</span>
+                </div>
+                {tipAmount > 0 && (
+                  <div className="flex justify-between text-[15px]">
+                    <span className="font-semibold text-slate-700">Tip</span>
+                    <span className="font-bold">{fmt(tipAmount)}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t-[3px] border-black mb-4"></div>
+
+              <div className="flex justify-between items-baseline mb-12">
+                <span className="text-2xl font-black">TOTAL</span>
+                <span className="text-3xl font-black">{fmt(grandTotal)}</span>
+              </div>
+
+              <div className="text-center mt-12">
+                <p className="text-base font-medium">Thank you for dining with us!</p>
+              </div>
+            </div>
+
+            <div className="no-print" data-html2canvas-ignore>
+              <div className="flex flex-col gap-3 mt-6">
+                {(role !== 'billing_staff' || currentOrder?.status === 'PAID') && (
+                  <>
+                    <button
+                      type="button"
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold flex items-center justify-center transition-colors shadow-lg"
+                      onClick={handlePrint}
+                    >
+                      <Icon name="print-outline" size={20} color="white" className="mr-2" />
+                      Print bill
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-xl font-bold flex items-center justify-center transition-colors shadow-lg"
+                      onClick={handleDownloadPDF}
+                    >
+                      <Icon name="share-outline" size={20} color="white" className="mr-2" />
+                      Download PDF
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  className="w-full bg-white border-2 border-slate-100 text-slate-700 hover:bg-slate-50 py-4 rounded-xl font-bold transition-colors"
+                  onClick={() =>
+                    router.replace(role === 'billing_staff' ? '/staff/billing-payment' : '/staff/staff-dashboard')
+                  }
+                >
+                  Back to {role === 'billing_staff' ? 'Billing' : 'Dashboard'}
+                </button>
+              </div>
             </div>
           </Animated>
         </div>

@@ -30,6 +30,21 @@ export interface StaffOrder {
     items?: StaffOrderItem[];
 }
 
+export interface CreateOrderPayload {
+    table_id?: string;
+    customer_name: string;
+    customer_phone?: string;
+    order_type: string;
+    items: {
+        menu_item_id: string;
+        quantity: number;
+    }[];
+    notes?: string;
+    payment_method: string;
+    tax_amount: number;
+    total_amount: number;
+}
+
 export interface StaffOrdersResponse {
     success: boolean;
     orders: StaffOrder[];
@@ -121,8 +136,6 @@ class StaffOrdersService {
         try {
             const authHeaders = {
                 'Authorization': `Bearer ${token}`,
-                'x-access-token': token,
-                'x-auth-token': token,
             };
 
             const response = await fetch(
@@ -174,8 +187,6 @@ class StaffOrdersService {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'Authorization': `Bearer ${token}`,
-                        'x-access-token': token,
-                        'x-auth-token': token,
                         'ngrok-skip-browser-warning': 'true',
                     },
                 }
@@ -211,8 +222,6 @@ class StaffOrdersService {
         try {
             const authHeaders = {
                 'Authorization': `Bearer ${token}`,
-                'x-access-token': token,
-                'x-auth-token': token,
             };
 
             const response = await fetch(
@@ -251,8 +260,6 @@ class StaffOrdersService {
         try {
             const authHeaders = {
                 'Authorization': `Bearer ${token}`,
-                'x-access-token': token,
-                'x-auth-token': token,
             };
 
             const response = await fetch(
@@ -291,8 +298,6 @@ class StaffOrdersService {
         try {
             const authHeaders = {
                 'Authorization': `Bearer ${token}`,
-                'x-access-token': token,
-                'x-auth-token': token,
             };
 
             const response = await fetch(
@@ -319,6 +324,48 @@ class StaffOrdersService {
             }
         } catch (error) {
             console.warn('Error processing payment:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Create a new order manually
+     */
+    async createOrder(payload: CreateOrderPayload): Promise<StaffOrder> {
+        const token = staffAuthService.getToken();
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        try {
+            const authHeaders = {
+                'Authorization': `Bearer ${token}`,
+            };
+
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STAFF_APP.ORDERS}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        ...authHeaders,
+                        'ngrok-skip-browser-warning': 'true',
+                    },
+                    body: JSON.stringify(payload),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to place order');
+            }
+
+            const data = await response.json();
+            const order = data.data || data.order || data;
+            return normalizeStaffOrder(order as StaffOrder);
+        } catch (error) {
+            console.error('Error placing order:', error);
             throw error;
         }
     }
