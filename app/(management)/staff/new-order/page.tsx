@@ -7,14 +7,14 @@ import { Animated } from '../components/Animated';
 import { useAuth } from '../contexts/AuthContext';
 import { useOrders } from '../contexts/OrdersContext';
 import { useNavigationState } from '../contexts/NavigationContext';
-import StaffPlaceOrderModal from '../components/StaffPlaceOrderModal';
+import { formatDateTime } from '../lib/date-utils';
 
 export default function NewOrder() {
   const { role } = useAuth();
   const { orders, setOrderStatus } = useOrders();
   const router = useRouter();
   const { setNavState } = useNavigationState();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'recent' | 'oldest'>('recent');
 
   useEffect(() => {
     if (role === 'billing_staff') {
@@ -58,7 +58,7 @@ export default function NewOrder() {
                   <div className="w-4 h-4 bg-white rounded-full mr-3 animate-pulse" />
                   <div>
                     <p className="text-white font-black text-xl tracking-wide">NEW ORDERS</p>
-                    <p className="text-white/70 text-sm mt-0.5">{item.time}</p>
+                    <p className="text-white/70 text-sm mt-0.5">{formatDateTime(item.createdAt)}</p>
                   </div>
                 </div>
                 <div className="bg-white/20 px-4 py-2 rounded-xl">
@@ -74,7 +74,11 @@ export default function NewOrder() {
                 </div>
                 <div>
                   <p className="text-emerald-700 font-black text-lg">ACCEPTED</p>
-                  <p className="text-emerald-600/70 text-sm">{item.orderNumber}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-emerald-600/70 text-sm">{item.orderNumber}</p>
+                    <span className="w-1 h-1 bg-emerald-600/30 rounded-full" />
+                    <p className="text-emerald-600/70 text-xs">{formatDateTime(item.createdAt)}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -195,13 +199,25 @@ export default function NewOrder() {
                 </p>
             </div>
             <div className="flex gap-4">
-                  <button 
-                    onClick={() => setIsModalOpen(true)}
-                    className="px-6 py-3 bg-gold text-white rounded-xl font-bold transition-all hover:bg-goldLight hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2"
-                  >
-                    <Icon name="add-circle" size={20} color="white" />
-                    <span>Place Order</span>
-                  </button>
+
+                   <div className="flex bg-white/10 p-1 rounded-xl backdrop-blur-md border border-white/10">
+                    <button
+                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${sortOrder === 'recent' 
+                        ? 'bg-white text-primary shadow-lg' 
+                        : 'text-white hover:bg-white/10'}`}
+                      onClick={() => setSortOrder('recent')}
+                    >
+                      Recent
+                    </button>
+                    <button
+                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${sortOrder === 'oldest' 
+                        ? 'bg-white text-primary shadow-lg' 
+                        : 'text-white hover:bg-white/10'}`}
+                      onClick={() => setSortOrder('oldest')}
+                    >
+                      Oldest
+                    </button>
+                  </div>
 
                    <button
                     className="w-10 h-10 md:w-12 md:h-12 bg-white/10 rounded-xl flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-md border border-white/10"
@@ -240,9 +256,15 @@ export default function NewOrder() {
             <div className="flex-1">
                {orders.length > 0 ? (
                   <div className="space-y-6">
-                    {orders.map((item, index) => (
-                      <OrderCard key={item.id} item={item} index={index} />
-                    ))}
+                    {[...orders]
+                      .sort((a, b) => {
+                        const dateA = new Date(a.createdAt).getTime();
+                        const dateB = new Date(b.createdAt).getTime();
+                        return sortOrder === 'recent' ? dateB - dateA : dateA - dateB;
+                      })
+                      .map((item, index) => (
+                        <OrderCard key={item.id} item={item} index={index} />
+                      ))}
                   </div>
                ) : (
                   <Animated type="fadeIn" duration={0.4} className="flex flex-col items-center justify-center py-20 bg-white/60 rounded-3xl border-2 border-dashed border-ivory-200">
@@ -257,15 +279,6 @@ export default function NewOrder() {
          </div>
       </div>
 
-      {/* Manual Order Modal */}
-      <StaffPlaceOrderModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={() => {
-          // Success handled by page refresh or internal state update if needed
-          window.location.reload();
-        }}
-      />
     </div>
   );
 }

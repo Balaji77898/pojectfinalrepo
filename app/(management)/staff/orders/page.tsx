@@ -6,6 +6,7 @@ import { Animated } from '../components/Animated';
 import { useAuth } from '../contexts/AuthContext';
 import { OrderStatus, useOrders } from '../contexts/OrdersContext';
 import { useNavigationState } from '../contexts/NavigationContext';
+import StaffPlaceOrderModal from '../components/StaffPlaceOrderModal';
 
 type FilterId = 'all' | Extract<OrderStatus, 'PLACED' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'SERVED'>;
 
@@ -15,6 +16,7 @@ export default function Orders() {
   const router = useRouter();
   const { setNavState } = useNavigationState();
   const [activeFilter, setActiveFilter] = useState<FilterId>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Cashier cannot access orders - redirect to billing
   useEffect(() => {
@@ -173,10 +175,10 @@ export default function Orders() {
 
                    <button
                     className="bg-gold hover:bg-yellow-500 text-white px-5 py-2 md:px-6 md:py-3 rounded-xl font-bold transition-colors flex items-center shadow-lg transform hover:-translate-y-0.5 text-sm md:text-base"
-                    onClick={() => router.push('/staff/new-order')}
+                    onClick={() => setIsModalOpen(true)}
                   >
-                    <Icon name="add" size={20} color="#FFFFFF" className="mr-2" />
-                    New Order
+                    <Icon name="add-circle" size={20} color="#FFFFFF" className="mr-2" />
+                    Place Order
                   </button>
             </div>
         </div>
@@ -238,6 +240,15 @@ export default function Orders() {
             </div>
         </div>
       </div>
+
+      {/* Manual Order Modal */}
+      <StaffPlaceOrderModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }
