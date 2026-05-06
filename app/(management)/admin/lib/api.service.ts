@@ -25,7 +25,7 @@ export function normalizeResponse<T>(data: unknown, fallback: T): T {
 
 
 interface RequestOptions {
-    method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | string;
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     headers?: Record<string, string>;
     body?: unknown;
     requiresAuth?: boolean;

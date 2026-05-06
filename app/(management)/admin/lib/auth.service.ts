@@ -15,11 +15,11 @@ interface LoginCredentials {
 interface LoginResponse {
     token?: string;
     accessToken?: string;
-    user?: any;
-    data?: any;
-    staff?: any;
+    user?: unknown;
+    data?: unknown;
+    staff?: unknown;
     message?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 interface User {
@@ -27,7 +27,7 @@ interface User {
     email?: string;
     name?: string;
     role?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 class AuthService {
@@ -151,7 +151,7 @@ class AuthService {
             }
 
             // Call /api/admin/me to validate session and get user data
-            const response = await apiService.get<any>(
+            const response = await apiService.get<unknown>(
                 API_CONFIG.ENDPOINTS.ADMIN.ME,
                 true, // Requires authentication
                 true  // Suppress logs for expected session expiry
@@ -165,9 +165,10 @@ class AuthService {
             }
 
             return user;
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Only log if it's NOT a 401/Unauthorized error (which is expected if token expired)
-            if (!error.message?.includes('Unauthorized') && !error.message?.includes('token')) {
+            const errMessage = error instanceof Error ? error.message : String(error);
+            if (!errMessage.includes('Unauthorized') && !errMessage.includes('token')) {
                 console.error('Session validation error:', error);
             }
             // Clear invalid token
@@ -188,7 +189,7 @@ class AuthService {
     /**
      * Send forgot password email
      */
-    async forgotPassword(email: string): Promise<any> {
+    async forgotPassword(email: string): Promise<unknown> {
         try {
             return await apiService.post(
                 API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD,
@@ -204,7 +205,7 @@ class AuthService {
     /**
      * Reset password using token
      */
-    async resetPassword(token: string, password: string): Promise<any> {
+    async resetPassword(token: string, password: string): Promise<unknown> {
         try {
             return await apiService.post(
                 API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD,
