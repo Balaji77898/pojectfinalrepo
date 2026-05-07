@@ -15,9 +15,9 @@ interface LoginCredentials {
 interface LoginResponse {
     token?: string;
     accessToken?: string;
-    user?: unknown;
-    data?: unknown;
-    staff?: unknown;
+    user?: Record<string, unknown>;
+    data?: Record<string, unknown>;
+    staff?: Record<string, unknown>;
     message?: string;
     [key: string]: unknown;
 }
@@ -43,7 +43,7 @@ class AuthService {
             );
 
             // Store token - check multiple possible locations
-            const token = response.token || response.accessToken || response.data?.token || response.user?.token || response.data?.accessToken;
+            const token = response.token || response.accessToken || (response.data?.token as string | undefined) || (response.user?.token as string | undefined) || (response.data?.accessToken as string | undefined);
             if (token) {
                 this.setToken(token);
             }
@@ -51,7 +51,7 @@ class AuthService {
             // Store user data - check multiple possible locations
             const userData = normalizeResponse(response, null) || response.user || response.data || response.staff;
             if (userData) {
-                this.setUser(userData);
+                this.setUser(userData as User);
             }
 
             return response;
